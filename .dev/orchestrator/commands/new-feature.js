@@ -24,16 +24,19 @@ export async function newFeature(name) {
         name: 'module',
         message: 'Select module:',
         choices: [
-          'core/inbox',
           'core/crm',
+          'core/inbox',
           'core/pos',
           'core/marketing',
+          'core/dsb',
           'core/tasks',
-          'core/ai',
-          'shared/inventory',
+          'shared/auth',
+          'shared/ai',
+          'shared/multi-tenant',
+          'shared/notifications',
           'shared/procurement',
-          'industry/culinary/courses',
           'industry/culinary/enrollment',
+          'industry/culinary/kitchen',
         ],
       },
       {
@@ -59,28 +62,23 @@ export async function newFeature(name) {
     const slug = slugify(name)
 
     // Replace placeholders
-    template = template.replace(/\{\{NAME\}\}/g, name)
+    template = template.replace(/\{\{NAME\}\}/g, slug.toUpperCase())
+    template = template.replace(/\{\{subtitle\}\}/g, answers.description)
     template = template.replace(/\{\{DATE\}\}/g, today)
     template = template.replace(/\{\{module\}\}/g, answers.module)
 
-    // Update priority in frontmatter
-    template = template.replace(/priority: P1/, `priority: ${answers.priority}`)
-
-    // Insert description into Summary section
+    // Inject description into Overview section placeholder
     template = template.replace(
       '<!-- 2-3 ประโยค อธิบายว่า feature นี้ทำอะไร ทำไมต้องมี -->',
       `<!-- 2-3 ประโยค อธิบายว่า feature นี้ทำอะไร ทำไมต้องมี -->\n${answers.description}`
     )
 
-    // Fix the module line in frontmatter (template has core/{{module}})
-    template = template.replace(`core/${answers.module}`, answers.module)
-
     // Write feature spec
-    const featuresDir = path.join(process.cwd(), 'docs', 'product', 'features')
-    await fs.mkdir(featuresDir, { recursive: true })
-    const featurePath = path.join(featuresDir, `${slug}.md`)
+    const specsDir = path.join(process.cwd(), 'docs', 'product', 'specs')
+    await fs.mkdir(specsDir, { recursive: true })
+    const featurePath = path.join(specsDir, `FEAT-${slug.toUpperCase()}.md`)
     await fs.writeFile(featurePath, template, 'utf-8')
-    console.log(chalk.green(`  Created: docs/product/features/${slug}.md`))
+    console.log(chalk.green(`  Created: docs/product/specs/FEAT-${slug.toUpperCase()}.md`))
 
     // Write flow skeleton
     const flowsDir = path.join(process.cwd(), 'docs', 'product', 'flows')

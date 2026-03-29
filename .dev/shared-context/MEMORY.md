@@ -77,3 +77,187 @@
 3. Phase 2: เขียน 8 ADRs ใหม่ (ADR-060 to 067)
 4. Phase 3: ปรับ vibecode ให้ทำงานจริงกับ Claude Code + Gemini CLI
 5. ติดตั้ง Google Sheets + Docs MCP (ถ้าต้องการ)
+
+---
+
+## 2026-03-30 — Session 2 (Claude Sonnet)
+
+### สิ่งที่ทำ
+
+**Feature Specs ✅**
+1. FEAT-ACCOUNTING-PLATFORM.md — APPROVED. Adapter pattern: FlowAccount (REST API OAuth 2.0 full auto) + Express ESG (X-import Excel semi-auto). เราไม่ทำโมดูลบัญชีเอง
+2. FEAT-AI-ASSISTANT.md — APPROVED v1.2. เพิ่ม: LINE Group ส่งยอด (REPORT intent), LINE Group รับออเดอร์ (ORDER intent), Slip processing (SLIP intent, Gemini Vision)
+3. PRD.md — APPROVED v2.2. Sync กับทุก spec ที่ approve แล้ว. Section 5.9 AI add-on, 5.10 Accounting Platform, pricing table
+4. ROADMAP.md — APPROVED v2.1. A5 (AI Assistant) ย้าย M6→M3. E1 (Accounting Platform) เพิ่ม M4
+
+**Git + GitHub ✅**
+5. git init → 253 files → push ขึ้น https://github.com/Freshair129/zuri1.0.git (branch: main)
+6. Rename: E:\CO → E:\zuri (เดิม E:\ZURI = v1 monolith → E:\ZURI-v1)
+7. แก้ path references ใน 8 ไฟล์ (E:/CO → E:/zuri)
+
+**Documentation ✅**
+8. AGENT_PROTOCOL.md v1.1 — เพิ่ม Section 9 (Obsidian Second Brain)
+9. CLAUDE.md — เพิ่ม AI add-on, Accounting add-on, Obsidian Second Brain section
+10. Obsidian MCP config แก้ path จาก E:\CO\docs → E:\zuri\docs
+
+**Claude Code Custom Commands ✅**
+11. .claude/commands/catchup.md — /catchup command
+12. .claude/commands/checkpoint.md — /checkpoint command
+
+**Research (ไม่ implement) ✅**
+13. Gmail expense pipeline → ไม่คุ้มสร้างสำหรับ Zuri (Thai biz ใช้ PromptPay ไม่ใช่ email)
+14. Express ESG → ไม่มี REST API → X-import (Excel bridge) เป็น solution เดียว
+15. FlowAccount → OpenAPI OAuth 2.0, apply ที่ developer_support@flowaccount.com
+
+**Excel ✅**
+16. E:/march_2026_expenses.xlsx — 3 sheets: รายจ่าย (12 items), ตัดออก (2), สรุปตามหมวด
+
+### สถานะปัจจุบัน
+- Phase 1 Feature Specs: 🔄 In Progress — PRD/ROADMAP/AI-ASSISTANT/ACCOUNTING-PLATFORM approved, ยัง copy docs จาก ZURI-v1 ไม่ได้
+- RESTRUCTURE_PLAN.md: รอ Boss approve
+- CHANGELOG.md: ยังไม่มี
+
+### Key Decisions (session นี้)
+- ไม่สร้าง Gmail expense pipeline
+- Accounting = adapter pattern (FlowAccount auto + Express semi-auto), ไม่ทำบัญชีเอง
+- Gemini Vision สำหรับ slip processing (ไม่ต้องการ OCR service แยก)
+- AI Assistant Pricing: Starter ฿890, Pro ฿1,290 (one-time purchase TBD)
+- .claude/commands/ (ไม่ใช่ .claude/skills/) สำหรับ slash commands
+
+### Files Changed
+- docs/product/PRD.md — v2.2
+- docs/product/ROADMAP.md — v2.1
+- docs/product/specs/FEAT-ACCOUNTING-PLATFORM.md — NEW, APPROVED
+- docs/product/specs/FEAT-AI-ASSISTANT.md — v1.2, APPROVED
+- .dev/agents/AGENT_PROTOCOL.md — v1.1
+- CLAUDE.md — updated
+- .claude/commands/catchup.md — NEW
+- .claude/commands/checkpoint.md — NEW
+
+### Pending / Next Session
+1. Boss approve RESTRUCTURE_PLAN.md (ค้างมาจาก session 1)
+2. ~~สร้าง CHANGELOG.md~~ → Done (v2.3.0)
+3. ~~Task 1.1: Copy + clean feature specs~~ → Done (7 specs + 1 tech-spec)
+4. Task 1.2: Module manifests
+5. Task 1.6: Obsidian vault config
+6. ADR-060 to ADR-069 (ทุกตัว pending)
+7. Contact FlowAccount: developer_support@flowaccount.com
+8. Push latest commits ที่ยังไม่ได้ push
+9. เขียน FEAT-CRM, FEAT-KITCHEN, FEAT-ENROLLMENT, FEAT-MARKETING (ไม่มีใน ZURI-v1)
+
+---
+
+## 2026-03-30 — Session 3 (Claude Opus)
+
+### สิ่งที่ทำ
+
+**Task 1.1: Copy + Clean Feature Specs ✅**
+1. Scanned ZURI-v1 `docs/zuri/` — found 11 .md files
+2. Copied 7 feature specs → `docs/product/specs/`:
+   - FEAT-INBOX.md — Unified Inbox (FB+LINE), 3-panel, Quick Sale
+   - FEAT-DSB.md — AI Daily Sales Brief + ConversationAnalysis + CustomerProfile + DailyBrief models
+   - FEAT-BILLING.md — Invoice & Payment, slip OCR
+   - FEAT-PROFILE.md — Customer Profile (CRM), identity resolution
+   - FEAT-AGENT.md — AI Assistant Panel (compose-reply + ask-AI)
+   - FEAT-MULTI-TENANT.md — Shared DB + tenantId + RLS backstop
+   - FEAT-LINE-AGENT.md — LINE Webhook Agent Mode + escalation
+3. Copied tech-spec.md → `docs/architecture/tech-spec.md`
+4. Skipped: TOKEN-REFRESH.md (cancelled — System User Token), PRD.md (zuri has v2.2 newer)
+5. Updated CHANGELOG.md → v2.3.0
+
+**Cleaning applied:**
+- Renamed all files to FEAT-*.md format
+- Updated cross-references (INBOX.md → FEAT-INBOX.md, etc.)
+- Updated realtime tech refs (SSE → Pusher where applicable)
+- Standardized priority labels (🔴 → P0, 🟠 → P1, 🟡 → P2)
+
+### สถานะปัจจุบัน
+- Phase 1 Feature Specs: 🔄 In Progress
+  - Task 1.1 ✅ (7 specs copied)
+  - Task 1.2 🔲 (module manifests)
+  - Task 1.3 🔲 (data flow)
+  - Task 1.4 🔲 (Boss sign-off)
+  - Task 1.5 ✅ (gotchas)
+  - Task 1.6 🔲 (Obsidian vault config)
+- Total specs in docs/product/specs/: 11 files
+- Missing specs (not in ZURI-v1): CRM, Kitchen, Enrollment, Marketing — ต้องเขียนใหม่
+
+### Files Changed
+- docs/product/specs/FEAT-INBOX.md — NEW
+- docs/product/specs/FEAT-DSB.md — NEW
+- docs/product/specs/FEAT-BILLING.md — NEW
+- docs/product/specs/FEAT-PROFILE.md — NEW
+- docs/product/specs/FEAT-AGENT.md — NEW
+- docs/product/specs/FEAT-MULTI-TENANT.md — NEW
+- docs/product/specs/FEAT-LINE-AGENT.md — NEW
+- docs/architecture/tech-spec.md — NEW
+- CHANGELOG.md — v2.3.0
+- .dev/shared-context/GOAL.md — updated task 1.1 ✅, specs list
+- .dev/shared-context/MEMORY.md — added session 3
+
+6. เขียน 4 specs ใหม่ (ไม่มีใน ZURI-v1) ด้วย subagents:
+   - FEAT-CRM.md — Customer list, lead funnel, identity resolution, tags, segments, import/export
+   - FEAT-KITCHEN.md — Recipe management, FEFO stock, auto-deduction, prep sheet, wastage
+   - FEAT-ENROLLMENT.md — Package catalog, enrollment lifecycle, QR attendance, certificates
+   - FEAT-MARKETING.md — Meta Ads dashboard, QStash sync, ROAS, demographics, attribution
+7. Updated CHANGELOG.md → v2.3.0 (11 new specs total)
+
+**Task 1.2: Module Manifests ✅**
+8. Created 13 module manifests in docs/product/module-manifests/:
+   - Core (8): crm, inbox, pos, marketing, dsb, enrollment, kitchen, tasks
+   - Shared (5): auth, ai, multi-tenant, notifications, procurement
+   - Each defines: models, repos, APIs, workers, pages, components, hooks, deps, public API
+9. Updated CHANGELOG.md, GOAL.md
+
+**Task 1.3: Data Flows ✅**
+10. Created 11 data flow docs in docs/architecture/data-flows/:
+    - Core (8): crm, inbox, pos, marketing, dsb, enrollment, kitchen, tasks
+    - Shared (3): auth, ai, multi-tenant
+    - Each has: Mermaid sequence diagrams, read/write/realtime/cache/cross-module sections
+11. Updated CHANGELOG.md, GOAL.md
+
+**Task 1.6: Obsidian Vault Config ✅**
+12. Updated HOME.md — full vault dashboard (15 specs, 11 data flows, manifests, gotchas, guides)
+13. Updated graph.json — 8 color groups for all doc folders
+14. Enabled core plugins: templates, daily-notes, note-composer, word-count
+15. Created 3 templates: feature-spec.md, adr.md, devlog.md
+16. Created hotkeys.json, templates.json, daily-notes.json configs
+
+**Phase 2: ADRs ✅**
+17. Created 8 ADRs (ADR-060 to ADR-067) in docs/decisions/adrs/:
+    - ADR-060: Modular Architecture (core/shared/industry split)
+    - ADR-061: Split Prisma Schema (prisma-merge per module)
+    - ADR-062: Obsidian as SSOT (docs/ = vault)
+    - ADR-063: Dev Tools Isolation (.dev/ directory)
+    - ADR-064: DOC TO CODE Workflow (mandatory spec before code)
+    - ADR-065: Industry Plugin System (tenant-configured modules)
+    - ADR-066: Component Size Limit (max 500 LOC)
+    - ADR-067: Changelog System v2 (sliding window)
+18. All status: PROPOSED — pending Boss approval
+
+**Phase 3: Orchestrator CLI Update ✅**
+19. Updated 7 commands + template to use new paths (specs/, decisions/adrs/)
+20. Updated module choices (13 modules), ADR auto-numbering after 067
+
+**Phase 4+6: Modular Architecture ✅**
+21. Created src/modules/core/ — 8 modules with index.js barrel exports
+22. Created src/modules/shared/ — 3 modules (ai, multi-tenant, procurement)
+23. Created src/modules/industry/culinary/ — plugin manifest + enrollment + kitchen
+24. Created 2 event handler skeletons (onOrderCreated, onClassStarted)
+25. Created industry plugin registry with lazy-loading
+
+### สถานะปัจจุบัน (updated)
+- Total specs: 15 files in docs/product/specs/
+- Task 1.1 ✅ Complete (all feature specs done)
+- Missing specs: None — all modules covered
+
+### Pending / Next Session
+1. Boss approve RESTRUCTURE_PLAN.md (ค้างจาก session 1)
+2. ~~เขียน FEAT-CRM, FEAT-KITCHEN, FEAT-ENROLLMENT, FEAT-MARKETING~~ → Done
+3. Task 1.2: Module manifests
+4. Task 1.3: Data flow ทุก module
+5. Task 1.6: Obsidian vault config
+6. Task 1.4: Boss review + sign-off ทุก spec
+7. ADR-060 to ADR-069
+8. Contact FlowAccount
+9. Push latest commits

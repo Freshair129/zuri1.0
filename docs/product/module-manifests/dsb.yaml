@@ -1,0 +1,52 @@
+# Module Manifest — dsb
+# Zuri Platform v2.3
+
+module:
+  name: dsb
+  group: core
+  description: "AI Daily Sales Brief — วิเคราะห์ conversation + auto-profiling + LINE notify ทุกเช้า"
+  spec: docs/product/specs/FEAT-DSB.md
+  status: scaffold  # scaffold | in-progress | built
+
+owns:
+  models:
+    - ConversationAnalysis
+    - CustomerProfile
+    - DailyBrief
+  repositories:
+    - dailyBriefRepo.js
+    - customerProfileRepo.js  # shared with CRM module
+  api_routes:
+    - GET /api/daily-brief — brief list for dashboard display
+    - GET /api/daily-brief/[date] — brief for a specific date (YYYY-MM-DD)
+    - GET /api/customers/[id]/profile — inferred AI-generated customer profile
+    - POST /api/ai/promo-advisor — promotion recommendation based on brief data
+  workers:
+    - POST /api/workers/daily-brief/process — QStash cron 00:05 ICT, run Gemini analysis on prior-day conversations
+    - POST /api/workers/daily-brief/notify — QStash cron 08:00 ICT, send LINE summary to configured recipients
+  pages: []  # embedded in executive dashboard — no standalone page
+  components:
+    - DailyBriefCard.js — compact brief summary card with key stats and AI insights
+    - PromoAdvisor.js — promo recommendation UI panel powered by /api/ai/promo-advisor
+  hooks: []
+
+depends_on:
+  - auth: session + role guard (MGR, DEV, TEC)
+  - crm: Customer model, lifecycleStage for segmentation context
+  - inbox: Conversation + messages as input for Gemini analysis
+  - ai: Gemini 2.0 Flash for NL analysis, summarization, and profiling
+
+public_api:
+  repos:
+    - getDailyBrief(tenantId, date) — fetch brief record for a given date
+    - listDailyBriefs(tenantId, limit) — paginated list of brief records
+    - upsertDailyBrief(tenantId, date, payload) — create or update brief for a date
+    - getCustomerProfile(tenantId, customerId) — fetch inferred AI profile
+    - upsertCustomerProfile(tenantId, customerId, profileData) — save updated profile
+    - getConversationAnalysis(tenantId, conversationId) — fetch analysis record
+  events:
+    - daily-brief-generated — fired by process worker after Gemini analysis completes
+    - daily-brief-sent — fired by notify worker after LINE message delivered
+  constants:
+    - DSB_PROCESS_CRON_ICT
+    - DSB_NOTIFY_CRON_ICT

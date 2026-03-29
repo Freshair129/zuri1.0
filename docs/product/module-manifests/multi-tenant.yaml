@@ -1,0 +1,51 @@
+# Module Manifest — multi-tenant
+# Zuri Platform v2.3
+
+module:
+  name: multi-tenant
+  group: shared
+  description: "Multi-Tenant Foundation — tenant model, subdomain routing, Prisma middleware, RLS backstop"
+  spec: docs/product/specs/FEAT-MULTI-TENANT.md
+  status: scaffold
+
+owns:
+  models:
+    - Tenant
+    - TenantToken
+  repositories:
+    - tenantRepo.js
+  api_routes:
+    - GET /api/tenants — list tenants (OWNER only)
+    - POST /api/tenants — create tenant
+    - PATCH /api/tenants/[id] — update tenant config
+    - GET /api/tokens/status — token status per tenant
+  workers: []
+  pages:
+    - /settings/tenant — tenant config (OWNER/ADM only)
+  components:
+    - TenantSettings.js — tenant name, logo, config editor
+    - TenantOnboarding.js — new tenant setup wizard
+  hooks: []
+
+depends_on:
+  - auth: OWNER/ADM role enforcement on tenant admin routes
+
+public_api:
+  repos:
+    - getTenantById(tenantId) — fetch tenant record
+    - getTenantBySubdomain(subdomain) — resolve subdomain → tenant
+    - createTenant(data) — provision new tenant
+    - updateTenant(tenantId, data) — update tenant config
+  events: []
+  constants:
+    - DEFAULT_TENANT_ID  # V School: 10000000-0000-0000-0000-000000000001
+
+libs:
+  - src/lib/tenant.js — getTenantFromRequest()
+  - src/lib/db.ts — Prisma middleware auto-inject tenantId on every query
+  - src/middleware.js — subdomain routing + x-tenant-id header injection
+
+notes:
+  - Every core table carries tenant_id (ADR-056)
+  - Middleware injects x-tenant-id header; repos accept tenantId as first param
+  - Prisma middleware in db.ts provides RLS backstop

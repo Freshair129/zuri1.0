@@ -1,0 +1,62 @@
+# Module Manifest — procurement
+# Zuri Platform v2.3
+
+module:
+  name: procurement
+  group: shared
+  description: "Procurement — PO lifecycle, supplier management, goods received, market prices"
+  spec: none  # covered in ZURI-v1 ADR-049; not yet migrated as FEAT spec
+  status: scaffold
+
+owns:
+  models:
+    - PurchaseOrderV2
+    - PurchaseRequest
+    - PurchaseRequestItem
+    - POItem
+    - POAcceptance
+    - POApproval
+    - POIssue
+    - POReturn
+    - POTracking
+    - Supplier
+    - MarketPrice
+    - GoodsReceivedNote
+    - GRNItem
+  repositories:
+    - procurementRepo.js
+    - supplierRepo.js
+  api_routes:
+    - GET /api/procurement/purchase-orders — PO list (filterable by status, date, supplier)
+    - POST /api/procurement/purchase-orders — create PO
+    - PATCH /api/procurement/purchase-orders/[id] — update PO status
+    - POST /api/procurement/purchase-requests — create purchase request
+    - GET /api/procurement/suppliers — supplier list
+    - POST /api/procurement/goods-received — record goods received note (GRN)
+    - GET /api/procurement/market-prices — market price reference data
+  workers: []
+  pages:
+    - /procurement — PO management (list, create, track)
+  components:
+    - POForm.js — create / edit purchase order
+    - POTable.js — PO list with status badges + actions
+    - SupplierList.js — supplier directory with contact info
+    - GRNForm.js — goods received note entry form
+  hooks: []
+
+depends_on:
+  - auth: PUR / MGR role enforcement on PO approval flows
+  - kitchen: auto-generates PurchaseRequest when ingredient stock falls below threshold
+
+public_api:
+  repos:
+    - listPurchaseOrders(tenantId, filters) — paginated PO list
+    - getPurchaseOrderById(tenantId, poId) — PO detail with items + tracking
+    - createPurchaseOrder(tenantId, data) — create PO from purchase request
+    - updatePOStatus(tenantId, poId, status) — advance PO lifecycle state
+    - createPurchaseRequest(tenantId, data) — log purchase request (manual or auto from kitchen)
+    - listSuppliers(tenantId, filters) — supplier directory
+    - createGRN(tenantId, data) — record goods received; triggers stock update
+    - getMarketPrices(tenantId, ingredientIds) — latest reference prices
+  events: []
+  constants: []

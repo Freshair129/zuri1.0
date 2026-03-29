@@ -8,10 +8,24 @@
   "collapse-color-groups": false,
   "colorGroups": [
     {
-      "query": "path:product",
+      "query": "path:product/specs",
       "color": {
         "a": 1,
         "rgb": 52479
+      }
+    },
+    {
+      "query": "path:product",
+      "color": {
+        "a": 1,
+        "rgb": 3381759
+      }
+    },
+    {
+      "query": "path:architecture/data-flows",
+      "color": {
+        "a": 1,
+        "rgb": 65433
       }
     },
     {
@@ -29,17 +43,24 @@
       }
     },
     {
-      "query": "path:devtools",
+      "query": "path:decisions",
+      "color": {
+        "a": 1,
+        "rgb": 10092544
+      }
+    },
+    {
+      "query": "path:guide",
       "color": {
         "a": 1,
         "rgb": 6553600
       }
     },
     {
-      "query": "path:decisions",
+      "query": "path:devtools",
       "color": {
         "a": 1,
-        "rgb": 10092544
+        "rgb": 8388608
       }
     }
   ],
@@ -53,6 +74,6 @@
   "repelStrength": 10,
   "linkStrength": 1,
   "linkDistance": 250,
-  "scale": 0.5087618855792551,
+  "scale": 0.5,
   "close": true
 }

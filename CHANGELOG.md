@@ -1,0 +1,122 @@
+# Changelog — Zuri Platform v2
+
+> Format: [version] date — summary
+> LATEST → v2.3.0
+
+---
+
+## [2.3.0] 2026-03-30
+
+### Added — Feature Specs (Task 1.1)
+- `docs/product/specs/FEAT-INBOX.md` — Unified Inbox (FB+LINE), 3-panel layout, Quick Sale toggle
+- `docs/product/specs/FEAT-DSB.md` — AI Daily Sales Brief, ConversationAnalysis, CustomerProfile, DailyBrief models
+- `docs/product/specs/FEAT-BILLING.md` — Invoice & Payment, slip OCR, refNumber dedup
+- `docs/product/specs/FEAT-PROFILE.md` — Customer Profile (CRM), identity resolution, ad attribution
+- `docs/product/specs/FEAT-AGENT.md` — AI Assistant Panel (compose-reply + ask-AI in Inbox)
+- `docs/product/specs/FEAT-MULTI-TENANT.md` — Multi-tenant foundation, shared DB + tenantId + RLS backstop
+- `docs/product/specs/FEAT-LINE-AGENT.md` — LINE Webhook Agent Mode, auto-reply + escalation engine
+- `docs/architecture/tech-spec.md` — Technical specification (stack, API design, RBAC, integrations)
+
+### Added — New Feature Specs (written from scratch)
+- `docs/product/specs/FEAT-CRM.md` — Customer list, lead funnel, identity resolution, tags, segments, import/export
+- `docs/product/specs/FEAT-KITCHEN.md` — Recipe management, FEFO stock, auto-deduction, prep sheet, wastage tracking
+- `docs/product/specs/FEAT-ENROLLMENT.md` — Package catalog, enrollment lifecycle, class schedule, QR attendance, certificates
+- `docs/product/specs/FEAT-MARKETING.md` — Meta Ads dashboard, QStash sync, ROAS, demographics, attribution
+
+### Added — Module Manifests (Task 1.2)
+- `docs/product/module-manifests/` — 13 YAML manifests defining module ownership
+  - **Core (8):** crm, inbox, pos, marketing, dsb, enrollment, kitchen, tasks
+  - **Shared (5):** auth, ai, multi-tenant, notifications, procurement
+  - Each manifest defines: models, repos, API routes, workers, pages, components, hooks, dependencies, public API
+
+### Added — Data Flows (Task 1.3)
+- `docs/architecture/data-flows/` — 11 data flow documents with Mermaid sequence diagrams
+  - **Core (8):** crm, inbox, pos, marketing, dsb, enrollment, kitchen, tasks
+  - **Shared (3):** auth, ai, multi-tenant
+  - Each covers: read/write flows, external integrations, realtime events, cache strategy, cross-module deps
+
+### Added — Phase 3: Orchestrator CLI Update
+- Updated all 7 orchestrator commands to use new paths (specs/, decisions/adrs/)
+- Updated feature-spec template to match FEAT-*.md format (9 sections)
+- Updated module choices (13 modules across core/shared/industry)
+- ADR auto-numbering starts after ADR-067
+
+### Added — Phase 4+6: Modular Architecture (CODE)
+- `src/modules/core/` — 8 module barrels: crm, inbox, pos, marketing, dsb, tasks, notifications, auth
+- `src/modules/shared/` — 3 module barrels: ai, multi-tenant, procurement
+- `src/modules/industry/culinary/` — plugin manifest + enrollment + kitchen sub-modules
+- `src/modules/industry/culinary/enrollment/handlers/onOrderCreated.js` — skeleton
+- `src/modules/industry/culinary/kitchen/handlers/onClassStarted.js` — skeleton (FEFO deduction)
+- `src/modules/industry/index.js` — plugin registry with lazy-loading
+- Total: 17 index.js files + 2 handler skeletons
+
+### Added — Phase 2: Architecture Decision Records
+- `docs/decisions/adrs/ADR-060-modular-architecture.md` — Core/Shared/Industry module split
+- `docs/decisions/adrs/ADR-061-split-prisma-schema.md` — prisma-merge per-module schema files
+- `docs/decisions/adrs/ADR-062-obsidian-as-ssot.md` — docs/ = Obsidian vault, no copy
+- `docs/decisions/adrs/ADR-063-dev-tools-isolation.md` — .dev/ directory, .vercelignore
+- `docs/decisions/adrs/ADR-064-doc-to-code-workflow.md` — mandatory spec before implementation
+- `docs/decisions/adrs/ADR-065-industry-plugin-system.md` — tenant-configured module loading
+- `docs/decisions/adrs/ADR-066-component-size-limit.md` — max 500 LOC per component
+- `docs/decisions/adrs/ADR-067-changelog-system-v2.md` — sliding window + orchestrator
+
+### Added — Obsidian Vault Config (Task 1.6)
+- `docs/HOME.md` — full vault dashboard with 15 specs, 11 data flows, manifests, gotchas, guides
+- `docs/.obsidian/graph.json` — 8 color groups (specs, architecture, data-flows, gotchas, decisions, guide, devtools, product)
+- `docs/.obsidian/core-plugins.json` — enabled: templates, daily-notes, note-composer, word-count, editor-status
+- `docs/.obsidian/templates.json` — template folder: `templates/`
+- `docs/.obsidian/daily-notes.json` — devlog folder with YYYY-MM-DD format
+- `docs/.obsidian/hotkeys.json` — Ctrl+G graph, Ctrl+Shift+D daily note, Ctrl+O switcher
+- `docs/templates/feature-spec.md` — FEAT-*.md template
+- `docs/templates/adr.md` — ADR template
+- `docs/templates/devlog.md` — daily dev log template
+
+### Notes
+- 7 specs copied from ZURI-v1 `docs/zuri/`, cleaned (FEAT-* naming, updated cross-refs, path fixes)
+- 4 specs written from scratch (not found in ZURI-v1 docs)
+- TOKEN-REFRESH.md not copied (cancelled — using System User Token instead)
+- Total: 15 feature specs + 13 module manifests
+
+---
+
+## [2.2.0] 2026-03-30
+
+### Added
+- `docs/product/specs/FEAT-ACCOUNTING-PLATFORM.md` — FlowAccount (auto) + Express ESG (semi-auto) adapter pattern
+- `docs/product/specs/FEAT-AI-ASSISTANT.md` v1.2 — LINE Group monitor (REPORT/ORDER/SLIP intents), Gemini Vision slip processing
+- `.claude/commands/catchup.md` — /catchup slash command
+- `.claude/commands/checkpoint.md` — /checkpoint slash command
+- Obsidian MCP configured to read `E:\zuri\docs\` as vault
+
+### Changed
+- `docs/product/PRD.md` → v2.2 (synced with all approved specs; AI add-on pricing, Accounting Platform section)
+- `docs/product/ROADMAP.md` → v2.1 (A5 AI Assistant moved M6→M3; E1 Accounting Platform added M4)
+- `.dev/agents/AGENT_PROTOCOL.md` → v1.1 (Section 9: Obsidian Second Brain)
+- `CLAUDE.md` — added AI add-on, Accounting add-on, Obsidian Second Brain rules
+
+### Infrastructure
+- Git repo initialized → pushed to https://github.com/Freshair129/zuri1.0.git
+- Project renamed: `E:\CO` → `E:\zuri` (v1 monolith: `E:\ZURI` → `E:\ZURI-v1`)
+
+---
+
+## [2.1.0] 2026-03-28
+
+### Added
+- Full project scaffold: 139+ files, Prisma schema (17 models)
+- Infrastructure: db, redis, qstash, pusher, tenant middleware, RBAC, systemConfig, idGenerator
+- Skeleton pages (22), API routes (38), components (32), repos (13)
+- `docs/gotchas/` — 7 files, 30 rules from ZURI-v1 lessons
+- `docs/zuri/RESTRUCTURE_PLAN.md` — 8-phase modular migration plan
+- `docs/product/PRD.md` v2.0 — 15 sections
+- `docs/architecture/database-erd/full-schema.md` v2.0
+- `.dev/orchestrator/` — CLI with 6 commands
+- `.dev/agents/` — Agent Protocol, 11 Claude skills, 4 sub-agent skills
+- `.dev/vibecode/` — Multi-agent config (9 agents, cost modes, gate rules)
+- `.dev/shared-context/` — GOAL.md, MEMORY.md, CONTEXT_INDEX.yaml
+
+---
+
+## [1.x] Pre-2026-03-28
+
+> Legacy monolith — see `E:\ZURI-v1` (archived)

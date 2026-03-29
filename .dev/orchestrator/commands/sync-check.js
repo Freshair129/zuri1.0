@@ -13,7 +13,7 @@ export async function syncCheck() {
     let featureCount = 0
 
     // --- Check 1: ADRs have valid frontmatter ---
-    const adrDir = path.join(root, 'docs', 'adr')
+    const adrDir = path.join(root, 'docs', 'decisions', 'adrs')
     try {
       const adrFiles = (await fs.readdir(adrDir)).filter(
         (f) => /^ADR-\d+/.test(f) && f.endsWith('.md')
@@ -49,30 +49,33 @@ export async function syncCheck() {
     } catch {
       issues.push({
         type: 'adr',
-        file: 'docs/adr/',
+        file: 'docs/decisions/adrs/',
         message: 'Directory not found',
       })
     }
 
-    // --- Check 2: Feature specs have status field ---
-    const featuresDir = path.join(root, 'docs', 'product', 'features')
+    // --- Check 2: Feature specs in docs/product/specs/ follow FEAT-* naming and have Status field ---
+    const specsDir = path.join(root, 'docs', 'product', 'specs')
     try {
-      const featureFiles = (await fs.readdir(featuresDir)).filter((f) =>
-        f.endsWith('.md')
+      const specFiles = (await fs.readdir(specsDir)).filter((f) =>
+        f.startsWith('FEAT-') && f.endsWith('.md')
       )
-      featureCount = featureFiles.length
+      featureCount = specFiles.length
 
-      for (const file of featureFiles) {
-        const filePath = path.join(featuresDir, file)
+      for (const file of specFiles) {
+        const filePath = path.join(specsDir, file)
         try {
           const content = await fs.readFile(filePath, 'utf-8')
           const { data: fm } = matter(content)
+          // Support both frontmatter status and bold-field status in body
+          const bodyStatusMatch = content.match(/\*\*Status:\*\*\s*(\w+)/)
+          const hasStatus = fm.status || bodyStatusMatch
 
-          if (!fm.status) {
+          if (!hasStatus) {
             issues.push({
               type: 'feature',
               file,
-              message: 'Missing status field in frontmatter',
+              message: 'Missing Status field (frontmatter or **Status:** in body)',
             })
           }
         } catch (err) {
@@ -86,8 +89,31 @@ export async function syncCheck() {
     } catch {
       issues.push({
         type: 'feature',
-        file: 'docs/product/features/',
+        file: 'docs/product/specs/',
         message: 'Directory not found',
+      })
+    }
+
+    // --- Check 2b: Data flows and module manifests (warn if dirs missing) ---
+    const dataFlowsDir = path.join(root, 'docs', 'product', 'data-flows')
+    try {
+      await fs.access(dataFlowsDir)
+    } catch {
+      issues.push({
+        type: 'structure',
+        file: 'docs/product/data-flows/',
+        message: 'Directory not found — create for data flow diagrams',
+      })
+    }
+
+    const moduleManifestsDir = path.join(root, 'docs', 'product', 'module-manifests')
+    try {
+      await fs.access(moduleManifestsDir)
+    } catch {
+      issues.push({
+        type: 'structure',
+        file: 'docs/product/module-manifests/',
+        message: 'Directory not found — create for module manifests',
       })
     }
 
@@ -127,8 +153,8 @@ export async function syncCheck() {
 
     // --- Print summary ---
     console.log(chalk.bold('  Totals:'))
-    console.log(`    ADRs found:     ${adrCount}`)
-    console.log(`    Features found: ${featureCount}`)
+    console.log(`    ADRs found:     ${adrCount}  (docs/decisions/adrs/)`)
+    console.log(`    Specs found:    ${featureCount}  (docs/product/specs/)`)
     console.log(`    Issues:         ${issues.length}`)
     console.log()
 

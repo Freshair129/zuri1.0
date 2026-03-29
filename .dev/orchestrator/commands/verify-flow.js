@@ -17,7 +17,7 @@ export async function verifyFlow(specPath) {
       content = await fs.readFile(fullPath, 'utf-8')
     } catch {
       console.error(chalk.red(`  File not found: ${specPath}`))
-      console.log(chalk.dim('  Hint: provide path relative to project root, e.g. docs/product/features/my-feature.md'))
+      console.log(chalk.dim('  Hint: provide path relative to project root, e.g. docs/product/specs/FEAT-MY-FEATURE.md'))
       process.exitCode = 1
       return
     }
@@ -38,9 +38,13 @@ export async function verifyFlow(specPath) {
     const results = []
     let hasCriticalFail = false
 
-    // --- Check 1: Frontmatter required fields ---
-    const requiredFields = ['status', 'module', 'priority', 'author']
-    const missingFields = requiredFields.filter((f) => !fm[f] || fm[f] === '')
+    // --- Check 1: Required header fields (bold markdown style used in specs) ---
+    // New spec format uses bold fields in body, not YAML frontmatter
+    const hasStatus = /\*\*Status:\*\*/.test(body) || (fm.status && fm.status !== '')
+    const hasAuthor = /\*\*Author:\*\*/.test(body) || (fm.author && fm.author !== '')
+    const missingFields = []
+    if (!hasStatus) missingFields.push('Status')
+    if (!hasAuthor) missingFields.push('Author')
     if (missingFields.length === 0) {
       results.push({ label: 'Frontmatter', status: 'pass', detail: 'All required fields present' })
     } else {
@@ -53,31 +57,23 @@ export async function verifyFlow(specPath) {
     }
 
     // --- Check 2: Data Flow section ---
-    if (/## 3\. Data Flow|## Data Flow/i.test(body)) {
+    if (/## 4\. Data Flow|## Data Flow/i.test(body)) {
       results.push({ label: 'Data Flow', status: 'pass', detail: 'Section found' })
     } else {
       results.push({ label: 'Data Flow', status: 'fail', detail: 'Missing' })
       hasCriticalFail = true
     }
 
-    // --- Check 3: API Endpoints section ---
-    if (/## 4\. API Endpoints|## API Endpoints/i.test(body)) {
-      // Count endpoint rows (lines starting with | GET/POST/PUT/PATCH/DELETE)
-      const endpointLines = body
-        .split('\n')
-        .filter((l) => /^\|\s*(GET|POST|PUT|PATCH|DELETE)\s/i.test(l))
-      const detail =
-        endpointLines.length > 0
-          ? `${endpointLines.length} endpoint(s) defined`
-          : 'Section found (no endpoints listed yet)'
-      results.push({ label: 'API Endpoints', status: 'pass', detail })
+    // --- Check 3: Feature Breakdown / Overview section ---
+    if (/## 3\. Feature Breakdown|## 1\. Overview|## Feature Breakdown|## Overview/i.test(body)) {
+      results.push({ label: 'Feature Breakdown / Overview', status: 'pass', detail: 'Section found' })
     } else {
-      results.push({ label: 'API Endpoints', status: 'fail', detail: 'Missing' })
+      results.push({ label: 'Feature Breakdown / Overview', status: 'fail', detail: 'Missing' })
       hasCriticalFail = true
     }
 
     // --- Check 4: Roles & Permissions section ---
-    if (/## 6\. Roles|## Roles\s*[&|and]*\s*Permissions/i.test(body)) {
+    if (/## 5\. Roles|## Roles\s*[&|and]*\s*Permissions/i.test(body)) {
       results.push({ label: 'Roles & Permissions', status: 'pass', detail: 'Section found' })
     } else {
       results.push({
@@ -117,20 +113,22 @@ export async function verifyFlow(specPath) {
       })
     }
 
-    // --- Check 6: Status = APPROVED ---
-    if (fm.status === 'APPROVED') {
+    // --- Check 6: Status = APPROVED (support both frontmatter and bold body field) ---
+    const bodyStatusMatch = body.match(/\*\*Status:\*\*\s*(\w+)/)
+    const specStatus = fm.status || (bodyStatusMatch && bodyStatusMatch[1]) || 'UNKNOWN'
+    if (specStatus === 'APPROVED') {
       results.push({ label: 'Status', status: 'pass', detail: 'APPROVED' })
-    } else if (fm.status === 'REVIEW') {
+    } else if (specStatus === 'REVIEW') {
       results.push({
         label: 'Status',
         status: 'warn',
-        detail: `${fm.status} (needs approval)`,
+        detail: `${specStatus} (needs approval)`,
       })
     } else {
       results.push({
         label: 'Status',
         status: 'fail',
-        detail: `${fm.status || 'UNKNOWN'} (needs approval)`,
+        detail: `${specStatus} (needs approval)`,
       })
       hasCriticalFail = true
     }

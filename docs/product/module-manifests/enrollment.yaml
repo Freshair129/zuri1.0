@@ -1,0 +1,84 @@
+# Module Manifest — enrollment
+# Zuri Platform v2.3
+
+module:
+  name: enrollment
+  group: core
+  description: "Enrollment & Schedule — package catalog, enrollment lifecycle, class schedule, QR attendance, certificates"
+  spec: docs/product/specs/FEAT-ENROLLMENT.md
+  status: scaffold  # scaffold | in-progress | built
+
+owns:
+  models:
+    - Package
+    - PackageCourse
+    - Enrollment
+    - EnrollmentItem
+    - CourseSchedule
+    - ClassAttendance
+    - Certificate
+    - CourseMenu
+    - CourseEquipment
+    - PackageGift
+    - PackageEnrollment
+    - PackageEnrollmentCourse
+  repositories:
+    - enrollmentRepo.js
+    - productRepo.js
+    - scheduleRepo.js
+  api_routes:
+    - GET /api/catalog — package/course catalog (used by POS too)
+    - GET /api/packages — package list
+    - POST /api/packages — create package
+    - GET /api/packages/[id] — package detail with courses
+    - GET /api/enrollments — enrollment list
+    - POST /api/enrollments — create enrollment
+    - PATCH /api/enrollments/[id] — update enrollment status
+    - GET /api/enrollments/[id] — enrollment detail
+    - GET /api/schedule — class schedule (calendar)
+    - POST /api/schedule — create class
+    - PATCH /api/schedule/[id] — update class
+    - POST /api/attendance/check-in — QR code check-in
+    - GET /api/attendance/[enrollmentId] — attendance records
+    - POST /api/certificates/generate — generate certificate
+  workers:
+    - POST /api/workers/attendance-automark — QStash cron every 15min, auto-mark absent
+  pages:
+    - /courses — package/course management
+    - /schedule — class calendar
+    - /enrollment — enrollment list
+  components:
+    - PackageCatalog.js — browsable package/course grid with filters
+    - EnrollmentForm.js — multi-step enrollment creation wizard
+    - ScheduleCalendar.js — weekly/monthly class calendar view
+    - AttendanceSheet.js — per-class attendance table with status toggles
+    - QRCheckIn.js — QR scanner for student self check-in
+    - CertificatePreview.js — PDF-ready certificate layout with student data
+  hooks:
+    - useSchedule.js
+    - useAttendance.js
+
+depends_on:
+  - auth: session/tenant context for all mutations
+  - crm: customerId — link enrollment to customer record
+  - pos: orderId triggers enrollment creation on payment
+  - kitchen: CourseMenu links to recipes for automatic stock deduction
+
+public_api:
+  repos:
+    - getEnrollments(tenantId, filters) — paginated enrollment list
+    - getEnrollmentById(tenantId, enrollmentId) — full enrollment detail with items
+    - createEnrollment(tenantId, payload) — create enrollment + items in transaction
+    - updateEnrollmentStatus(tenantId, enrollmentId, status) — lifecycle state change
+    - getPackages(tenantId, filters) — package catalog with courses
+    - getPackageById(tenantId, packageId) — package detail with course list
+    - getSchedule(tenantId, dateRange) — class schedule for calendar
+    - getAttendance(tenantId, enrollmentId) — attendance records for enrollment
+    - markAttendance(tenantId, classId, studentId, status) — upsert attendance record
+  events:
+    - enrollment.created — new enrollment confirmed (consumed by kitchen for stock planning)
+    - attendance.checked-in — student QR check-in recorded
+  constants:
+    - ENROLLMENT_STATUS
+    - ATTENDANCE_STATUS
+    - CERTIFICATE_TEMPLATE

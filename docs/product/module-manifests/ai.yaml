@@ -1,0 +1,47 @@
+# Module Manifest — ai
+# Zuri Platform v2.3
+
+module:
+  name: ai
+  group: shared
+  description: "AI Engine — Gemini 2.0 Flash, compose-reply, ask-AI, daily brief analysis, slip OCR"
+  spec: docs/product/specs/FEAT-AGENT.md  # also FEAT-AI-ASSISTANT.md + FEAT-LINE-AGENT.md
+  status: scaffold
+
+owns:
+  models:
+    - AIConfig
+    - KnowledgeFile
+    - Experiment
+    - AIAssistLog
+  repositories: []  # AI is stateless service; logs go to aiAssistLogRepo if needed
+  api_routes:
+    - POST /api/ai/compose-reply — draft reply for inbox conversation
+    - POST /api/ai/ask — ask AI with SSE streaming response
+    - POST /api/ai/promo-advisor — promotion recommendations based on CRM data
+  workers: []
+  pages: []  # embedded in Inbox right panel — no standalone page
+  components:
+    - AIAssistPanel.js — right-panel AI assist overlay in Inbox
+    - AskAIChat.js — streaming chat interface
+    - ComposeReply.js — AI-drafted reply with edit + send flow
+  hooks: []
+
+depends_on:
+  - auth: session context (tenantId, employeeId, roles)
+  - crm: customer context for personalized responses
+  - inbox: conversation history + channel metadata
+
+public_api:
+  repos: []
+  events: []
+  constants: []
+
+libs:
+  - src/lib/agent/agentProcessor.js — LINE agent mode processor
+  - src/lib/ai/gemini.js — Gemini 2.0 Flash API client
+
+public_functions:
+  - composeReply(tenantId, conversationId, context) — draft reply text
+  - askAI(tenantId, prompt, stream) — streaming AI response
+  - agentProcessor.process(tenantId, lineEvent) — LINE agent pipeline

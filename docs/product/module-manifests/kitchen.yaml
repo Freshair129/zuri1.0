@@ -1,0 +1,76 @@
+# Module Manifest — kitchen
+# Zuri Platform v2.3
+
+module:
+  name: kitchen
+  group: core
+  description: "Kitchen Ops — recipe management, FEFO stock tracking, auto-deduction, prep sheet, wastage, procurement trigger"
+  spec: docs/product/specs/FEAT-KITCHEN.md
+  status: scaffold  # scaffold | in-progress | built
+
+owns:
+  models:
+    - Ingredient
+    - IngredientLot
+    - Recipe
+    - RecipeIngredient
+    - RecipeEquipment
+    - StockDeductionLog
+    - StockMovement
+    - Warehouse
+    - WarehouseStock
+    - InventoryItem
+    - StockCount
+    - StockCountItem
+  repositories:
+    - ingredientRepo.js
+  api_routes:
+    - GET /api/ingredients — ingredient list
+    - POST /api/ingredients — create ingredient
+    - PATCH /api/ingredients/[id] — update ingredient
+    - GET /api/ingredients/[id]/lots — lot list (FEFO order)
+    - POST /api/ingredients/lots — receive new lot (goods received)
+    - GET /api/recipes — recipe list
+    - POST /api/recipes — create recipe
+    - GET /api/recipes/[id] — recipe detail with ingredients + equipment
+    - POST /api/kitchen/deduct — manual stock deduction
+    - GET /api/kitchen/prep-sheet — daily prep list
+    - POST /api/kitchen/wastage — log wastage
+    - GET /api/kitchen/stock-alerts — low stock alerts
+  workers:
+    - POST /api/workers/stock-deduct — QStash trigger, auto-deduct stock for scheduled classes
+    - POST /api/workers/prep-sheet — QStash cron 20:00 ICT, generate tomorrow's prep sheet
+  pages:
+    - /kitchen — kitchen dashboard (stock levels, alerts, prep sheet)
+    - /kitchen/recipes — recipe management
+    - /kitchen/ingredients — ingredient catalog
+  components:
+    - IngredientTable.js — sortable ingredient list with stock levels and lot counts
+    - RecipeBuilder.js — drag-and-drop recipe composer with ingredient quantities
+    - StockLevelBar.js — visual stock gauge with low-stock threshold indicator
+    - PrepSheet.js — printable daily prep checklist grouped by class
+    - LotTracker.js — FEFO lot table with expiry dates and remaining quantities
+    - WastageForm.js — wastage entry form with lot selection and reason codes
+  hooks:
+    - useIngredients.js
+    - useRecipes.js
+
+depends_on:
+  - auth: session/tenant context for all mutations
+  - enrollment: CourseSchedule for deduction trigger; CourseMenu for recipe-to-class links
+  - procurement: auto-create PurchaseRequest when ingredient falls below reorder threshold
+
+public_api:
+  repos:
+    - getStock(tenantId, ingredientId) — current aggregated stock level across lots
+    - deductFEFO(tenantId, ingredientId, qty, reason) — deduct qty using oldest lots first, log movement
+    - getLowStock(tenantId) — ingredients below reorder threshold (used by procurement trigger)
+    - getIngredients(tenantId, filters) — paginated ingredient catalog
+    - getLots(tenantId, ingredientId) — lots sorted by expiry ASC (FEFO order)
+    - getRecipeById(tenantId, recipeId) — recipe detail with ingredient + equipment lines
+  events:
+    - stock.low — ingredient crossed reorder threshold (consumed by procurement module)
+  constants:
+    - STOCK_MOVEMENT_TYPE
+    - DEDUCTION_REASON
+    - LOW_STOCK_THRESHOLD_DEFAULT

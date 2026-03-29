@@ -45,6 +45,28 @@ export async function preCommit() {
       })
     }
 
+    // --- Check 1b: Feature specs must be in docs/product/specs/ ---
+    const misplacedSpecs = stagedFiles.filter(
+      (f) => f.includes('docs/product/features/') && f.endsWith('.md')
+    )
+    for (const f of misplacedSpecs) {
+      issues.push({
+        level: 'block',
+        message: `${f} — specs must live in docs/product/specs/ (use FEAT-{SLUG}.md naming)`,
+      })
+    }
+
+    // --- Check 1c: ADRs must be in docs/decisions/adrs/ ---
+    const misplacedAdrs = stagedFiles.filter(
+      (f) => f.includes('docs/adr/') && f.endsWith('.md')
+    )
+    for (const f of misplacedAdrs) {
+      issues.push({
+        level: 'block',
+        message: `${f} — ADRs must live in docs/decisions/adrs/ not docs/adr/`,
+      })
+    }
+
     // --- Check 2: .jsx files > 500 LOC ---
     const jsxFiles = stagedFiles.filter((f) => f.endsWith('.jsx'))
     for (const file of jsxFiles) {

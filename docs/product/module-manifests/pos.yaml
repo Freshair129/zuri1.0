@@ -1,0 +1,61 @@
+# Module Manifest — pos
+# Zuri Platform v2.3
+
+module:
+  name: pos
+  group: core
+  description: "POS + Billing — Quick Sale (Inbox), Full POS (standalone), Invoice, Slip OCR, Payment"
+  spec: docs/product/specs/FEAT-POS.md
+  status: scaffold  # scaffold | in-progress | built
+
+owns:
+  models:       # Prisma models this module owns (SSOT)
+    - Order
+    - CartItem
+    - Transaction
+    - CreditNote
+    - Advance
+  repositories: # src/lib/repositories/
+    - orderRepo.js
+    - paymentRepo.js
+  api_routes:   # src/app/api/
+    - POST /api/orders — create order
+    - GET /api/orders — list orders with filters
+    - GET /api/orders/[id] — order detail
+    - PATCH /api/orders/[id] — update order status
+    - POST /api/invoices — create invoice
+    - GET /api/invoices/[id] — invoice detail
+    - POST /api/payments/verify-slip — OCR slip verification via Gemini Vision
+    - POST /api/transactions — create transaction record
+    - GET /api/catalog — product catalog for POS item picker
+  workers:      # QStash workers (if any)
+    []
+  pages:        # src/app/(dashboard)/
+    - /pos — standalone Full POS
+  components:   # src/components/
+    - PremiumPOS.js — standalone full-screen POS interface
+    - ChatPOS.js — Quick Sale panel embedded inside Inbox conversation
+    - InvoiceView.js — printable/shareable invoice view
+    - CartManager.js — cart state, line items, discounts, totals
+    - PaymentSelector.js — payment method picker (cash, QR, transfer, card)
+    - SlipVerifier.js — upload and OCR payment slip with Gemini Vision
+  hooks:        # src/hooks/
+    - useCart.js
+
+depends_on:     # modules this module imports from
+  - crm: customerId attached to orders for customer history
+  - inbox: conversationId linked for Quick Sale / ChatPOS context
+  - auth: session resolution + RBAC can() checks
+
+public_api:     # what this module exports for others
+  repos:
+    - getById(tenantId, orderId) — fetch single order by ID
+    - list(tenantId, filters) — list orders with pagination and filters
+    - create(tenantId, data) — create new order
+    - updateStatus(tenantId, orderId, status) — update order status
+    - getOrdersByCustomer(tenantId, customerId) — orders for CRM history view
+  events:       # Pusher events this module emits
+    - order-created — emitted when a new order is successfully created
+  constants:
+    - ORDER_STATUS_VALUES
+    - PAYMENT_METHOD_TYPES

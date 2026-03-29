@@ -1,0 +1,7 @@
+{
+  "app:go-back": [{ "modifiers": ["Alt"], "key": "ArrowLeft" }],
+  "app:go-forward": [{ "modifiers": ["Alt"], "key": "ArrowRight" }],
+  "graph:open": [{ "modifiers": ["Ctrl"], "key": "g" }],
+  "daily-notes": [{ "modifiers": ["Ctrl", "Shift"], "key": "d" }],
+  "switcher:open": [{ "modifiers": ["Ctrl"], "key": "o" }]
+}

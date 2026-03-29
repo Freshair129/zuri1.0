@@ -1,0 +1,56 @@
+# Module Manifest — inbox
+# Zuri Platform v2.3
+
+module:
+  name: inbox
+  group: core
+  description: "Unified Inbox — FB Messenger + LINE OA รวมหน้าเดียว, reply, Quick Sale"
+  spec: docs/product/specs/FEAT-INBOX.md
+  status: scaffold  # scaffold | in-progress | built
+
+owns:
+  models:       # Prisma models this module owns (SSOT)
+    - Conversation
+    - Message
+    - ConversationIntelligence
+  repositories: # src/lib/repositories/
+    - conversationRepo.js
+  api_routes:   # src/app/api/
+    - GET /api/conversations — list conversations with filters
+    - GET /api/conversations/[id] — conversation detail + messages
+    - POST /api/conversations/[id]/reply — send reply via FB or LINE
+    - PATCH /api/conversations/[id] — update status or assignee
+    - POST /api/webhooks/facebook — FB Messenger inbound webhook
+    - POST /api/webhooks/line — LINE OA inbound webhook
+  workers:      # QStash workers (if any)
+    []
+  pages:        # src/app/(dashboard)/
+    - /inbox — unified inbox
+  components:   # src/components/
+    - FacebookChat.js — main unified inbox conversation panel
+    - ChatBubble.js — renders a single message bubble (FB/LINE styled)
+    - ConversationCard.js — conversation list item with preview + status
+    - ReplyBox.js — compose and send reply with quick-reply buttons
+    - InboxFilter.js — filter by channel, status, assignee, date
+  hooks:        # src/hooks/
+    - useConversations.js
+    - useMessages.js
+
+depends_on:     # modules this module imports from
+  - crm: customer card displayed in conversation sidebar
+  - pos: Quick Sale / ChatPOS panel embedded in inbox
+  - auth: session resolution + RBAC can() checks
+  - ai: compose-reply suggestion via Gemini
+
+public_api:     # what this module exports for others
+  repos:
+    - getById(tenantId, conversationId) — fetch conversation with messages
+    - list(tenantId, filters) — list conversations with pagination
+    - createOrUpdate(tenantId, data) — upsert conversation from webhook
+    - appendMessage(tenantId, conversationId, message) — add inbound/outbound message
+  events:       # Pusher events this module emits
+    - new-message — emitted when an inbound message arrives
+    - message-sent — emitted after a reply is successfully delivered
+  constants:
+    - CONVERSATION_STATUS_VALUES
+    - INBOX_CHANNEL_TYPES

@@ -1,0 +1,46 @@
+# Module Manifest — notifications
+# Zuri Platform v2.3
+
+module:
+  name: notifications
+  group: shared
+  description: "Notifications — LINE notify, web push, in-app alerts"
+  spec: none  # lightweight cross-cutting concern, no dedicated FEAT spec
+  status: scaffold
+
+owns:
+  models:
+    - NotificationRule
+    - PushSubscription
+  repositories:
+    - notificationRepo.js
+  api_routes:
+    - POST /api/notifications/subscribe — register web push subscription
+    - GET /api/notifications — notification list for current user
+    - POST /api/notifications/send — send notification (internal use only)
+  workers: []
+  pages: []  # notification UI is embedded in shell layout via components
+  components:
+    - NotificationBell.js — top-bar bell with unread badge
+    - NotificationPanel.js — slide-over notification feed
+  hooks: []
+
+depends_on:
+  - auth: session (tenantId, employeeId) for scoping notifications
+
+public_api:
+  repos:
+    - createNotification(tenantId, data) — persist in-app notification
+    - listNotifications(tenantId, employeeId) — fetch notification feed
+    - markRead(tenantId, notificationId) — mark as read
+  events:
+    - notification-new — Pusher: triggers bell badge update on client
+  constants: []
+
+libs:
+  - src/lib/lineNotify.js — sendLINENotify(message, token)
+  - src/lib/webPush.js — sendWebPush(subscription, payload)
+
+public_functions:
+  - sendLINENotify(tenantId, message) — send LINE Notify to configured token
+  - sendWebPush(tenantId, employeeId, payload) — push to registered browser subscription

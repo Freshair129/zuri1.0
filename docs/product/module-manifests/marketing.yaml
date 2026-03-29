@@ -1,0 +1,66 @@
+# Module Manifest — marketing
+# Zuri Platform v2.3
+
+module:
+  name: marketing
+  group: core
+  description: "Meta Ads Analytics — dashboard, campaign sync, ROAS, attribution, demographics"
+  spec: docs/product/specs/FEAT-MARKETING.md
+  status: scaffold  # scaffold | in-progress | built
+
+owns:
+  models:
+    - Campaign
+    - Ad
+    - AdSet
+    - AdAccount
+    - AdActivity
+    - AdCreative
+    - AdDailyMetric
+    - AdHourlyMetric
+    - AdDailyDemographic
+    - AdDailyPlacement
+    - AdHourlyLedger
+    - AdLiveStatus
+    - AdReviewResult
+    - AdsOptimizeRequest
+  repositories:
+    - campaignRepo.js  # covers all marketing models
+  api_routes:
+    - GET /api/marketing/dashboard — executive overview (cached 5min)
+    - GET /api/marketing/campaigns — campaign list
+    - GET /api/marketing/campaigns/[id] — campaign detail + metrics
+    - GET /api/marketing/chat/conversations — conversations with ad attribution
+  workers:
+    - POST /api/workers/sync-hourly — QStash cron every 1h, syncs Meta Marketing API
+  pages:
+    - /marketing — ads dashboard with charts
+  components:
+    - MarketingDashboard.js — top-level layout, KPI cards, date-range selector
+    - CampaignTable.js — sortable campaign list with status badges
+    - MetricsChart.js — Recharts line/bar chart for spend, impressions, ROAS
+    - DemographicBreakdown.js — age/gender/region breakdown charts
+    - HourlyHeatmap.js — hourly performance heatmap grid
+    - AttributionPanel.js — first-touch ad attribution per conversation
+  hooks:
+    - useMarketingDashboard.js
+
+depends_on:
+  - auth: session + role guard (MKT, MGR, DEV)
+  - crm: customer.originId used for ad attribution linkback
+  - inbox: conversation.firstTouchAdId links conversations to campaigns
+
+public_api:
+  repos:
+    - getCampaigns(tenantId, filters) — list campaigns with pagination
+    - getCampaignById(tenantId, campaignId) — campaign detail + nested metrics
+    - getDailyMetrics(tenantId, adAccountId, dateRange) — aggregated daily spend/impressions
+    - getHourlyMetrics(tenantId, campaignId, date) — hourly granularity data
+    - getDemographicBreakdown(tenantId, adSetId, dateRange) — age/gender/region split
+    - getAttributionSummary(tenantId, dateRange) — ROAS + attributed conversations
+  events:
+    - ad-sync-completed — fired by sync-hourly worker after Meta API pull
+    - campaign-status-changed — fired when campaign status transitions
+  constants:
+    - MARKETING_CACHE_TTL_SECONDS
+    - META_ADS_SYNC_INTERVAL_HOURS

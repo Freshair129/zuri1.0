@@ -1,0 +1,56 @@
+# Module Manifest — crm
+# Zuri Platform v2.3
+
+module:
+  name: crm
+  group: core
+  description: "ระบบจัดการลูกค้า — customer list, lead funnel, identity resolution, tags, segments"
+  spec: docs/product/specs/FEAT-CRM.md
+  status: scaffold  # scaffold | in-progress | built
+
+owns:
+  models:       # Prisma models this module owns (SSOT)
+    - Customer
+    - CustomerProfile
+  repositories: # src/lib/repositories/
+    - customerRepo.js
+    - customerProfileRepo.js
+  api_routes:   # src/app/api/
+    - GET /api/customers — list with search/filter/sort
+    - GET /api/customers/[id] — customer detail
+    - PATCH /api/customers/[id] — update customer
+    - POST /api/customers — create customer
+    - DELETE /api/customers/[id] — soft delete
+    - GET /api/customers/[id]/history — activity timeline
+    - POST /api/customers/import — CSV import
+    - GET /api/customers/export — CSV export
+    - POST /api/customers/merge — identity merge
+  workers:      # QStash workers (if any)
+    []
+  pages:        # src/app/(dashboard)/
+    - /crm — customer list
+  components:   # src/components/
+    - CustomerCard.js — displays customer summary card
+    - CustomerList.js — paginated/filterable customer table
+    - CustomerForm.js — create/edit customer form
+    - MergeCustomerDialog.js — identity merge confirmation dialog
+    - TagManager.js — add/remove/create tags on a customer
+  hooks:        # src/hooks/
+    - useCustomer.js
+
+depends_on:     # modules this module imports from
+  - auth: session resolution + RBAC can() checks
+  - pos: order history displayed on customer detail
+  - enrollment: course history displayed on customer detail
+  - inbox: conversation link shown on customer card
+
+public_api:     # what this module exports for others
+  repos:
+    - getById(tenantId, customerId) — fetch single customer by ID
+    - search(tenantId, filters) — search/filter customers
+    - upsert(tenantId, data) — create or update customer (identity upsert)
+    - merge(tenantId, sourceId, targetId) — merge two customer records
+  events:       # Pusher events this module emits
+    - customer-updated — emitted after any customer record mutation
+  constants:
+    - CUSTOMER_STATUS_VALUES

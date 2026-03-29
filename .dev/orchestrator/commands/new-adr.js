@@ -18,10 +18,10 @@ export async function newAdr(title) {
     console.log(chalk.cyan('\n--- Zuri: New ADR ---\n'))
 
     // Scan existing ADRs to find highest number
-    const adrDir = path.join(process.cwd(), 'docs', 'adr')
+    const adrDir = path.join(process.cwd(), 'docs', 'decisions', 'adrs')
     await fs.mkdir(adrDir, { recursive: true })
 
-    let maxNumber = 59 // start from 060 if none found
+    let maxNumber = 67 // start from 068 if none found (ADR-067 is the current highest)
     try {
       const files = await fs.readdir(adrDir)
       const adrFiles = files.filter((f) => /^ADR-\d+/.test(f) && f.endsWith('.md'))
@@ -33,7 +33,7 @@ export async function newAdr(title) {
         }
       }
     } catch {
-      // Directory might not exist yet — maxNumber stays 59
+      // Directory might not exist yet — maxNumber stays 67
     }
 
     const nextNumber = maxNumber + 1
@@ -99,7 +99,7 @@ export async function newAdr(title) {
     const filePath = path.join(adrDir, fileName)
     await fs.writeFile(filePath, template, 'utf-8')
 
-    console.log(chalk.green(`\n  Created: docs/adr/${fileName}`))
+    console.log(chalk.green(`\n  Created: docs/decisions/adrs/${fileName}`))
     console.log(
       chalk.yellow(`  ADR-${paddedNumber} created — needs Boss approval\n`)
     )

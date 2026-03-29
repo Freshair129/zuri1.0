@@ -27,7 +27,12 @@ program
 
 program
   .command('new-feature <name>')
-  .description('Create a feature spec from template')
+  .description(
+    'Create a feature spec → docs/product/specs/FEAT-{SLUG}.md\n' +
+    '  Modules: core/crm, core/inbox, core/pos, core/marketing, core/dsb, core/tasks\n' +
+    '           shared/auth, shared/ai, shared/multi-tenant, shared/notifications, shared/procurement\n' +
+    '           industry/culinary/enrollment, industry/culinary/kitchen'
+  )
   .action(async (name) => {
     const { newFeature } = await import('./commands/new-feature.js')
     await newFeature(name)
@@ -35,7 +40,7 @@ program
 
 program
   .command('new-adr <title>')
-  .description('Create an ADR with auto-numbering')
+  .description('Create an ADR → docs/decisions/adrs/ADR-{NNN}-{slug}.md (auto-numbered after ADR-067)')
   .action(async (title) => {
     const { newAdr } = await import('./commands/new-adr.js')
     await newAdr(title)
@@ -51,7 +56,7 @@ program
 
 program
   .command('verify-flow <specPath>')
-  .description('Verify feature spec completeness before implement')
+  .description('Verify feature spec completeness before implement (e.g. docs/product/specs/FEAT-MY-FEATURE.md)')
   .action(async (specPath) => {
     const { verifyFlow } = await import('./commands/verify-flow.js')
     await verifyFlow(specPath)

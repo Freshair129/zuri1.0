@@ -1,0 +1,53 @@
+# Module Manifest — tasks
+# Zuri Platform v2.3
+
+module:
+  name: tasks
+  group: core
+  description: "Task Management — follow-up, internal tasks, milestones, timeline events"
+  spec: null  # no dedicated FEAT spec yet — lightweight module
+  status: scaffold  # scaffold | in-progress | built
+
+owns:
+  models:
+    - Task
+    - TimelineEvent
+  repositories:
+    - taskRepo.js
+  api_routes:
+    - GET /api/tasks — list tasks (filter by type, status, assignee)
+    - POST /api/tasks — create task
+    - PATCH /api/tasks/[id] — update task (status, assignee, dueDate, etc.)
+    - DELETE /api/tasks/[id] — delete task
+    - GET /api/tasks/[id]/timeline — timeline events for a task
+  workers: []  # no background workers
+  pages:
+    - /tasks — task board (kanban or list view, toggle per user preference)
+  components:
+    - TaskBoard.js — kanban/list toggle layout with column grouping by status
+    - TaskCard.js — individual task card with priority, due date, assignee avatar
+    - TaskForm.js — create/edit task modal with type selector and CRM link
+    - TimelineView.js — ordered timeline of events for a single task
+  hooks:
+    - useTasks.js
+
+depends_on:
+  - auth: assignee resolves to Employee; role guard for task management actions
+  - crm: Task.customerId links tasks to a Customer record
+
+public_api:
+  repos:
+    - listTasks(tenantId, filters) — list tasks with optional type/status/assignee filters
+    - getTaskById(tenantId, taskId) — single task with timeline events
+    - createTask(tenantId, payload) — create new task record
+    - updateTask(tenantId, taskId, patch) — partial update task fields
+    - deleteTask(tenantId, taskId) — soft or hard delete task
+    - getTaskTimeline(tenantId, taskId) — ordered list of TimelineEvent records
+    - addTimelineEvent(tenantId, taskId, event) — append event to task timeline
+  events:
+    - task-created — fired when a new task is created
+    - task-status-changed — fired when task status transitions
+    - task-assigned — fired when assignee changes
+  constants:
+    - TASK_TYPES  # FOLLOW_UP | INTERNAL | MILESTONE — sourced from system_config.yaml
+    - TASK_STATUSES  # sourced from system_config.yaml
