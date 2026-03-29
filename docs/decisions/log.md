@@ -82,7 +82,7 @@
 
 ### DEC-007: docs/ = Obsidian vault
 - **Context:** ต้องการดู docs เป็นภาพ, graph view, linked notes
-- **Decision:** E:\CO\docs\ เป็น Obsidian vault โดยตรง
+- **Decision:** E:\zuri\docs\ เป็น Obsidian vault โดยตรง
 - **Config:** .obsidian/ with graph color groups per folder
 - **Folders:** product/, architecture/, gotchas/, devtools/, decisions/
 

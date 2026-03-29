@@ -8,7 +8,7 @@
 ## Active Phase: Phase 1 — DOC (Feature Specs)
 
 ### Tasks
-- [ ] 1.1 Copy + clean docs จาก E:\ZURI → E:\CO\docs\
+- [ ] 1.1 Copy + clean docs จาก E:\ZURI → E:\zuri\docs\
 - [ ] 1.2 เขียน module manifest ทุก module
 - [ ] 1.3 เขียน data flow ทุก module
 - [ ] 1.4 Review + approve ทุก feature spec (Boss sign-off)

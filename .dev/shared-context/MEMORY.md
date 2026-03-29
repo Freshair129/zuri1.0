@@ -59,7 +59,7 @@
 - MCP: Supabase+Vercel always-on, ที่เหลือ on-demand
 
 ### Files Changed (key files)
-- E:\CO\ — ทั้ง project (สร้างใหม่)
+- E:\zuri\ — ทั้ง project (สร้างใหม่)
 - docs/product/PRD.md — PRD v2.0.0
 - docs/architecture/database-erd/full-schema.md — ERD v2.0.0
 - docs/gotchas/*.md — 7 files, 30 rules

@@ -49,9 +49,9 @@ Industry Module = Culinary (V School) | Beauty | Fitness | ...
 
 ### 2.4 Dev Tools แยกจาก Production
 ```
-E:\CO\                    ← production (deploy ขึ้น Vercel)
-E:\CO\.dev\               ← dev tooling (gitignore จาก deploy, push github ได้)
-E:\CO\docs\               ← SSOT = Obsidian vault
+E:\zuri\                    ← production (deploy ขึ้น Vercel)
+E:\zuri\.dev\               ← dev tooling (gitignore จาก deploy, push github ได้)
+E:\zuri\docs\               ← SSOT = Obsidian vault
 ```
 
 ---
@@ -202,7 +202,7 @@ E:\CO/
 │   │   └── smoke-test.mjs
 │   │
 │   └── shared-context/               # 📋 Shared context (push to github)
-│       ├── CLAUDE.md                  # → symlink to E:\CO\CLAUDE.md
+│       ├── CLAUDE.md                  # → symlink to E:\zuri\CLAUDE.md
 │       ├── GOAL.md                    # Current objectives
 │       ├── MEMORY.md                  # Agent handover
 │       └── CONTEXT_INDEX.yaml         # Session context map
@@ -246,10 +246,10 @@ src/modules/core/inbox/
 
 ## 5. Obsidian Strategy
 
-### SSOT = `E:\CO\docs\`
+### SSOT = `E:\zuri\docs\`
 
 ```
-Obsidian Vault Path = E:\CO\docs\
+Obsidian Vault Path = E:\zuri\docs\
 ```
 
 - **ไม่มี copy** — docs/ คือ vault เดียว
