@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+.dev/orchestrator/node_modules/
+
+# Next.js
+.next/
+out/
+
+# Environment (secrets)
+.env
+.env.local
+.env.production.local
+
+# Vercel
+.vercel
+
+# Build
+*.tsbuildinfo
+
+# Obsidian personal config (vault settings are personal)
+docs/_vault/.obsidian/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

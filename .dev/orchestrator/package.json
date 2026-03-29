@@ -1,0 +1,20 @@
+{
+  "name": "@zuri/orchestrator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "zuri": "./cli.js"
+  },
+  "scripts": {
+    "start": "node cli.js"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "inquirer": "^9.3.7",
+    "chalk": "^5.4.1",
+    "gray-matter": "^4.0.3",
+    "glob": "^10.4.5",
+    "yaml": "^2.6.1"
+  }
+}

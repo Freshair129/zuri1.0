@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Env
+.env
+.env.local
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# State (runtime files)
+history_log.jsonl
+project_state.json
+gates.json
+
+# IDE
+.vscode/
+.idea/

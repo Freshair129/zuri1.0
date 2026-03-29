@@ -1,0 +1,23 @@
+# settings.yaml — Global config
+
+project:
+  name: co-dev
+  version: "3.1.0"
+  project_path: "auto"  # resolved from .dev/co-dev/../../ at runtime
+
+context:
+  core_path: "context/core"
+  runtime_path: "context/runtime"
+  max_context_lines: 200     # max lines sent to agent per call
+  jsonl_tail_lines: 30       # read last N lines from JSONL
+
+gates:
+  file: "gates.json"
+  auto_approve_after_hours: null   # null = no auto-approve
+
+logging:
+  history_file: "history_log.jsonl"
+  state_file: "project_state.json"
+
+outputs:
+  path: "outputs/"

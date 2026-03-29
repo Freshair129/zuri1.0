@@ -1,0 +1,449 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================
+// Multi-Tenant Foundation (ADR-056)
+// ============================================
+
+model Tenant {
+  id         String   @id @default(uuid())
+  tenantSlug String   @unique @map("tenant_slug")
+  tenantName String   @map("tenant_name")
+  lineOaId   String?  @map("line_oa_id")
+  fbPageId   String?  @map("fb_page_id")
+  plan       String   @default("STARTER")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  employees     Employee[]
+  customers     Customer[]
+  conversations Conversation[]
+
+  @@map("tenants")
+}
+
+// ============================================
+// DOMAIN: Auth & Employee
+// ============================================
+
+model Employee {
+  id           String    @id @default(uuid())
+  employeeId   String    @unique @map("employee_id")
+  tenantId     String    @map("tenant_id")
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  nickName     String?   @map("nick_name")
+  email        String    @unique
+  phone        String?
+  department   String?
+  jobTitle     String?   @map("job_title")
+  role         String    @default("STF")
+  roles        String[]  @default(["STF"])
+  status       String    @default("ACTIVE")
+  passwordHash String    @map("password_hash")
+  hiredAt      DateTime? @map("hired_at")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@map("employees")
+}
+
+// ============================================
+// DOMAIN: Customer CRM
+// ============================================
+
+model Customer {
+  id              String    @id @default(uuid())
+  customerId      String    @unique @map("customer_id")
+  tenantId        String    @map("tenant_id")
+  status          String    @default("Active")
+  membershipTier  String    @default("MEMBER") @map("membership_tier")
+  lifecycleStage  String    @default("LEAD") @map("lifecycle_stage")
+  email           String?
+  phonePrimary    String?   @map("phone_primary")
+  phoneSecondary  String?   @map("phone_secondary")
+  lineId          String?   @map("line_id")
+  facebookId      String?   @unique @map("facebook_id")
+  facebookName    String?   @map("facebook_name")
+  originId        String?   @map("origin_id")
+  walletBalance   Float     @default(0) @map("wallet_balance")
+  walletPoints    Int       @default(0) @map("wallet_points")
+  intelligence    Json?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  conversations Conversation[]
+  orders        Order[]
+  enrollments   Enrollment[]
+  profile       CustomerProfile?
+
+  @@index([tenantId])
+  @@index([phonePrimary])
+  @@map("customers")
+}
+
+model CustomerProfile {
+  id             String    @id @default(uuid())
+  customerId     String    @unique @map("customer_id")
+  gender         String?
+  ageRange       String?   @map("age_range")
+  hasChildren    Boolean?  @map("has_children")
+  occupation     String?
+  educationLevel String?   @map("education_level")
+  location       String?
+  cookingLevel   String?   @map("cooking_level")
+  motivation     String[]  @default([])
+  budgetSignal   String?   @map("budget_signal")
+  inferenceCount Int       @default(0) @map("inference_count")
+  lastInferredAt DateTime? @map("last_inferred_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("customer_profiles")
+}
+
+// ============================================
+// DOMAIN: Inbox & Conversations
+// ============================================
+
+model Conversation {
+  id              String    @id @default(uuid())
+  conversationId  String    @unique @map("conversation_id")
+  tenantId        String    @map("tenant_id")
+  customerId      String?   @map("customer_id")
+  participantId   String?   @map("participant_id")
+  channel         String    @default("facebook")
+  firstTouchAdId  String?   @map("first_touch_ad_id")
+  assigneeId      String?   @map("assignee_id")
+  status          String    @default("open")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+  messages Message[]
+  analyses ConversationAnalysis[]
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  messageId      String   @unique @map("message_id")
+  conversationId String   @map("conversation_id")
+  sender         String
+  content        String?  @db.Text
+  attachments    Json?
+  responderId    String?  @map("responder_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("messages")
+}
+
+// ============================================
+// DOMAIN: Orders & Payments
+// ============================================
+
+model Order {
+  id             String   @id @default(uuid())
+  orderId        String   @unique @map("order_id")
+  customerId     String   @map("customer_id")
+  closedById     String?  @map("closed_by_id")
+  conversationId String?  @map("conversation_id")
+  status         String   @default("PENDING")
+  orderType      String   @default("ONLINE") @map("order_type")
+  totalAmount    Float    @default(0) @map("total_amount")
+  paidAmount     Float    @default(0) @map("paid_amount")
+  discountAmount Float    @default(0) @map("discount_amount")
+  paymentMethod  String?  @map("payment_method")
+  items          Json     @default("[]")
+  notes          String?  @db.Text
+  date           DateTime @default(now())
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  transactions Transaction[]
+
+  @@map("orders")
+}
+
+model Transaction {
+  id            String   @id @default(uuid())
+  transactionId String   @unique @map("transaction_id")
+  orderId       String   @map("order_id")
+  amount        Float
+  type          String   @default("PAYMENT")
+  method        String   @default("Transfer")
+  slipStatus    String   @default("PENDING") @map("slip_status")
+  slipData      Json?    @map("slip_data")
+  slipUrl       String?  @map("slip_url")
+  refNumber     String?  @unique @map("ref_number")
+  date          DateTime @default(now())
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("transactions")
+}
+
+// ============================================
+// DOMAIN: Products & Catalog
+// ============================================
+
+model Product {
+  id                  String  @id @default(uuid())
+  productId           String  @unique @map("product_id")
+  name                String
+  category            String
+  fallbackSubCategory String? @map("fallback_sub_category")
+  basePrice           Float   @default(0) @map("base_price")
+  hours               Float?
+  sessionType         String? @map("session_type")
+  isActive            Boolean @default(true) @map("is_active")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  enrollments Enrollment[]
+  schedules   CourseSchedule[]
+
+  @@map("products")
+}
+
+// ============================================
+// DOMAIN: Enrollment & Schedule
+// ============================================
+
+model Enrollment {
+  id           String   @id @default(uuid())
+  enrollmentId String   @unique @map("enrollment_id")
+  customerId   String   @map("customer_id")
+  productId    String   @map("product_id")
+  soldById     String?  @map("sold_by_id")
+  totalPrice   Float    @default(0) @map("total_price")
+  status       String   @default("ACTIVE")
+  enrolledAt   DateTime @default(now()) @map("enrolled_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@map("enrollments")
+}
+
+model CourseSchedule {
+  id                String   @id @default(uuid())
+  scheduleId        String   @unique @map("schedule_id")
+  productId         String   @map("product_id")
+  instructorId      String?  @map("instructor_id")
+  scheduledDate     DateTime @map("scheduled_date")
+  startTime         String   @map("start_time")
+  endTime           String   @map("end_time")
+  maxStudents       Int      @default(10) @map("max_students")
+  confirmedStudents Int      @default(0) @map("confirmed_students")
+  status            String   @default("SCHEDULED")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("course_schedules")
+}
+
+// ============================================
+// DOMAIN: Marketing & Ads (synced from Meta via QStash)
+// ============================================
+
+model Ad {
+  id          String   @id @default(uuid())
+  adId        String   @unique @map("ad_id")
+  adSetId     String?  @map("ad_set_id")
+  name        String
+  status      String   @default("ACTIVE")
+  spend       Float    @default(0)
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  revenue     Float    @default(0)
+  roas        Float    @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  dailyMetrics AdDailyMetric[]
+
+  @@map("ads")
+}
+
+model AdDailyMetric {
+  id          String   @id @default(uuid())
+  adId        String   @map("ad_id")
+  date        DateTime
+  spend       Float    @default(0)
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  leads       Int      @default(0)
+  purchases   Int      @default(0)
+  revenue     Float    @default(0)
+  roas        Float    @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  ad Ad @relation(fields: [adId], references: [adId])
+
+  @@unique([adId, date])
+  @@map("ad_daily_metrics")
+}
+
+// ============================================
+// DOMAIN: Kitchen Ops
+// ============================================
+
+model Ingredient {
+  id           String  @id @default(uuid())
+  ingredientId String  @unique @map("ingredient_id")
+  name         String
+  unit         String  @default("g")
+  currentStock Float   @default(0) @map("current_stock")
+  minStock     Float   @default(0) @map("min_stock")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  lots IngredientLot[]
+
+  @@map("ingredients")
+}
+
+model IngredientLot {
+  id           String   @id @default(uuid())
+  lotId        String   @unique @map("lot_id")
+  ingredientId String   @map("ingredient_id")
+  initialQty   Float    @map("initial_qty")
+  remainingQty Float    @map("remaining_qty")
+  expiresAt    DateTime @map("expires_at")
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@index([ingredientId, expiresAt])
+  @@map("ingredient_lots")
+}
+
+// ============================================
+// DOMAIN: Tasks
+// ============================================
+
+model Task {
+  id          String    @id @default(uuid())
+  taskId      String    @unique @map("task_id")
+  customerId  String?   @map("customer_id")
+  assigneeId  String?   @map("assignee_id")
+  createdById String?   @map("created_by_id")
+  title       String
+  description String?   @db.Text
+  type        String    @default("FOLLOW_UP")
+  status      String    @default("PENDING")
+  priority    String    @default("L3")
+  taskType    String    @default("SINGLE") @map("task_type")
+  dueDate     DateTime? @map("due_date")
+  startDate   DateTime? @map("start_date")
+  timeStart   String?   @map("time_start")
+  timeEnd     String?   @map("time_end")
+  milestones  Json?
+  completedAt DateTime? @map("completed_at")
+  notionId    String?   @map("notion_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("tasks")
+}
+
+// ============================================
+// DOMAIN: Daily Sales Brief (DSB)
+// ============================================
+
+model ConversationAnalysis {
+  id             String   @id @default(uuid())
+  conversationId String   @map("conversation_id")
+  analyzedDate   DateTime @map("analyzed_date")
+  analyzedAt     DateTime @default(now()) @map("analyzed_at")
+  contactType    String   @map("contact_type")
+  state          String
+  cta            String
+  revenue        Float    @default(0)
+  sourceAdId     String?  @map("source_ad_id")
+  tags           String[]
+  summary        String   @db.Text
+  rawOutput      Json?    @map("raw_output")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, analyzedDate])
+  @@index([analyzedDate])
+  @@index([contactType])
+  @@index([state])
+  @@map("conversation_analyses")
+}
+
+model DailyBrief {
+  id                 String    @id @default(uuid())
+  briefDate          DateTime  @unique @map("brief_date")
+  totalConversations Int       @default(0) @map("total_conversations")
+  totalContacts      Int       @default(0) @map("total_contacts")
+  totalLeads         Int       @default(0) @map("total_leads")
+  totalCustomers     Int       @default(0) @map("total_customers")
+  closedWon          Int       @default(0) @map("closed_won")
+  totalRevenue       Float     @default(0) @map("total_revenue")
+  hotLeads           Int       @default(0) @map("hot_leads")
+  considering        Int       @default(0) @map("considering")
+  closedLost         Int       @default(0) @map("closed_lost")
+  topCtas            Json      @default("[]") @map("top_ctas")
+  adBreakdown        Json      @default("{}") @map("ad_breakdown")
+  topTags            Json      @default("[]") @map("top_tags")
+  status             String    @default("PENDING")
+  processedAt        DateTime? @map("processed_at")
+  sentAt             DateTime? @map("sent_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  @@index([briefDate])
+  @@index([status])
+  @@map("daily_briefs")
+}
+
+// ============================================
+// DOMAIN: Audit
+// ============================================
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actor     String
+  action    String
+  target    String?
+  details   Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([actor])
+  @@index([action])
+  @@map("audit_logs")
+}

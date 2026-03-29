@@ -1,0 +1,542 @@
+---
+title: "Zuri Platform — Product Roadmap"
+version: "2.1.0"
+date: "2026-03-30"
+status: APPROVED
+owner: ["Boss (Product)", "Claude (Lead Architect)"]
+approach: "DOC TO CODE — ไม่ implement จนกว่า spec + ADR approved"
+---
+
+# Zuri Platform — Product Roadmap v2.0.0
+
+---
+
+## 1. Roadmap Overview
+
+```
+2026
+│
+├── Q1 (Jan-Mar) ✅ DONE
+│   └── v1.0–v3.7: V School CRM monolith (E:\ZURI)
+│       33 ADRs, 81 models, 167 API routes
+│
+├── Q2 (Apr-Jun) ← WE ARE HERE
+│   ├── M1: Foundation + DOC (Apr)
+│   ├── M2: Core Migration (May)
+│   └── M3: AI Chat Intelligence — Wave 1 (Jun)
+│
+├── Q3 (Jul-Sep)
+│   ├── M4: AI Agent + Sales Tools — Wave 2 (Jul-Aug)
+│   └── M5: Multi-Tenant Launch (Sep)
+│
+└── Q4 (Oct-Dec)
+    ├── M6: AI Ads + Content — Wave 3 (Oct-Nov)
+    └── M7: Growth + Billing (Dec)
+
+M = Milestone
+```
+
+---
+
+## 2. Milestone Detail
+
+### ═══════════════════════════════════════════
+### M1: Foundation + DOC (April 2026)
+### ═══════════════════════════════════════════
+
+> เป้าหมาย: โครงสร้างใหม่พร้อม, docs ครบ, dev tools พร้อม
+> ไม่มี feature ใหม่ — เน้นจัด project ให้นิ่ง
+
+| Phase | Task | Status | Owner |
+|---|---|---|---|
+| **0** | Project scaffold (E:\CO) | ✅ Done | Claude |
+| **0** | Prisma schema (17 core models) | ✅ Done | Claude |
+| **0** | Infra libs (db, redis, qstash, pusher, tenant, RBAC) | ✅ Done | Claude |
+| **0** | Skeleton pages (22) + API routes (38) + components (32) | ✅ Done | Claude |
+| **0** | Gotchas docs (30 rules จาก 6 incidents + 33 ADRs) | ✅ Done | Claude |
+| **0** | Dev tools: orchestrator CLI (6 commands) + 15 agent skills | ✅ Done | Claude |
+| **0** | Multi-agent: vibecode + model routing (Opus/Sonnet/Gemini) | ✅ Done | Claude |
+| **0** | PRD v2.0 + ERD v2.0 | ✅ Done | Claude |
+| | | | |
+| **1** | Copy + clean feature specs จาก ZURI → CO docs/ | 🔲 | PM agent |
+| **1** | เขียน feature spec ทุก module (10 core + 3 shared + 5 culinary) | 🔲 | PM agent |
+| **1** | เขียน data flow diagrams ทุก module | 🔲 | PM agent |
+| **1** | Boss review + approve ทุก spec | 🔲 | Boss |
+| **1** | สร้าง Obsidian vault config (docs/ = vault) | 🔲 | Claude |
+| | | | |
+| **2** | ADR-060: Modular Architecture | 🔲 | CTO agent |
+| **2** | ADR-061: Split Prisma Schema (prisma-merge) | 🔲 | CTO agent |
+| **2** | ADR-062: Obsidian as SSOT | 🔲 | CTO agent |
+| **2** | ADR-063: Dev Tools Isolation (.dev/) | 🔲 | CTO agent |
+| **2** | ADR-064: DOC TO CODE Workflow | 🔲 | CTO agent |
+| **2** | ADR-065: Industry Plugin System | 🔲 | CTO agent |
+| **2** | ADR-066: Component Size Limit (500 LOC) | 🔲 | CTO agent |
+| **2** | ADR-067: Changelog System v2 (sliding window) | 🔲 | CTO agent |
+| **2** | ADR-068: NotebookLM as AI Context Layer | 🔲 | CTO agent |
+| **2** | ADR-069: AI Feature Architecture (Compose/Agent/Analytics) | 🔲 | CTO agent |
+| **2** | Boss approve ทุก ADR | 🔲 | Boss |
+
+**Deliverables:**
+- [ ] Feature specs ครบทุก module (docs/product/features/)
+- [ ] ADR-060 to ADR-069 approved
+- [ ] Obsidian vault ใช้งานได้
+- [ ] RESTRUCTURE_PLAN.md approved
+
+---
+
+### ═══════════════════════════════════════════
+### M2: Core Migration (May 2026)
+### ═══════════════════════════════════════════
+
+> เป้าหมาย: ย้าย working features จาก ZURI → CO modular structure
+> V School ใช้งาน CO ได้เหมือนเดิม (feature parity)
+
+| Phase | Task | Models | Owner |
+|---|---|---|---|
+| **3** | Orchestrator CLI integration test | — | Claude |
+| **3** | vibecode pipeline test (Gemini + Claude) | — | Claude |
+| | | | |
+| **4.1** | core/auth — NextAuth + RBAC | Employee | Backend |
+| **4.2** | core/tenant — Multi-tenant middleware | Tenant, TenantConfig | Backend |
+| **4.3** | core/crm — Customer + identity merge | Customer, CustomerProfile | Backend + Frontend |
+| **4.4** | core/inbox — Unified Inbox + webhooks | Conversation, Message, +3 | Backend + Frontend |
+| **4.5** | core/pos — POS + Quick Sale + slip OCR | Order, Transaction | Backend + Frontend |
+| **4.6** | core/marketing — Ads sync + dashboard | Ad, Campaign, AdSet, +10 | Backend + Frontend |
+| **4.7** | core/tasks — Task management | Task | Backend + Frontend |
+| **4.8** | core/employees — Employee management | Employee | Backend + Frontend |
+| **4.9** | core/ai — Gemini endpoints | — | Backend |
+| **4.10** | core/notifications — Push + LINE | PushSubscription, +2 | Backend |
+| | | | |
+| **5.1** | shared/inventory — Warehouse + stock | +6 models | Backend |
+| **5.2** | shared/procurement — PO lifecycle | +12 models | Backend |
+| **5.3** | shared/audit — Audit + approval | AuditLog, +1 | Backend |
+| | | | |
+| **6.1** | industry/culinary/courses | +5 models | Backend + Frontend |
+| **6.2** | industry/culinary/recipes | +4 models | Backend + Frontend |
+| **6.3** | industry/culinary/kitchen | +4 models | Backend + Frontend |
+| **6.4** | industry/culinary/certificates | Certificate | Backend |
+| **6.5** | industry/culinary/packages | +5 models | Backend + Frontend |
+| | | | |
+| **7** | Integration testing (E2E, multi-tenant, performance) | — | QA agent |
+| **7** | Migration script: ZURI DB → CO DB | — | Migrator agent |
+| **7** | V School UAT (Boss verify) | — | Boss |
+
+**Deliverables:**
+- [ ] ~57 models migrated + working
+- [ ] V School feature parity กับ ZURI v3.7
+- [ ] E2E tests pass
+- [ ] V School cutover to CO
+
+---
+
+### ═══════════════════════════════════════════
+### M3: AI Chat Intelligence — Wave 1 (June 2026)
+### ═══════════════════════════════════════════
+
+> เป้าหมาย: AI features ที่ใช้ได้ทันที ต่อยอดจากที่มี
+> NotebookLM เป็น context layer
+
+#### A1: AI Assist — Compose Reply
+
+```
+Sales พิมพ์คำธรรมดา → AI แปลงเป็นคำตอบลูกค้า
+
+Input:  "มึงจะซื้อไม่ซื้อ"
+Output: "ตอนนี้ใกล้ตัดยอดแล้วนะคะ พี่ยังอยากให้หนูทำส่วนลดให้ไหมคะ"
+```
+
+| Item | Spec |
+|---|---|
+| Module | core/ai (compose-reply endpoint — rewrite) |
+| Context | NLM notebook per admin: chat history + style + product info |
+| Model | Gemini Flash (เร็ว, ถูก) |
+| NFR | < 2 sec response |
+| Depends on | core/inbox (conversation context) |
+
+#### A4: Auto Tag / Intent (PDAD Framework)
+
+```
+ทุกข้อความที่เข้ามา → AI วิเคราะห์ → auto-assign tags + intent
+
+PDAD = Problem → Desire → Action → Decision
+```
+
+| Item | Spec |
+|---|---|
+| Module | core/ai (auto-tag endpoint — new) |
+| Context | NLM notebook: PDAD framework + tag taxonomy |
+| Model | Gemini Flash |
+| Output | tags[], intent, pdadStage, sentiment |
+| Storage | ConversationAnalysis (extend) หรือ new ConversationTag model |
+| Trigger | ทุก incoming message (async via QStash) |
+
+#### B1: Daily Sales Brief v2 (Rewrite)
+
+```
+DSB v1 logic ผิด → rewrite ใหม่ทั้งหมด
+
+- ใช้ PDAD tags เป็น input (แทน raw conversation)
+- Attribution ต้อง match product (G-MKT-01)
+- Array mutation ก่อน DB op (G-DB-04)
+```
+
+| Item | Spec |
+|---|---|
+| Module | core/ai (daily-brief worker — rewrite) |
+| Context | NLM notebook: DSB format + analysis rules |
+| Input | ConversationAnalysis (from A4) + Orders + Ads |
+| Output | DailyBrief (rewrite aggregation logic) |
+| Notify | LINE push 08:00 ICT |
+| ADR | ต้องเขียน ADR ใหม่ (DSB v2 architecture) |
+
+#### B3: Follow-up CTA Assignment
+
+```
+จากผล DSB + auto-tag → กำหนด CTA ให้ sales แต่ละคน
+
+- HOT lead → โทรภายใน 1 ชม.
+- WARM → ส่งข้อความ follow-up
+- COLD → re-engage campaign
+```
+
+| Item | Spec |
+|---|---|
+| Module | core/tasks (auto-create) + core/notifications (remind) |
+| Input | ConversationAnalysis.state + assigneeId |
+| Output | Task (auto-created) + LINE notification to sales |
+| Logic | Rule-based (HOT=call, WARM=message, COLD=campaign) |
+
+#### A5: AI Assistant Add-on Phase 1 (FEAT-AI-ASSISTANT.md ✅ APPROVED)
+
+```
+Web FAB → NL2SQL → ถามข้อมูลได้ทุกหน้า
+LINE Bot 1:1 → Query + Data Entry
+LINE Group ส่งยอด → REPORT intent → auto-save
+LINE Group รับออเดอร์ → ORDER intent → draft POS order
+สลิปใน LINE → Gemini Vision → confirm → save
+```
+
+| Item | Spec |
+|---|---|
+| Module | core/ai (ai-assistant — new) |
+| Tiers | AI Starter ฿890 (Web only) / AI Pro ฿1,290 (Web + LINE) |
+| RBAC | query scope per role, blacklist sensitive fields |
+| Security | NL2SQL read-only, tenant isolation, rate limit 30 req/min |
+| Spec | FEAT-AI-ASSISTANT.md ✅ |
+
+**M3 Deliverables:**
+- [ ] A1: AI Compose Reply v2 — with NLM context
+- [ ] A4: Auto Tag/Intent (PDAD) — every message
+- [ ] B1: DSB v2 — rewritten logic
+- [ ] B3: Follow-up CTA — auto-assign from DSB
+- [ ] **A5: AI Assistant Add-on Phase 1** — Web FAB + LINE Bot + Group + Slip
+- [ ] NLM notebooks configured per tenant
+
+---
+
+### ═══════════════════════════════════════════
+### M4: AI Agent + Sales Tools — Wave 2 (Jul-Aug 2026)
+### ═══════════════════════════════════════════
+
+> เป้าหมาย: AI ทำงานแทนคนได้จริง + sales มี tools ครบ
+
+#### A2: AI Chatbot — Agent Mode (per-admin style)
+
+```
+ไม่ใช่แค่ตอบแบบ generic — แต่ตอบตาม style ของ admin เจ้าของเคส
+
+Admin "น้องเอ" ตอบน่ารัก → AI ตอบน่ารัก
+Admin "พี่บอส" ตอบกระชับ → AI ตอบกระชับ
+```
+
+| Item | Spec |
+|---|---|
+| Module | core/ai (agent-mode — extend ADR-054) |
+| Context | NLM notebook per admin: 50+ past conversations → style extraction |
+| Model | Gemini Flash (reply) + Gemini Pro (style analysis) |
+| Escalation | Keyword, sentiment, loop (3 turns), explicit takeover |
+| Data | Conversation.agentMode, agentTurnCount, ConversationLog |
+
+#### A3: AI Sales Closer
+
+```
+AI ไม่แค่ตอบ — แต่ปิดการขายได้
+
+- ให้ข้อมูล course/package/pricing
+- ตอบ objections
+- ส่ง payment link
+- สร้าง Order (PENDING) อัตโนมัติ
+```
+
+| Item | Spec |
+|---|---|
+| Module | core/ai (sales-closer — new) |
+| Context | NLM notebook: product catalog + pricing + objection handling |
+| Model | Gemini Pro (reasoning for closing) |
+| Integration | core/pos (auto-create Order), core/crm (update lifecycle) |
+| Gate | ✅ Human gate: Boss approve ก่อน enable per tenant |
+
+#### B2: AI Chat Analytics (Sales KPI)
+
+```
+วัด KPI ของ sales จากแชท:
+
+- Response time (เฉลี่ยกี่นาที)
+- Conversion rate (lead → customer)
+- Revenue per conversation
+- PDAD progression rate
+- Customer satisfaction (sentiment)
+```
+
+| Item | Spec |
+|---|---|
+| Module | core/marketing (chat-analytics — new) |
+| Input | ConversationAnalysis + Orders + Employee |
+| Output | SalesKPI dashboard (per employee, per period) |
+| Context | NLM notebook: KPI criteria + benchmarks |
+
+#### C1: Meta Ads Analytics (Audit)
+
+```
+สำหรับ audit คนยิง ads:
+
+- ตรวจคุณภาพ creative (quality ranking)
+- ตรวจ policy compliance
+- เทียบ ROAS กับ benchmark
+- แนะนำ: ปรับกลุ่ม, ปรับ content
+```
+
+| Item | Spec |
+|---|---|
+| Module | core/marketing (ads-audit — new) |
+| Input | Ad + AdDailyMetric + AdCreative |
+| Model | Gemini Pro (analysis) |
+| Context | NLM notebook: Meta policy + best practices |
+| Output | AuditReport per campaign |
+
+#### E1: Accounting Platform Integration (FEAT-ACCOUNTING-PLATFORM.md ✅ APPROVED)
+
+```
+Zuri POS/Expense data → FlowAccount (API auto) or Express (X-import email)
+นักบัญชีใช้โปรแกรมเดิม — Zuri ส่งข้อมูลให้อัตโนมัติ
+```
+
+| Item | Spec |
+|---|---|
+| Module | core/integrations/accounting (new) |
+| FlowAccount | OAuth 2.0 OpenID Connect, multi-tenant, QStash async |
+| Express | Excel export → Supabase Storage → email นักบัญชีรายวัน |
+| Pricing | One-time purchase (TBD) |
+| Prereq | ติดต่อ FlowAccount ขอ OpenID credentials ก่อน |
+| Spec | FEAT-ACCOUNTING-PLATFORM.md ✅ |
+
+**M4 Deliverables:**
+- [ ] A2: Agent Mode per-admin style
+- [ ] A3: AI Sales Closer (with human gate)
+- [ ] B2: Sales KPI Dashboard
+- [ ] C1: Ads Audit Report
+- [ ] **E1: Accounting Platform** — FlowAccount + Express X-import
+
+---
+
+### ═══════════════════════════════════════════
+### M5: Multi-Tenant Launch (September 2026)
+### ═══════════════════════════════════════════
+
+> เป้าหมาย: onboard tenant #2 — ขายได้จริง
+
+| Phase | Task | ADR |
+|---|---|---|
+| MT-2 | Per-tenant FB Page + LINE OA config | — |
+| MT-2 | Per-tenant Meta Ads account + token | — |
+| MT-2 | Per-tenant branding (logo, color) | — |
+| MT-2 | Per-tenant NLM notebooks (auto-create on onboard) | ADR-068 |
+| MT-2 | Per-tenant AI system prompt | ADR-054 |
+| MT-3 | Subdomain routing: {slug}.zuri.app | ADR-056 |
+| MT-3 | Tenant onboarding flow (signup → provision → first login) | — |
+| MT-3 | Admin panel (tenant CRUD, usage view) | — |
+
+**M5 Deliverables:**
+- [ ] Tenant #2 onboarded + using system
+- [ ] Per-tenant config working (FB, LINE, Ads, NLM, branding)
+- [ ] Subdomain routing live
+- [ ] Admin panel MVP
+
+---
+
+### ═══════════════════════════════════════════
+### M6: AI Ads + Content — Wave 3 (Oct-Nov 2026)
+### ═══════════════════════════════════════════
+
+> เป้าหมาย: AI ทำ ads + content ได้เอง
+
+#### C2: AI Ads Optimize
+
+```
+AI ยิง ads เต็มรูปแบบ:
+
+1. วิเคราะห์ performance → recommend action
+2. Auto-pause underperforming ads
+3. Auto-duplicate winning ads with variations
+4. Auto-adjust budget allocation
+5. A/B test creative อัตโนมัติ
+```
+
+| Item | Spec |
+|---|---|
+| Module | core/marketing (ai-optimize — new) |
+| Model | Gemini Pro (strategy) + Meta API (execution) |
+| Gate | ✅ Budget changes > ฿1,000 need Boss approve |
+| Context | NLM notebook: campaign history + Meta best practices |
+
+#### D1: AI Content Master
+
+```
+Sales สั่ง AI สร้าง content ส่งลูกค้าด่วน:
+
+- Ads poster (image)
+- Short video (15-30s)
+- Carousel (IG/FB)
+- LINE rich message
+```
+
+| Item | Spec |
+|---|---|
+| Module | core/ai (content-master — new) |
+| Model | Gemini Pro (copy) + image gen API (visual) |
+| Context | NLM notebook: brand guidelines + past content |
+| Output | Downloadable assets + direct send to LINE/FB |
+
+#### A5: LINE-native Everything
+
+> ⚠️ **Moved to M3** — ถูก supersede โดย FEAT-AI-ASSISTANT.md (approved 2026-03-30)
+> ดูรายละเอียดที่ M3: AI Assistant Add-on Phase 1
+
+#### D2: Market Price Scraper
+
+```
+ทุกเช้า (06:00 ICT) → ดึงราคาวัตถุดิบ:
+
+Sources: Lotus, 7-11, BigC, Makro, Top
+Items:   น้ำตาล, แป้ง, ไข่, นม, เนย, ...
+Output:  MarketPrice table → baseline สำหรับจัดซื้อ
+```
+
+| Item | Spec |
+|---|---|
+| Module | shared/procurement (price-scraper — new) |
+| Model | MarketPrice (exists in ZURI schema) |
+| Trigger | QStash cron 06:00 ICT |
+| Method | Web scraping or API (ต้อง R&D per source) |
+
+**M6 Deliverables:**
+- [ ] C2: AI Ads Optimize (with budget gate)
+- [ ] D1: AI Content Master MVP
+- [ ] A5: LINE-native — at least record sale + slip OCR in LINE
+- [ ] D2: Market Price Scraper (Makro + Lotus)
+
+---
+
+### ═══════════════════════════════════════════
+### M7: Growth + Billing (December 2026)
+### ═══════════════════════════════════════════
+
+> เป้าหมาย: self-serve signup + revenue
+
+| Task | Spec |
+|---|---|
+| Stripe billing integration | Per-tenant subscription |
+| Usage metering | Messages/month, users, storage, AI calls |
+| Landing page | zuri.app marketing site |
+| Self-serve signup | Register → choose plan → provision → first login |
+| Referral program | Tenant refers tenant → discount |
+| SLA dashboard | Uptime, response time, error rate per tenant |
+
+**M7 Deliverables:**
+- [ ] 3+ paying tenants
+- [ ] MRR ≥ ฿15,000
+- [ ] Self-serve signup working
+- [ ] Stripe billing live
+
+---
+
+## 3. Feature → Milestone Matrix
+
+| Feature | M1 | M2 | M3 | M4 | M5 | M6 | M7 |
+|---|---|---|---|---|---|---|---|
+| **A1** AI Compose Reply | | | ● | | | | |
+| **A2** AI Agent (per-admin style) | | | | ● | | | |
+| **A3** AI Sales Closer | | | | ● | | | |
+| **A4** Auto Tag/Intent (PDAD) | | | ● | | | | |
+| **A5** AI Assistant Add-on Phase 1 | | | ● | | | | |
+| **B1** DSB v2 (rewrite) | | | ● | | | | |
+| **B2** Chat Analytics (Sales KPI) | | | | ● | | | |
+| **B3** Follow-up CTA | | | ● | | | | |
+| **C1** Ads Audit | | | | ● | | | |
+| **C2** AI Ads Optimize | | | | | | ● | |
+| **D1** AI Content Master | | | | | | ● | |
+| **D2** Market Price Scraper | | | | | | ● | |
+| **E1** Accounting Platform | | | | ● | | | |
+| POS Full (floor plan, receipts, loyalty) | | ● | | | | | |
+| Foundation + DOC | ● | | | | | | |
+| Core Migration | | ● | | | | | |
+| Multi-Tenant Launch | | | | | ● | | |
+| Billing + Growth (incl. add-on pricing) | | | | | | | ● |
+
+---
+
+## 4. NotebookLM Notebook Plan
+
+| Notebook | Created | Used By | Features |
+|---|---|---|---|
+| `{tenant}-chat-intelligence` | M3 | A1, A2, A3 | Admin styles, chat corpus, product FAQ |
+| `{tenant}-pdad-framework` | M3 | A4, B1 | PDAD rules, tag taxonomy, DSB format |
+| `{tenant}-sales-kpi` | M4 | B2, B3 | KPI criteria, benchmarks, CTA rules |
+| `{tenant}-ads-intelligence` | M4 | C1, C2 | Meta policy, campaign history |
+| `{tenant}-brand-content` | M6 | D1 | Brand guidelines, past content |
+| `zuri-platform` | M1 | All agents | PRD, ERD, ADRs, gotchas |
+
+---
+
+## 5. Tech Dependencies per Milestone
+
+| Milestone | ต้องมีก่อน | New Dependencies |
+|---|---|---|
+| M1 | — | nlm CLI (✅ installed) |
+| M2 | M1 (specs + ADRs approved) | prisma-merge |
+| M3 | M2 (core modules working) | NLM API integration |
+| M4 | M3 (A4 tags available) | Gemini Pro for style analysis |
+| M5 | M2 + M3 (core + AI working) | DNS wildcard, Stripe SDK |
+| M6 | M4 (AI pipeline proven) | Image gen API, web scraping |
+| M7 | M5 (multi-tenant live) | Stripe billing, analytics |
+
+---
+
+## 6. Risk Register
+
+| Risk | Impact | Probability | Mitigation |
+|---|---|---|---|
+| NLM API changes (unofficial) | AI context layer breaks | Medium | Fallback to direct Gemini context injection |
+| Gemini hallucination in sales | ส่งข้อมูลผิดให้ลูกค้า | High | Strict prompt + real DB data only + human review option |
+| PDAD tag accuracy | DSB v2 + KPI ผิด | Medium | Train on V School data first, tune thresholds |
+| AI Sales Closer จ่ายเงินผิด | สร้าง Order ผิด amount | High | Human gate + Order.status = PENDING จนกว่า verify |
+| Market price scraping blocked | ไม่ได้ราคาวัตถุดิบ | Medium | Multiple sources + manual fallback |
+| Multi-tenant data leak | ลูกค้าเห็นข้อมูลข้าม tenant | Critical | tenantId every query + integration test + audit |
+| LINE group monitoring privacy | พนักงานไม่ยอมให้ monitor | Medium | Opt-in only + clear disclosure |
+
+---
+
+## 7. Success Metrics per Milestone
+
+| Milestone | Metric | Target |
+|---|---|---|
+| **M1** | Docs completeness | 100% modules have spec |
+| **M2** | Feature parity | V School ใช้ CO ได้เหมือน ZURI |
+| **M3** | AI Compose usage | Sales ใช้ > 50% ของ replies |
+| **M3** | Auto-tag accuracy | > 80% correct tags |
+| **M4** | Agent Mode | ตอบ > 70% ของ out-of-hours messages |
+| **M4** | Sales KPI | Dashboard ใช้งานได้ทุกวัน |
+| **M5** | Tenant #2 | Onboarded + active |
+| **M6** | AI Content | Sales สร้าง content > 10 ชิ้น/สัปดาห์ |
+| **M7** | MRR | ≥ ฿15,000 |
+| **M7** | Paying tenants | ≥ 3 |

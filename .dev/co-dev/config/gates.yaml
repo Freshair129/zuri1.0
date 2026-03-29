@@ -1,0 +1,81 @@
+# gates.yaml — Human Approval Rules
+# requires_human: true → หยุดรอ Boss อนุมัติก่อนดำเนินการต่อ
+
+gates:
+
+  # ── ALWAYS REQUIRE APPROVAL ─────────────────────────────
+  - action: "create_adr"
+    agent: "cto"
+    requires_human: true
+    reason: "Architecture decision กระทบทั้ง project"
+
+  - action: "modify_db_schema"
+    agent: "backend"
+    requires_human: true
+    reason: "Schema change กระทบ production data + ต้องมี ADR"
+
+  - action: "delete_api_route"
+    agent: "backend"
+    requires_human: true
+    reason: "Breaking change — อาจกระทบ frontend ที่ใช้อยู่"
+
+  - action: "change_env_vars"
+    agent: "devops"
+    requires_human: true
+    reason: "Env vars กระทบ production runtime"
+
+  - action: "deploy_production"
+    agent: "devops"
+    requires_human: true
+    reason: "Production deploy ต้อง verify ก่อนเสมอ"
+
+  - action: "modify_permission_matrix"
+    agent: "backend"
+    requires_human: true
+    reason: "RBAC change กระทบ access control ทุก role"
+
+  - action: "add_external_dependency"
+    agent: "cto"
+    requires_human: true
+    reason: "New dependency กระทบ bundle size + security"
+
+  # ── AUTO-APPROVE ────────────────────────────────────────
+  - action: "add_new_api_route"
+    agent: "backend"
+    requires_human: false
+    reason: "ไม่ break existing APIs"
+
+  - action: "write_component"
+    agent: "frontend"
+    requires_human: false
+    reason: "UI only — ไม่กระทบ backend"
+
+  - action: "write_unit_test"
+    agent: "qa"
+    requires_human: false
+    reason: "Tests ปลอดภัยเสมอ"
+
+  - action: "write_documentation"
+    agent: "doc_writer"
+    requires_human: false
+    reason: "Docs ไม่กระทบ runtime"
+
+  - action: "code_review"
+    agent: "tech_lead"
+    requires_human: false
+    reason: "Review ไม่แก้ code"
+
+  - action: "deploy_preview"
+    agent: "devops"
+    requires_human: false
+    reason: "Preview ไม่กระทบ production"
+
+  - action: "create_feature_spec"
+    agent: "pm"
+    requires_human: false
+    reason: "Spec = doc only — Boss review ตอน approve"
+
+  - action: "write_changelog"
+    agent: "doc_writer"
+    requires_human: false
+    reason: "Changelog = doc only"

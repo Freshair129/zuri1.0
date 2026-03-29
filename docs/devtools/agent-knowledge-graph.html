@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zuri Agent Knowledge Graph</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0b1a;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden}
+#app{display:flex;height:100vh}
+
+/* Sidebar */
+#sidebar{width:260px;background:rgba(12,13,35,0.95);border-right:1px solid #1a1d3a;display:flex;flex-direction:column;z-index:10;backdrop-filter:blur(20px)}
+#sidebar-header{padding:20px;border-bottom:1px solid #1a1d3a;background:linear-gradient(135deg,rgba(255,107,74,0.08),rgba(74,158,255,0.05))}
+#sidebar-header h1{font-size:17px;color:#ff6b4a;letter-spacing:.5px}
+#sidebar-header p{font-size:11px;color:#555;margin-top:4px}
+#node-list{flex:1;overflow-y:auto;padding:8px}
+.node-item{padding:8px 12px;margin:2px 0;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12px;transition:all .25s cubic-bezier(.4,0,.2,1);border:1px solid transparent}
+.node-item:hover{background:rgba(255,107,74,.06);border-color:rgba(255,107,74,.15);transform:translateX(3px)}
+.node-item.active{background:rgba(255,107,74,.1);border-color:rgba(255,107,74,.3)}
+.node-badge{padding:2px 8px;border-radius:10px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
+.badge-agent{background:rgba(255,107,74,.15);color:#ff6b4a}.badge-module{background:rgba(74,158,255,.15);color:#4a9eff}
+.badge-service{background:rgba(80,200,120,.15);color:#50c878}.badge-doc{background:rgba(255,215,0,.15);color:#ffd700}
+.badge-rule{background:rgba(255,74,107,.15);color:#ff4a6b}.badge-config{background:rgba(192,132,252,.15);color:#c084fc}
+.section-label{padding:10px 12px 4px;font-size:10px;color:#444;text-transform:uppercase;letter-spacing:1px}
+
+/* Main Area */
+#main{flex:1;display:flex;flex-direction:column;position:relative}
+#canvas-area{flex:1;position:relative}
+canvas{display:block;position:absolute;top:0;left:0}
+
+/* Detail Panel */
+#detail{position:absolute;top:0;right:0;width:340px;height:100%;background:rgba(12,13,35,.95);border-left:1px solid #1a1d3a;overflow-y:auto;z-index:10;backdrop-filter:blur(20px);transform:translateX(100%);transition:transform .4s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;gap:12px;padding:20px}
+#detail.visible{transform:translateX(0)}
+#detail-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.05);border:1px solid #2a2d4a;color:#888;cursor:pointer;font-size:16px;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+#detail-close:hover{background:rgba(255,107,74,.15);color:#ff6b4a;border-color:#ff6b4a44}
+
+/* Cards */
+.card{background:rgba(255,255,255,.03);border:1px solid #1e2045;border-radius:14px;padding:16px;transition:all .3s cubic-bezier(.4,0,.2,1);animation:cardIn .4s cubic-bezier(.4,0,.2,1) backwards}
+.card:hover{border-color:#2a2d5a;background:rgba(255,255,255,.05)}
+.card:nth-child(2){animation-delay:.05s}.card:nth-child(3){animation-delay:.1s}.card:nth-child(4){animation-delay:.15s}.card:nth-child(5){animation-delay:.2s}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.card-header h2{font-size:16px;color:#fff;font-weight:600}
+.card-desc{font-size:13px;color:#999;line-height:1.6}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-item{background:rgba(255,255,255,.02);border:1px solid #1a1d3a;border-radius:10px;padding:10px 12px;transition:all .25s}
+.stat-item:hover{border-color:#ff6b4a33}
+.stat-label{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:14px;color:#fff;font-weight:600;margin-top:2px;font-family:'JetBrains Mono',monospace,system-ui}
+.card h3{font-size:11px;color:#ff6b4a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.conn-item{padding:6px 10px;margin:3px 0;border-radius:8px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;border:1px solid transparent}
+.conn-item:hover{background:rgba(74,158,255,.08);border-color:rgba(74,158,255,.2)}
+.conn-item .arrow{color:#ff6b4a;font-size:10px}
+.conn-item .conn-label{color:#555;font-size:10px;margin-left:auto}
+.conn-item.hidden{opacity:.35}
+
+/* Controls */
+#controls{position:absolute;top:16px;left:50%;transform:translateX(-50%);display:flex;gap:4px;background:rgba(12,13,35,.8);border:1px solid #1a1d3a;border-radius:12px;padding:4px;backdrop-filter:blur(16px);z-index:5}
+.ctrl-btn{background:transparent;border:none;color:#666;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:500;transition:all .25s;letter-spacing:.3px}
+.ctrl-btn:hover{color:#ccc;background:rgba(255,255,255,.05)}
+.ctrl-btn.active{background:rgba(255,107,74,.15);color:#ff6b4a}
+
+/* ═══════════════════════════════════════════════════════
+   DASHBOARD
+   ═══════════════════════════════════════════════════════ */
+#dashboard{height:0;background:rgba(8,9,22,.98);border-top:1px solid #1a1d3a;overflow:hidden;transition:height .5s cubic-bezier(.4,0,.2,1);z-index:15;backdrop-filter:blur(20px)}
+#dashboard.open{height:220px}
+#dash-toggle{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:12px;background:rgba(12,13,35,.85);border:1px solid #1a1d3a;border-radius:20px;padding:5px 16px;backdrop-filter:blur(12px);cursor:pointer;transition:all .3s}
+#dash-toggle:hover{border-color:#ff6b4a44;background:rgba(255,107,74,.06)}
+#dash-toggle .toggle-label{font-size:11px;color:#666;transition:color .2s}
+#dash-toggle:hover .toggle-label{color:#ccc}
+#dash-toggle .toggle-arrow{font-size:14px;color:#ff6b4a;transition:transform .4s cubic-bezier(.4,0,.2,1)}
+#dash-toggle.flipped .toggle-arrow{transform:rotate(180deg)}
+#dash-toggle .dot{width:6px;height:6px;border-radius:50%;background:#50c878;animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+
+#dash-content{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:16px 20px;height:100%;animation:dashIn .5s cubic-bezier(.4,0,.2,1) backwards}
+@keyframes dashIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.dash-card{background:rgba(255,255,255,.02);border:1px solid #1a1d3a;border-radius:14px;padding:14px;display:flex;flex-direction:column;transition:all .3s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
+.dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:14px 14px 0 0;transition:opacity .3s;opacity:0}
+.dash-card:hover{border-color:#2a2d5a;transform:translateY(-2px)}.dash-card:hover::before{opacity:1}
+.dash-card:nth-child(1)::before{background:linear-gradient(90deg,#ff6b4a,#ff6b4a00)}
+.dash-card:nth-child(2)::before{background:linear-gradient(90deg,#4a9eff,#4a9eff00)}
+.dash-card:nth-child(3)::before{background:linear-gradient(90deg,#50c878,#50c87800)}
+.dash-card:nth-child(4)::before{background:linear-gradient(90deg,#ffd700,#ffd70000)}
+.dash-card:nth-child(5)::before{background:linear-gradient(90deg,#c084fc,#c084fc00)}
+
+.dash-title{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.dash-title .dash-icon{font-size:12px}
+.dash-big{font-size:28px;font-weight:700;font-family:'JetBrains Mono',monospace,system-ui;margin-bottom:4px;background:linear-gradient(135deg,#fff,#888);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.dash-sub{font-size:11px;color:#555;margin-bottom:10px}
+.dash-bar-group{display:flex;flex-direction:column;gap:4px;flex:1;justify-content:flex-end}
+.dash-bar-row{display:flex;align-items:center;gap:6px;font-size:10px}
+.dash-bar-label{width:55px;color:#666;text-align:right;flex-shrink:0}
+.dash-bar-track{flex:1;height:6px;background:rgba(255,255,255,.04);border-radius:3px;overflow:hidden;position:relative}
+.dash-bar-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1);position:relative}
+.dash-bar-fill::after{content:'';position:absolute;top:0;right:0;bottom:0;width:20px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3));animation:bar-shine 2s infinite}
+@keyframes bar-shine{0%,100%{opacity:0}50%{opacity:1}}
+.dash-bar-val{width:24px;font-family:monospace;color:#888;font-size:10px}
+
+/* Pipeline mini flow */
+.pipe-flow{display:flex;align-items:center;gap:2px;flex-wrap:wrap;margin-top:6px}
+.pipe-node{padding:3px 8px;border-radius:6px;font-size:9px;font-weight:600;border:1px solid;transition:all .3s;cursor:default;animation:pipeIn .4s cubic-bezier(.4,0,.2,1) backwards}
+.pipe-node:nth-child(2){animation-delay:.05s}.pipe-node:nth-child(3){animation-delay:.1s}.pipe-node:nth-child(4){animation-delay:.15s}
+.pipe-node:nth-child(5){animation-delay:.2s}.pipe-node:nth-child(6){animation-delay:.25s}.pipe-node:nth-child(7){animation-delay:.3s}
+@keyframes pipeIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.pipe-arrow{color:#333;font-size:10px;animation:arrowPulse 1.5s infinite}
+@keyframes arrowPulse{0%,100%{opacity:.3}50%{opacity:.8}}
+.pipe-node.t1{color:#ff6b4a;border-color:#ff6b4a44;background:rgba(255,107,74,.06)}
+.pipe-node.t2{color:#4a9eff;border-color:#4a9eff44;background:rgba(74,158,255,.06)}
+.pipe-node.t3{color:#50c878;border-color:#50c87844;background:rgba(80,200,120,.06)}
+
+/* Ring chart */
+.ring-container{display:flex;align-items:center;gap:12px;margin-top:4px}
+.ring-legend{display:flex;flex-direction:column;gap:3px}
+.ring-legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#888}
+.ring-legend-dot{width:6px;height:6px;border-radius:50%}
+
+/* Scroll */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#1a1d3a;border-radius:2px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <div id="sidebar-header"><h1>Zuri Knowledge Graph</h1><p>Agent context & relationships</p></div>
+    <div id="node-list"></div>
+  </div>
+  <div id="main">
+    <div id="canvas-area">
+      <canvas id="stars"></canvas>
+      <canvas id="graph"></canvas>
+      <div id="controls">
+        <button class="ctrl-btn active" onclick="filterType('all',this)">All</button>
+        <button class="ctrl-btn" onclick="filterType('agent',this)">Agents</button>
+        <button class="ctrl-btn" onclick="filterType('module',this)">Modules</button>
+        <button class="ctrl-btn" onclick="filterType('service',this)">Services</button>
+        <button class="ctrl-btn" onclick="filterType('doc',this)">Docs</button>
+        <button class="ctrl-btn" onclick="filterType('rule',this)">Rules</button>
+        <button class="ctrl-btn" onclick="resetGraph(this)">Reset</button>
+      </div>
+      <div id="dash-toggle" onclick="toggleDashboard()">
+        <span class="dot"></span>
+        <span class="toggle-label">Dashboard</span>
+        <span class="toggle-arrow">&#9650;</span>
+      </div>
+      <div id="detail">
+        <button id="detail-close" onclick="closeDetail()">&times;</button>
+        <div id="detail-content"></div>
+      </div>
+    </div>
+    <div id="dashboard"><div id="dash-content"></div></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+const NODES=[
+{id:"cto",label:"CTO",type:"agent",tier:1,model:"claude-opus",desc:"Architecture decisions, ADR writing, final review, gotcha guard",gate:true,cost:"session"},
+{id:"tech_lead",label:"Tech Lead",type:"agent",tier:1,model:"claude-sonnet",desc:"Code review, NFR compliance, security checks",cost:"session"},
+{id:"pm",label:"PM",type:"agent",tier:3,model:"gemini-flash",desc:"Feature specs (10-section), user stories, acceptance criteria",cost:"free"},
+{id:"backend",label:"Backend",type:"agent",tier:2,model:"gemini-flash",desc:"API routes, repositories, workers, webhooks",cost:"free"},
+{id:"frontend",label:"Frontend",type:"agent",tier:2,model:"gemini-flash",desc:"Next.js pages, components, hooks, Tailwind",cost:"free"},
+{id:"qa",label:"QA",type:"agent",tier:3,model:"gemini-flash",desc:"Vitest tests, mock Prisma, multi-tenant isolation",cost:"free"},
+{id:"doc_writer",label:"Doc Writer",type:"agent",tier:3,model:"gemini-flash",desc:"Feature specs, ADR drafts, Mermaid diagrams, changelogs",cost:"free"},
+{id:"devops",label:"DevOps",type:"agent",tier:3,model:"gemini-pro",desc:"Vercel deploy, Doppler secrets, QStash cron",gate:true,cost:"free"},
+{id:"migrator",label:"Migrator",type:"agent",tier:2,model:"claude-sonnet",desc:"ZURI-LEGACY to zuri modular migration",cost:"session"},
+{id:"mod_inbox",label:"Inbox",type:"module",desc:"Unified FB+LINE messaging, 3-panel UI, AI compose reply"},
+{id:"mod_crm",label:"CRM",type:"module",desc:"Customer profiles, tags, segments, identity resolution"},
+{id:"mod_pos",label:"POS",type:"module",desc:"Premium POS, payment slip OCR, package sales"},
+{id:"mod_marketing",label:"Marketing",type:"module",desc:"Meta Ads + LINE analytics, campaign ROI, Daily Sales Brief"},
+{id:"mod_kitchen",label:"Kitchen Ops",type:"module",desc:"Recipe & Cost Management — สูตร → ต้นทุน → ราคา → SOP → BOM → Menu Engineering | Add-on: ฿790/mo | Target: culinary schools, restaurants, catering | Features: (1) 5-Dimension Cost: วัตถุดิบ+ค่าแรง+พลังงาน+ค่าเช่า+ค่าเสื่อม (2) 3-Layer Cost Analysis: Food Cost → Direct Costs → ABC → กำไรจริงต่อเมนู (3) Auto Price Propagation: อัปราคาจุดเดียว → ทุกเมนูอัปเดต (4) Component Recipes & Batch: ซอสกลาง/น้ำซุป ใช้ข้ามเมนู (5) Multi-Channel Pricing: ปลีก/ส่ง/เดลิเวอรี/จัดชุด/บุฟเฟต์+VAT+GP% (6) BOM: material requirement, ลด waste, ประมาณงบจัดซื้อ (7) Menu Engineering: Stars/Plowhorses/Puzzles/Dogs matrix (8) BEP Calculator: fixedCost/(avgPrice−avgVarCost) (9) Scenario Testing: what-if ephemeral compute (10) Standard Recipe SOP: คิดต้นทุน+SOP ในขั้นตอนเดียว"},
+{id:"mod_tasks",label:"Tasks",type:"module",desc:"SINGLE/RANGE/PROJECT task types"},
+{id:"mod_employees",label:"Employees",type:"module",desc:"Staff management, schedules, RBAC roles"},
+{id:"mod_ai",label:"AI Layer",type:"module",desc:"Gemini 2.0 Flash: compose-reply, ask-AI, DSB analysis"},
+{id:"mod_auth",label:"Auth",type:"module",desc:"NextAuth v4, JWT, credentials provider, bcrypt"},
+{id:"mod_tenant",label:"Multi-Tenant",type:"module",desc:"tenant_id column, middleware resolution, data isolation"},
+{id:"svc_supabase",label:"Supabase",type:"service",desc:"PostgreSQL database via Prisma ORM"},
+{id:"svc_redis",label:"Redis",type:"service",desc:"Upstash REST cache, getOrSet pattern, TTL 300s"},
+{id:"svc_qstash",label:"QStash",type:"service",desc:"Cron workers, async jobs, retry >= 5 times"},
+{id:"svc_pusher",label:"Pusher",type:"service",desc:"Realtime channels: new-message, customer-updated"},
+{id:"svc_gemini",label:"Gemini",type:"service",desc:"Gemini 2.0 Flash API for AI features"},
+{id:"svc_meta",label:"Meta API",type:"service",desc:"Facebook Graph API (QStash sync only!)"},
+{id:"svc_line",label:"LINE API",type:"service",desc:"LINE Messaging API (QStash sync only!)"},
+{id:"svc_vercel",label:"Vercel",type:"service",desc:"Serverless deployment, App Router, edge functions"},
+{id:"svc_doppler",label:"Doppler",type:"service",desc:"Secrets management (dev/stg/prd environments)"},
+{id:"doc_prd",label:"PRD",type:"doc",desc:"Product Requirements Document v2.0"},
+{id:"doc_roadmap",label:"Roadmap",type:"doc",desc:"M1-M7 milestones through 2026, 12 AI features"},
+{id:"doc_erd",label:"ERD",type:"doc",desc:"17 current models + migration plan (+40 Phase 4-6)"},
+{id:"doc_claude",label:"CLAUDE.md",type:"doc",desc:"Project rules, architecture, NFRs"},
+{id:"doc_decisions",label:"Decisions",type:"doc",desc:"7 architecture decisions from session 1"},
+{id:"rule_repo",label:"Repo Pattern",type:"rule",desc:"ALL DB ops go through src/lib/repositories/"},
+{id:"rule_nfr1",label:"NFR1 <200ms",type:"rule",desc:"Webhook must respond 200 before processing"},
+{id:"rule_nfr2",label:"NFR2 <500ms",type:"rule",desc:"Dashboard API must use Redis cache"},
+{id:"rule_nfr5",label:"NFR5 Txn",type:"rule",desc:"Identity upsert must use prisma.$transaction"},
+{id:"rule_no_meta",label:"No Direct API",type:"rule",desc:"NEVER call Meta/LINE from UI or routes"},
+{id:"rule_tenant",label:"tenantId",type:"rule",desc:"Every query WHERE must include tenant_id"},
+{id:"rule_no_silent",label:"No Silent Catch",type:"rule",desc:"Always console.error('[Module]', error)"},
+{id:"cfg_system",label:"system_config",type:"config",desc:"Roles, VAT, statuses, thresholds"},
+{id:"cfg_ids",label:"id_standards",type:"config",desc:"CUST-[ULID], EMP-[TYPE]-[DEPT]-[NNN]"},
+{id:"cfg_prisma",label:"schema.prisma",type:"config",desc:"Database schema - single source of truth"},
+];
+
+const EDGES=[
+{from:"pm",to:"cto",label:"spec->review",t:"handoff"},{from:"cto",to:"backend",label:"approved",t:"handoff"},
+{from:"cto",to:"frontend",label:"approved",t:"handoff"},{from:"backend",to:"qa",label:"code->test",t:"handoff"},
+{from:"frontend",to:"qa",label:"code->test",t:"handoff"},{from:"qa",to:"tech_lead",label:"test->review",t:"handoff"},
+{from:"tech_lead",to:"devops",label:"deploy",t:"handoff"},{from:"pm",to:"doc_writer",label:"parallel",t:"parallel"},
+{from:"backend",to:"frontend",label:"parallel",t:"parallel"},
+{from:"backend",to:"mod_inbox",label:"owns",t:"owns"},{from:"backend",to:"mod_crm",label:"owns",t:"owns"},
+{from:"backend",to:"mod_pos",label:"owns",t:"owns"},{from:"backend",to:"mod_marketing",label:"owns",t:"owns"},
+{from:"backend",to:"mod_ai",label:"owns",t:"owns"},{from:"backend",to:"mod_auth",label:"owns",t:"owns"},
+{from:"backend",to:"mod_tenant",label:"owns",t:"owns"},{from:"backend",to:"mod_tasks",label:"owns",t:"owns"},
+{from:"backend",to:"mod_employees",label:"owns",t:"owns"},
+{from:"frontend",to:"mod_inbox",label:"owns",t:"owns"},{from:"frontend",to:"mod_crm",label:"owns",t:"owns"},
+{from:"frontend",to:"mod_pos",label:"owns",t:"owns"},{from:"frontend",to:"mod_marketing",label:"owns",t:"owns"},
+{from:"frontend",to:"mod_tasks",label:"owns",t:"owns"},{from:"frontend",to:"mod_employees",label:"owns",t:"owns"},
+{from:"mod_inbox",to:"svc_pusher",label:"realtime",t:"uses"},{from:"mod_inbox",to:"svc_meta",label:"sync",t:"uses"},
+{from:"mod_inbox",to:"svc_line",label:"sync",t:"uses"},{from:"mod_crm",to:"svc_supabase",label:"identity",t:"uses"},
+{from:"mod_pos",to:"svc_supabase",label:"orders",t:"uses"},{from:"mod_marketing",to:"svc_meta",label:"ads",t:"uses"},
+{from:"mod_marketing",to:"svc_qstash",label:"DSB cron",t:"uses"},{from:"mod_ai",to:"svc_gemini",label:"AI",t:"uses"},
+{from:"mod_auth",to:"svc_supabase",label:"cred",t:"uses"},{from:"mod_tenant",to:"svc_supabase",label:"tenant_id",t:"uses"},
+{from:"mod_kitchen",to:"svc_supabase",label:"stock",t:"uses"},
+{from:"mod_kitchen",to:"mod_pos",label:"menu pricing",t:"uses"},
+{from:"mod_kitchen",to:"mod_crm",label:"menu preference",t:"uses"},
+{from:"mod_kitchen",to:"mod_ai",label:"DSB cost analysis",t:"uses"},
+{from:"mod_kitchen",to:"svc_qstash",label:"price sync cron",t:"uses"},
+{from:"backend",to:"mod_kitchen",label:"owns",t:"owns"},
+{from:"frontend",to:"mod_kitchen",label:"owns",t:"owns"},
+{from:"svc_qstash",to:"svc_meta",label:"sync hourly",t:"uses"},{from:"svc_qstash",to:"svc_line",label:"sync hourly",t:"uses"},
+{from:"tech_lead",to:"rule_repo",label:"enforces",t:"enforces"},{from:"tech_lead",to:"rule_nfr1",label:"enforces",t:"enforces"},
+{from:"tech_lead",to:"rule_nfr2",label:"enforces",t:"enforces"},{from:"tech_lead",to:"rule_nfr5",label:"enforces",t:"enforces"},
+{from:"tech_lead",to:"rule_no_silent",label:"enforces",t:"enforces"},
+{from:"cto",to:"rule_no_meta",label:"guards",t:"enforces"},{from:"cto",to:"rule_tenant",label:"guards",t:"enforces"},
+{from:"backend",to:"rule_repo",label:"follows",t:"enforces"},{from:"backend",to:"rule_nfr1",label:"follows",t:"enforces"},
+{from:"cto",to:"doc_claude",label:"reads",t:"reads"},{from:"cto",to:"doc_decisions",label:"writes",t:"reads"},
+{from:"pm",to:"doc_prd",label:"ref",t:"reads"},{from:"pm",to:"doc_roadmap",label:"ref",t:"reads"},
+{from:"backend",to:"cfg_prisma",label:"reads",t:"reads"},{from:"backend",to:"cfg_ids",label:"reads",t:"reads"},
+{from:"frontend",to:"cfg_system",label:"reads",t:"reads"},{from:"cfg_prisma",to:"svc_supabase",label:"schema",t:"uses"},
+{from:"cfg_system",to:"mod_auth",label:"roles",t:"uses"},
+];
+
+const COLORS={agent:'#ff6b4a',module:'#4a9eff',service:'#50c878',doc:'#ffd700',rule:'#ff4a6b',config:'#c084fc'};
+const GLOW={agent:'255,107,74',module:'74,158,255',service:'80,200,120',doc:'255,215,0',rule:'255,74,107',config:'192,132,252'};
+
+// ═══════════════════════════════════════════════════════
+// 3D ENGINE
+// ═══════════════════════════════════════════════════════
+const canvas=document.getElementById('graph'),ctx=canvas.getContext('2d');
+const starsC=document.getElementById('stars'),starsCtx=starsC.getContext('2d');
+let W,H,nodes3d=[],edgesData=[],visibleNodes=new Set(),selectedNode=null,hoveredNode=null,dragNode=null;
+let rotX=.3,rotY=0,autoRotate=true,mouseDown=false,lastMX=0,lastMY=0,zoom3d=1,time=0,stars=[];
+let dashOpen=false;
+
+function resize(){
+  const c=document.getElementById('canvas-area');
+  W=c.clientWidth;H=c.clientHeight;
+  [canvas,starsC].forEach(cv=>{cv.width=W*devicePixelRatio;cv.height=H*devicePixelRatio;cv.style.width=W+'px';cv.style.height=H+'px'});
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  starsCtx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+}
+
+function initStars(){stars=[];for(let i=0;i<300;i++)stars.push({x:Math.random()*2-1,y:Math.random()*2-1,z:Math.random()*2-1,size:Math.random()*1.5+.3,b:Math.random()})}
+
+function drawStars(){
+  starsCtx.clearRect(0,0,W,H);
+  const cx=W/2,cy=H/2;
+  for(const s of stars){
+    const cY=Math.cos(rotY*.1),sY=Math.sin(rotY*.1),rx=s.x*cY-s.z*sY,rz=s.x*sY+s.z*cY;
+    const sc=600/(600+rz*200),sx=cx+rx*400*sc,sy=cy+s.y*400*sc;
+    const pulse=.5+.5*Math.sin(time*.02+s.b*10);
+    starsCtx.beginPath();starsCtx.arc(sx,sy,s.size*sc,0,Math.PI*2);
+    starsCtx.fillStyle=`rgba(180,200,255,${s.b*.4*pulse*sc})`;starsCtx.fill();
+  }
+}
+
+function project(x,y,z){
+  const cY=Math.cos(rotY),sY=Math.sin(rotY);let rx=x*cY-z*sY,rz=x*sY+z*cY;
+  const cX=Math.cos(rotX),sX=Math.sin(rotX);let ry=y*cX-rz*sX;rz=y*sX+rz*cX;
+  const s=800/(800+rz*200)*zoom3d;
+  return{x:W/2+rx*s*300,y:H/2+ry*s*300,scale:s,z:rz};
+}
+
+function init3D(){
+  resize();initStars();
+  nodes3d=NODES.map((n,i)=>{
+    let phi,theta,r;const agents=NODES.filter(x=>x.type==='agent'),ai=agents.indexOf(n);
+    switch(n.type){
+      case'agent':phi=(ai/agents.length)*Math.PI*2;theta=Math.PI/2+(Math.random()-.5)*.3;r=.6;break;
+      case'module':phi=Math.random()*Math.PI*2;theta=Math.PI/2+(Math.random()-.5)*.8;r=1.1;break;
+      case'service':phi=Math.random()*Math.PI*2;theta=Math.random()*Math.PI;r=1.5;break;
+      default:phi=Math.random()*Math.PI*2;theta=Math.random()*Math.PI;r=1.3+Math.random()*.4;
+    }
+    return{...n,x:Math.sin(theta)*Math.cos(phi)*r,y:Math.cos(theta)*r,z:Math.sin(theta)*Math.sin(phi)*r,
+      vx:0,vy:0,vz:0,baseR:n.type==='agent'?20:n.type==='module'?14:10,pp:Math.random()*Math.PI*2};
+  });
+  edgesData=EDGES.map(e=>({...e,source:nodes3d.find(n=>n.id===e.from),target:nodes3d.find(n=>n.id===e.to)})).filter(e=>e.source&&e.target);
+  visibleNodes=new Set(nodes3d.filter(n=>n.type==='agent').map(n=>n.id));
+  updateSidebar();updateCounts();buildDashboard();animate();
+}
+
+function simulate3D(){
+  const vis=nodes3d.filter(n=>visibleNodes.has(n.id));
+  for(let i=0;i<vis.length;i++)for(let j=i+1;j<vis.length;j++){
+    const a=vis[i],b=vis[j];let dx=b.x-a.x,dy=b.y-a.y,dz=b.z-a.z,d=Math.sqrt(dx*dx+dy*dy+dz*dz)||.01,f=.004/(d*d);
+    if(d<.3)f*=4;a.vx-=dx/d*f;a.vy-=dy/d*f;a.vz-=dz/d*f;b.vx+=dx/d*f;b.vy+=dy/d*f;b.vz+=dz/d*f;
+  }
+  const vE=edgesData.filter(e=>visibleNodes.has(e.from)&&visibleNodes.has(e.to));
+  for(const e of vE){let dx=e.target.x-e.source.x,dy=e.target.y-e.source.y,dz=e.target.z-e.source.z,d=Math.sqrt(dx*dx+dy*dy+dz*dz)||.01,f=(d-.7)*.002;
+    e.source.vx+=dx/d*f;e.source.vy+=dy/d*f;e.source.vz+=dz/d*f;e.target.vx-=dx/d*f;e.target.vy-=dy/d*f;e.target.vz-=dz/d*f;
+  }
+  for(const n of vis){if(n===dragNode)continue;n.vx*=.88;n.vy*=.88;n.vz*=.88;n.x+=n.vx;n.y+=n.vy;n.z+=n.vz}
+}
+
+function draw3D(){
+  ctx.clearRect(0,0,W,H);time++;
+  if(autoRotate&&!mouseDown&&!dragNode)rotY+=.003;
+  const proj=nodes3d.filter(n=>visibleNodes.has(n.id)).map(n=>{const p=project(n.x,n.y,n.z);return{node:n,...p}}).sort((a,b)=>a.z-b.z);
+  const vE=edgesData.filter(e=>visibleNodes.has(e.from)&&visibleNodes.has(e.to));
+  // Edges
+  for(const e of vE){
+    const sp=project(e.source.x,e.source.y,e.source.z),tp=project(e.target.x,e.target.y,e.target.z);
+    const hl=selectedNode&&(e.from===selectedNode.id||e.to===selectedNode.id);
+    ctx.beginPath();ctx.moveTo(sp.x,sp.y);ctx.lineTo(tp.x,tp.y);
+    ctx.strokeStyle=hl?COLORS[e.source.type]:'#ffffff';ctx.globalAlpha=hl?.4:.06;ctx.lineWidth=hl?2:.8;ctx.stroke();ctx.globalAlpha=1;
+    if(hl&&e.label){const mx=(sp.x+tp.x)/2,my=(sp.y+tp.y)/2;ctx.font='10px system-ui';ctx.fillStyle='rgba(255,255,255,.4)';ctx.textAlign='center';ctx.fillText(e.label,mx,my-6)}
+  }
+  // Nodes
+  for(const p of proj){
+    const n=p.node,r=n.baseR*p.scale,color=COLORS[n.type],glow=GLOW[n.type];
+    const isSel=selectedNode&&selectedNode.id===n.id,isConn=selectedNode&&edgesData.some(e=>(e.from===selectedNode.id&&e.to===n.id)||(e.to===selectedNode.id&&e.from===n.id));
+    const dim=selectedNode&&!isSel&&!isConn,pulse=.85+.15*Math.sin(time*.04+n.pp);
+    if(!dim){const gr=r*(isSel?3.5:2)*pulse,g=ctx.createRadialGradient(p.x,p.y,r*.5,p.x,p.y,gr);
+      g.addColorStop(0,`rgba(${glow},${isSel?.3:.12})`);g.addColorStop(.5,`rgba(${glow},${isSel?.08:.03})`);g.addColorStop(1,`rgba(${glow},0)`);
+      ctx.beginPath();ctx.arc(p.x,p.y,gr,0,Math.PI*2);ctx.fillStyle=g;ctx.fill()}
+    if(isSel){ctx.beginPath();ctx.arc(p.x,p.y,r+6*pulse,0,Math.PI*2);ctx.strokeStyle=`rgba(${glow},.3)`;ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.lineDashOffset=-time*.5;ctx.stroke();ctx.setLineDash([])}
+    const sg=ctx.createRadialGradient(p.x-r*.25,p.y-r*.25,r*.1,p.x,p.y,r);
+    sg.addColorStop(0,dim?'#333':lighten(color,40));sg.addColorStop(.7,dim?'#1a1a1a':color);sg.addColorStop(1,dim?'#111':darken(color,30));
+    ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fillStyle=sg;ctx.globalAlpha=dim?.25:1;ctx.fill();ctx.globalAlpha=1;
+    if(!dim){const sp=ctx.createRadialGradient(p.x-r*.3,p.y-r*.3,0,p.x-r*.3,p.y-r*.3,r*.6);sp.addColorStop(0,'rgba(255,255,255,.35)');sp.addColorStop(1,'rgba(255,255,255,0)');ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fillStyle=sp;ctx.fill()}
+    if(n.gate&&!dim){ctx.beginPath();ctx.arc(p.x+r*.7,p.y-r*.7,4*p.scale,0,Math.PI*2);ctx.fillStyle='#ffd700';ctx.fill();ctx.strokeStyle='#0a0b1a';ctx.lineWidth=1.5;ctx.stroke()}
+    const hc=edgesData.filter(e=>(e.from===n.id&&!visibleNodes.has(e.to))||(e.to===n.id&&!visibleNodes.has(e.from))).length;
+    if(hc>0&&!dim){const bx=p.x+r,by=p.y+r*.6,br=7*p.scale;ctx.beginPath();ctx.arc(bx,by,br,0,Math.PI*2);ctx.fillStyle='rgba(10,11,26,.9)';ctx.fill();ctx.strokeStyle=`rgba(${glow},.6)`;ctx.lineWidth=1;ctx.stroke();ctx.font=`bold ${Math.max(8,9*p.scale)}px system-ui`;ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('+'+hc,bx,by)}
+    if(!dim||isSel||isConn){ctx.font=`${isSel?'bold ':''}${Math.max(10,12*p.scale)}px system-ui`;ctx.fillStyle=dim?'#444':`rgba(255,255,255,${.6+.4*p.scale})`;ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(n.label,p.x,p.y+r+6)}
+  }
+}
+
+function lighten(h,p){const n=parseInt(h.slice(1),16);return`rgb(${Math.min(255,(n>>16)+p)},${Math.min(255,((n>>8)&0xff)+p)},${Math.min(255,(n&0xff)+p)})`}
+function darken(h,p){const n=parseInt(h.slice(1),16);return`rgb(${Math.max(0,(n>>16)-p)},${Math.max(0,((n>>8)&0xff)-p)},${Math.max(0,(n&0xff)-p)})`}
+
+function animate(){simulate3D();drawStars();draw3D();requestAnimationFrame(animate)}
+
+// ═══════════════════════════════════════════════════════
+// INTERACTION
+// ═══════════════════════════════════════════════════════
+function getNodeAt(mx,my){
+  return nodes3d.filter(n=>visibleNodes.has(n.id)).map(n=>{const p=project(n.x,n.y,n.z);return{node:n,...p}}).sort((a,b)=>b.z-a.z)
+    .find(p=>{const r=p.node.baseR*p.scale,dx=mx-p.x,dy=my-p.y;return dx*dx+dy*dy<(r+6)*(r+6)})?.node||null;
+}
+canvas.addEventListener('mousedown',e=>{const n=getNodeAt(e.offsetX,e.offsetY);if(n){expandNode(n);selectNode(n)}else{mouseDown=true;lastMX=e.offsetX;lastMY=e.offsetY;autoRotate=false}});
+canvas.addEventListener('mousemove',e=>{if(mouseDown){rotY+=(e.offsetX-lastMX)*.005;rotX+=(e.offsetY-lastMY)*.005;rotX=Math.max(-1.2,Math.min(1.2,rotX));lastMX=e.offsetX;lastMY=e.offsetY}else{hoveredNode=getNodeAt(e.offsetX,e.offsetY);canvas.style.cursor=hoveredNode?'pointer':'grab'}});
+canvas.addEventListener('mouseup',()=>{mouseDown=false});
+canvas.addEventListener('mouseleave',()=>{mouseDown=false});
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoom3d*=e.deltaY>0?.92:1.08;zoom3d=Math.max(.4,Math.min(3,zoom3d))});
+canvas.addEventListener('dblclick',()=>{autoRotate=!autoRotate});
+
+function expandNode(n){
+  for(const e of edgesData){
+    if(e.from===n.id&&!visibleNodes.has(e.to)){visibleNodes.add(e.to);const t=nodes3d.find(x=>x.id===e.to);if(t){t.x=n.x+(Math.random()-.5)*.3;t.y=n.y+(Math.random()-.5)*.3;t.z=n.z+(Math.random()-.5)*.3}}
+    if(e.to===n.id&&!visibleNodes.has(e.from)){visibleNodes.add(e.from);const s=nodes3d.find(x=>x.id===e.from);if(s){s.x=n.x+(Math.random()-.5)*.3;s.y=n.y+(Math.random()-.5)*.3;s.z=n.z+(Math.random()-.5)*.3}}
+  }
+  updateSidebar();updateCounts();buildDashboard();
+}
+function selectNode(n){selectedNode=n;showDetail(n);document.querySelectorAll('.node-item').forEach(el=>el.classList.toggle('active',el.dataset.id===n.id));buildDashboard()}
+function showDetail(node){
+  const panel=document.getElementById('detail'),content=document.getElementById('detail-content');
+  const conns=edgesData.filter(e=>e.from===node.id||e.to===node.id);
+  let h=`<div class="card"><div class="card-header"><h2>${node.label}</h2><span class="node-badge badge-${node.type}">${node.type}</span></div><p class="card-desc">${node.desc}</p></div>`;
+  if(node.model)h+=`<div class="card"><h3>Properties</h3><div class="stat-grid"><div class="stat-item"><div class="stat-label">Model</div><div class="stat-value">${node.model}</div></div><div class="stat-item"><div class="stat-label">Tier</div><div class="stat-value">${node.tier}</div></div><div class="stat-item"><div class="stat-label">Gate</div><div class="stat-value">${node.gate?'Human':'Auto'}</div></div><div class="stat-item"><div class="stat-label">Cost</div><div class="stat-value">${node.cost||'-'}</div></div></div></div>`;
+  h+=`<div class="card"><h3>Connections (${conns.length})</h3>`;
+  for(const e of conns){const oid=e.from===node.id?e.to:e.from,o=nodes3d.find(n=>n.id===oid),v=visibleNodes.has(oid);
+    h+=`<div class="conn-item ${v?'':'hidden'}" onclick="expandAndSelect('${oid}')"><span class="arrow">${e.from===node.id?'->':'<-'}</span><span>${o?o.label:oid}</span><span class="conn-label">${e.label||''}</span></div>`}
+  h+='</div>';content.innerHTML=h;panel.classList.add('visible');
+}
+function closeDetail(){document.getElementById('detail').classList.remove('visible');selectedNode=null;buildDashboard()}
+function expandAndSelect(id){const n=nodes3d.find(x=>x.id===id);if(!n)return;visibleNodes.add(id);expandNode(n);selectNode(n)}
+function filterType(type,btn){
+  document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');
+  if(type==='all')visibleNodes=new Set(nodes3d.filter(n=>n.type==='agent').map(n=>n.id));
+  else{visibleNodes=new Set(nodes3d.filter(n=>n.type===type).map(n=>n.id));
+    for(const e of edgesData){if(visibleNodes.has(e.from)){const t=nodes3d.find(n=>n.id===e.to);if(t&&t.type==='agent')visibleNodes.add(e.to)}
+      if(visibleNodes.has(e.to)){const s=nodes3d.find(n=>n.id===e.from);if(s&&s.type==='agent')visibleNodes.add(e.from)}}}
+  selectedNode=null;closeDetail();updateSidebar();updateCounts();buildDashboard();
+}
+function resetGraph(btn){
+  visibleNodes=new Set(nodes3d.filter(n=>n.type==='agent').map(n=>n.id));rotX=.3;rotY=0;zoom3d=1;autoRotate=true;
+  selectedNode=null;closeDetail();updateSidebar();updateCounts();buildDashboard();
+  document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));document.querySelector('.ctrl-btn').classList.add('active');
+}
+function updateSidebar(){
+  const list=document.getElementById('node-list'),vis=nodes3d.filter(n=>visibleNodes.has(n.id));
+  vis.sort((a,b)=>a.type.localeCompare(b.type)||a.label.localeCompare(b.label));
+  let h='',lt='';for(const n of vis){if(n.type!==lt){h+=`<div class="section-label">${n.type}s</div>`;lt=n.type}
+    h+=`<div class="node-item ${selectedNode?.id===n.id?'active':''}" data-id="${n.id}" onclick="expandAndSelect('${n.id}')"><span class="node-badge badge-${n.type}">${n.type}</span>${n.label}</div>`}
+  list.innerHTML=h;
+}
+function updateCounts(){document.getElementById('node-count')&&(document.getElementById('node-count').textContent=visibleNodes.size)}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════
+function toggleDashboard(){
+  dashOpen=!dashOpen;
+  document.getElementById('dashboard').classList.toggle('open',dashOpen);
+  document.getElementById('dash-toggle').classList.toggle('flipped',dashOpen);
+  if(dashOpen){buildDashboard();setTimeout(resize,500)}else setTimeout(resize,500);
+}
+
+function buildDashboard(){
+  const dc=document.getElementById('dash-content');
+  const vis=nodes3d.filter(n=>visibleNodes.has(n.id));
+  const visE=edgesData.filter(e=>visibleNodes.has(e.from)&&visibleNodes.has(e.to));
+  const byType={};vis.forEach(n=>{byType[n.type]=(byType[n.type]||0)+1});
+  const agents=vis.filter(n=>n.type==='agent');
+  const freeAgents=agents.filter(a=>a.cost==='free').length;
+  const sessionAgents=agents.filter(a=>a.cost==='session').length;
+  const totalNodes=NODES.length,totalEdges=EDGES.length;
+
+  dc.innerHTML=`
+    <!-- Card 1: Overview -->
+    <div class="dash-card">
+      <div class="dash-title"><span class="dash-icon">&#9673;</span> Graph Overview</div>
+      <div class="dash-big">${vis.length}<span style="font-size:14px;color:#555"> / ${totalNodes}</span></div>
+      <div class="dash-sub">nodes visible</div>
+      <div class="dash-bar-group">
+        ${Object.entries(byType).map(([t,c])=>`<div class="dash-bar-row">
+          <span class="dash-bar-label">${t}</span>
+          <div class="dash-bar-track"><div class="dash-bar-fill" style="width:${c/vis.length*100}%;background:${COLORS[t]}"></div></div>
+          <span class="dash-bar-val">${c}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Card 2: Agents -->
+    <div class="dash-card">
+      <div class="dash-title"><span class="dash-icon">&#9733;</span> Agent Roster</div>
+      <div class="dash-big">${agents.length}<span style="font-size:14px;color:#555"> agents</span></div>
+      <div class="dash-sub">${freeAgents} free (Gemini) / ${sessionAgents} session (Claude)</div>
+      <div class="dash-bar-group">
+        <div class="dash-bar-row"><span class="dash-bar-label">Gemini</span><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${agents.length?freeAgents/agents.length*100:0}%;background:#50c878"></div></div><span class="dash-bar-val">${freeAgents}</span></div>
+        <div class="dash-bar-row"><span class="dash-bar-label">Claude</span><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${agents.length?sessionAgents/agents.length*100:0}%;background:#ff6b4a"></div></div><span class="dash-bar-val">${sessionAgents}</span></div>
+        <div class="dash-bar-row"><span class="dash-bar-label">Gates</span><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${agents.length?agents.filter(a=>a.gate).length/agents.length*100:0}%;background:#ffd700"></div></div><span class="dash-bar-val">${agents.filter(a=>a.gate).length}</span></div>
+      </div>
+    </div>
+
+    <!-- Card 3: Coverage -->
+    <div class="dash-card">
+      <div class="dash-title"><span class="dash-icon">&#9635;</span> Module Coverage</div>
+      <div class="dash-big">${byType.module||0}<span style="font-size:14px;color:#555"> / ${NODES.filter(n=>n.type==='module').length}</span></div>
+      <div class="dash-sub">modules visible</div>
+      <div class="dash-bar-group">
+        <div class="dash-bar-row"><span class="dash-bar-label">Services</span><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${(byType.service||0)/NODES.filter(n=>n.type==='service').length*100}%;background:#50c878"></div></div><span class="dash-bar-val">${byType.service||0}/${NODES.filter(n=>n.type==='service').length}</span></div>
+        <div class="dash-bar-row"><span class="dash-bar-label">Rules</span><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${(byType.rule||0)/NODES.filter(n=>n.type==='rule').length*100}%;background:#ff4a6b"></div></div><span class="dash-bar-val">${byType.rule||0}/${NODES.filter(n=>n.type==='rule').length}</span></div>
+        <div class="dash-bar-row"><span class="dash-bar-label">Docs</span><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${(byType.doc||0)/NODES.filter(n=>n.type==='doc').length*100}%;background:#ffd700"></div></div><span class="dash-bar-val">${byType.doc||0}/${NODES.filter(n=>n.type==='doc').length}</span></div>
+        <div class="dash-bar-row"><span class="dash-bar-label">Edges</span><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${visE.length/totalEdges*100}%;background:#4a9eff"></div></div><span class="dash-bar-val">${visE.length}/${totalEdges}</span></div>
+      </div>
+    </div>
+
+    <!-- Card 4: Pipeline -->
+    <div class="dash-card">
+      <div class="dash-title"><span class="dash-icon">&#9654;</span> Pipeline Flow</div>
+      <div class="dash-sub" style="margin-top:4px">DOC TO CODE workflow</div>
+      <div class="pipe-flow">
+        <span class="pipe-node t3">PM</span><span class="pipe-arrow">-></span>
+        <span class="pipe-node t1">CTO</span><span class="pipe-arrow">-></span>
+        <span class="pipe-node t2">BE</span><span class="pipe-arrow">||</span>
+        <span class="pipe-node t2">FE</span><span class="pipe-arrow">-></span>
+        <span class="pipe-node t3">QA</span><span class="pipe-arrow">-></span>
+        <span class="pipe-node t1">TL</span><span class="pipe-arrow">-></span>
+        <span class="pipe-node t3">DevOps</span>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#50c878"></span><span style="font-size:10px;color:#666">Free (Gemini)</span></div>
+        <div style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff6b4a"></span><span style="font-size:10px;color:#666">Session (Claude)</span></div>
+        <div style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#4a9eff"></span><span style="font-size:10px;color:#666">Boilerplate</span></div>
+      </div>
+    </div>
+
+    <!-- Card 5: Selected Node -->
+    <div class="dash-card">
+      <div class="dash-title"><span class="dash-icon">&#9881;</span> ${selectedNode?'Selected':'System Info'}</div>
+      ${selectedNode?`
+        <div class="dash-big" style="font-size:22px">${selectedNode.label}</div>
+        <div class="dash-sub">${selectedNode.type} ${selectedNode.model?'/ '+selectedNode.model:''}</div>
+        <div class="dash-bar-group">
+          <div class="dash-bar-row"><span class="dash-bar-label">Links</span><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${Math.min(100,edgesData.filter(e=>e.from===selectedNode.id||e.to===selectedNode.id).length/10*100)}%;background:${COLORS[selectedNode.type]}"></div></div><span class="dash-bar-val">${edgesData.filter(e=>e.from===selectedNode.id||e.to===selectedNode.id).length}</span></div>
+          <div class="dash-bar-row"><span class="dash-bar-label">Visible</span><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${edgesData.filter(e=>(e.from===selectedNode.id||e.to===selectedNode.id)&&visibleNodes.has(e.from)&&visibleNodes.has(e.to)).length/Math.max(1,edgesData.filter(e=>e.from===selectedNode.id||e.to===selectedNode.id).length)*100}%;background:#4a9eff"></div></div><span class="dash-bar-val">${edgesData.filter(e=>(e.from===selectedNode.id||e.to===selectedNode.id)&&visibleNodes.has(e.from)&&visibleNodes.has(e.to)).length}</span></div>
+        </div>
+      `:`
+        <div class="dash-big" style="font-size:20px">co-dev</div>
+        <div class="dash-sub">v3.1 / ${NODES.filter(n=>n.type==='agent').length} agents / ${NODES.filter(n=>n.type==='module').length} modules</div>
+        <div class="dash-bar-group">
+          <div class="dash-bar-row"><span class="dash-bar-label">Prompts</span><div class="dash-bar-track"><div class="dash-bar-fill" style="width:88%;background:#c084fc"></div></div><span class="dash-bar-val">8</span></div>
+          <div class="dash-bar-row"><span class="dash-bar-label">Gotchas</span><div class="dash-bar-track"><div class="dash-bar-fill" style="width:100%;background:#ff4a6b"></div></div><span class="dash-bar-val">30</span></div>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+window.addEventListener('resize',resize);
+init3D();
+</script>
+</body>
+</html>

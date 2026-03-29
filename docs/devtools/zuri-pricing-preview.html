@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zuri Pricing - ราคาแพ็คเกจ</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== OPTION D — ROYAL THAI (NAVY + GOLD) — 60-30-10 RULE — APPROVED 2026-03-29 ===== */
+:root {
+  /* 60% — Neutrals */
+  --bg-primary:   #F5F8FB;    /* cool white — main background */
+  --bg-surface:   #FFF8F0;    /* warm white — cards, panels */
+  --bg-border:    #E8ECF1;    /* cool white border */
+
+  /* 30% — Secondary */
+  --text-primary:   #101828;  /* deep navy — headings, nav */
+  --text-body:      #1A1A1A;  /* off-black — body text */
+  --text-secondary: #2D3748;  /* mid dark — subtext */
+
+  /* 10% — Accent */
+  --accent:       #D4A017;    /* saffron gold — CTAs only */
+  --accent-hover: #F0C040;
+  --accent-dark:  #9A7410;
+
+  /* Semantic */
+  --destructive:  #DC2626;
+  --success:      #16A34A;
+  --warning:      #D97706;
+
+  /* Legacy / alias */
+  --navy:         #101828;
+  --navy-dark:    #0A0F1A;
+  --gold:         #D4A017;
+  --gold-light:   #F0C040;
+  --gold-dark:    #9A7410;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'IBM Plex Sans Thai', 'Prompt', 'Noto Sans Thai', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ===== UTILITY ===== */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.fade-in { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+.section-title { font-size: 2rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; color: var(--text-primary); }
+.section-subtitle { font-size: 1.1rem; color: var(--text-secondary); text-align: center; margin-bottom: 3rem; }
+
+/* ===== HERO ===== */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(212,160,23,0.15) 0%, transparent 70%);
+  top: -100px; right: -100px;
+  border-radius: 50%;
+  animation: float 8s ease-in-out infinite;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(212,160,23,0.08) 0%, transparent 70%);
+  bottom: -50px; left: -50px;
+  border-radius: 50%;
+  animation: float 10s ease-in-out infinite reverse;
+}
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -30px) scale(1.05); }
+}
+.hero-content { position: relative; z-index: 1; max-width: 700px; }
+.hero-logo { margin-bottom: 2rem; }
+.hero-logo .logo-main {
+  font-size: 3.5rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-logo .logo-thai { font-size: 1.2rem; color: var(--gold-light); font-weight: 500; display: block; margin-top: -8px; }
+.hero h1 { font-size: 2.5rem; font-weight: 700; line-height: 1.3; margin-bottom: 1rem; color: var(--bg-primary); }
+.hero p { font-size: 1.2rem; color: var(--bg-border); margin-bottom: 2.5rem; }
+.hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 14px 32px; border-radius: 12px; font-family: inherit;
+  font-size: 1.05rem; font-weight: 600; cursor: pointer;
+  transition: all 0.3s ease; border: 2px solid transparent; text-decoration: none;
+}
+.btn-primary { background: var(--accent); color: var(--text-primary); border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212,160,23,0.45); }
+.btn-secondary { background: transparent; color: var(--bg-primary); border-color: var(--bg-border); }
+.btn-secondary:hover { background: rgba(245,248,251,0.15); border-color: var(--bg-primary); }
+
+/* ===== FEATURES ===== */
+.features { padding: 80px 0; background: var(--bg-primary); }
+.features-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+}
+.feature-card {
+  background: var(--bg-surface); border-radius: 16px; padding: 32px 24px;
+  text-align: center; transition: all 0.3s ease;
+  border: 1px solid var(--bg-border);
+}
+.feature-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(16,24,40,0.1); border-color: var(--text-primary); }
+.feature-icon { font-size: 2.5rem; margin-bottom: 16px; }
+.feature-card h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+.feature-card p { font-size: 0.9rem; color: var(--text-secondary); }
+
+/* ===== PRICING ===== */
+.pricing { padding: 80px 0; background: var(--bg-surface); }
+.toggle-wrap { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 3rem; }
+.toggle-label { font-size: 0.95rem; color: var(--text-secondary); font-weight: 500; cursor: pointer; }
+.toggle-label.active { color: var(--text-primary); font-weight: 600; }
+.toggle-switch {
+  width: 56px; height: 30px; background: var(--bg-border); border-radius: 15px;
+  position: relative; cursor: pointer; transition: background 0.3s;
+}
+.toggle-switch.active { background: var(--accent); }
+.toggle-switch::after {
+  content: ''; position: absolute; width: 24px; height: 24px;
+  background: #fff; border-radius: 50%; top: 3px; left: 3px;
+  transition: transform 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.toggle-switch.active::after { transform: translateX(26px); }
+.save-badge {
+  background: var(--accent); color: var(--text-primary); font-size: 0.8rem;
+  padding: 4px 10px; border-radius: 20px; font-weight: 600;
+}
+
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+  align-items: start;
+}
+.pricing-card {
+  background: var(--bg-surface); border-radius: 20px; padding: 32px 28px;
+  border: 2px solid var(--bg-border); transition: all 0.3s ease;
+  position: relative;
+}
+.pricing-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(16,24,40,0.1); }
+.pricing-card.recommended {
+  border-color: var(--accent);
+  border-width: 2px;
+  transform: scale(1.04);
+  box-shadow: 0 8px 40px rgba(212,160,23,0.25);
+  z-index: 2;
+  animation: goldGlow 3s ease-in-out infinite;
+}
+@keyframes goldGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(212,160,23,0.35), 0 0 40px rgba(212,160,23,0.15); }
+  50% { box-shadow: 0 0 30px rgba(212,160,23,0.6), 0 0 60px rgba(212,160,23,0.25); }
+}
+.pricing-card.recommended:hover { transform: scale(1.04) translateY(-4px); }
+.pricing-badge {
+  display: inline-block; background: var(--accent);
+  color: var(--text-primary); font-size: 0.8rem; font-weight: 700;
+  padding: 4px 14px; border-radius: 20px; margin-bottom: 12px;
+}
+.pricing-tier-name { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; color: var(--text-primary); }
+.pricing-desc { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px; }
+.pricing-price { margin-bottom: 24px; }
+.pricing-amount { font-size: 2.8rem; font-weight: 800; color: var(--text-primary); }
+.pricing-period { font-size: 0.9rem; color: var(--text-secondary); }
+.pricing-original { text-decoration: line-through; color: var(--text-secondary); font-size: 1rem; margin-right: 4px; }
+.pricing-features { list-style: none; margin-bottom: 28px; }
+.pricing-features li {
+  padding: 6px 0; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 8px;
+  color: var(--text-body);
+}
+.pricing-features li .check { color: var(--success); flex-shrink: 0; font-weight: 700; }
+.pricing-features li .cross { color: var(--bg-border); flex-shrink: 0; }
+.pricing-features li.disabled { color: var(--text-secondary); }
+.pricing-btn {
+  width: 100%; padding: 14px; border-radius: 12px; font-family: inherit;
+  font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s;
+  border: 2px solid transparent;
+}
+/* Free tier */
+.pricing-btn-outline { background: transparent; border-color: var(--bg-border); color: var(--text-secondary); }
+.pricing-btn-outline:hover { border-color: var(--text-primary); color: var(--text-primary); background: var(--bg-primary); }
+/* Starter tier */
+.pricing-btn-navy { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
+.pricing-btn-navy:hover { background: var(--text-secondary); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16,24,40,0.35); }
+/* Pro tier */
+.pricing-btn-gold { background: var(--accent); color: var(--text-primary); border-color: var(--accent); font-size: 1.05rem; padding: 16px; font-weight: 700; }
+.pricing-btn-gold:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,160,23,0.5); }
+/* Business tier */
+.pricing-btn-dark { background: var(--navy-dark); color: var(--bg-primary); border-color: var(--navy-dark); }
+.pricing-btn-dark:hover { background: var(--text-primary); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16,24,40,0.4); }
+
+/* Tier accent bars */
+.tier-accent { height: 4px; border-radius: 4px; margin-bottom: 20px; }
+.tier-gray   { background: var(--bg-border); }
+.tier-blue   { background: var(--text-primary); }
+.tier-gold   { background: linear-gradient(90deg, var(--accent), var(--accent-hover)); }
+.tier-dark   { background: linear-gradient(90deg, var(--navy-dark), var(--text-primary)); }
+
+/* ===== ADD-ONS ===== */
+.addons { padding: 80px 0; background: var(--bg-primary); }
+.addons-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.addon-card.featured { border-color: var(--accent); background: linear-gradient(135deg, #FFF8F0, #FFFDF5); }
+.addon-card.featured:hover { border-color: var(--accent-dark); box-shadow: 0 12px 40px rgba(212,160,23,0.2); }
+.addon-badge { display: inline-block; background: var(--accent); color: #fff; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-bottom: 6px; letter-spacing: 0.5px; }
+.addon-card {
+  background: var(--bg-surface); border-radius: 16px; padding: 28px;
+  border: 1px solid var(--bg-border); transition: all 0.3s;
+  display: flex; gap: 20px; align-items: flex-start;
+}
+.addon-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(16,24,40,0.1); border-color: var(--text-primary); }
+.addon-icon { font-size: 2rem; flex-shrink: 0; }
+.addon-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+.addon-card .addon-price { color: var(--accent-dark); font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; }
+.addon-card p { font-size: 0.85rem; color: var(--text-secondary); }
+
+/* ===== COMPARISON ===== */
+.comparison { padding: 80px 0; background: var(--bg-surface); }
+.comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 900px; margin: 0 auto; }
+.comparison-card {
+  background: var(--bg-primary); border-radius: 20px; padding: 36px; position: relative;
+}
+.comparison-card.old { border: 2px solid var(--bg-border); }
+.comparison-card.zuri { border: 2px solid var(--text-primary); box-shadow: 0 8px 30px rgba(16,24,40,0.12); }
+.comparison-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; color: var(--text-primary); }
+.comparison-list { list-style: none; }
+.comparison-list li { padding: 8px 0; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--bg-border); }
+.comparison-list li:last-child { border-bottom: none; }
+.strike { text-decoration: line-through; color: var(--text-secondary); }
+.comparison-total {
+  margin-top: 20px; padding-top: 16px; border-top: 2px solid var(--bg-border);
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 1.3rem; font-weight: 700;
+}
+.comparison-card.zuri .comparison-total { color: var(--text-primary); }
+.savings-banner {
+  text-align: center; margin-top: 40px; padding: 24px;
+  background: linear-gradient(135deg, var(--navy-dark), var(--text-primary));
+  border-radius: 16px; color: var(--bg-primary);
+  border: 2px solid var(--accent);
+}
+.savings-banner .savings-amount { font-size: 2.5rem; font-weight: 800; color: var(--accent-hover); }
+.savings-banner .savings-label { font-size: 1rem; opacity: 0.9; }
+
+/* ===== SOCIAL PROOF ===== */
+.social-proof { padding: 80px 0; background: var(--bg-primary); }
+.testimonial {
+  max-width: 700px; margin: 0 auto; text-align: center;
+  background: var(--bg-surface); border-radius: 20px; padding: 48px 40px;
+  border: 1px solid var(--bg-border); position: relative;
+}
+.testimonial::before { content: '\201C'; font-size: 6rem; color: var(--accent-hover); position: absolute; top: 10px; left: 30px; line-height: 1; opacity: 0.4; }
+.testimonial blockquote { font-size: 1.15rem; font-style: italic; color: var(--text-body); margin-bottom: 20px; position: relative; z-index: 1; }
+.testimonial cite { font-style: normal; font-weight: 600; color: var(--text-primary); }
+.testimonial .cite-role { font-size: 0.85rem; color: var(--text-secondary); }
+.badges { display: flex; justify-content: center; gap: 24px; margin-top: 40px; flex-wrap: wrap; }
+.badge {
+  display: flex; align-items: center; gap: 8px; background: var(--bg-surface);
+  padding: 12px 24px; border-radius: 12px; border: 1px solid var(--bg-border);
+  font-size: 0.9rem; font-weight: 500; color: var(--text-secondary);
+}
+.badge-icon { font-size: 1.5rem; }
+
+/* ===== FAQ ===== */
+.faq { padding: 80px 0; background: var(--bg-surface); }
+.faq-list { max-width: 700px; margin: 0 auto; }
+.faq-item { margin-bottom: 12px; }
+.faq-question {
+  width: 100%; padding: 20px 24px; background: var(--bg-primary);
+  border: 1px solid var(--bg-border); border-radius: 12px;
+  font-family: inherit; font-size: 1rem; font-weight: 600;
+  text-align: left; cursor: pointer; transition: all 0.3s;
+  display: flex; justify-content: space-between; align-items: center;
+  color: var(--text-primary);
+}
+.faq-question:hover { border-color: var(--text-primary); }
+.faq-question.open { border-color: var(--accent); border-radius: 12px 12px 0 0; background: var(--bg-border); }
+.faq-arrow { transition: transform 0.3s; font-size: 1.2rem; color: var(--text-secondary); }
+.faq-question.open .faq-arrow { transform: rotate(180deg); color: var(--accent); }
+.faq-answer {
+  max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s ease;
+  background: var(--bg-primary); border: 1px solid var(--bg-border); border-top: none;
+  border-radius: 0 0 12px 12px; padding: 0 24px;
+  font-size: 0.95rem; color: var(--text-body); line-height: 1.7;
+}
+.faq-answer.open { max-height: 200px; padding: 20px 24px; }
+
+/* ===== FOOTER CTA ===== */
+.footer-cta {
+  padding: 100px 0; text-align: center;
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--text-primary) 100%);
+  color: var(--bg-primary);
+}
+.footer-cta h2 { font-size: 2.2rem; font-weight: 700; margin-bottom: 12px; color: var(--bg-primary); }
+.footer-cta p { font-size: 1.1rem; opacity: 0.85; margin-bottom: 32px; color: var(--bg-border); }
+.btn-white { background: var(--accent); color: var(--text-primary); font-weight: 700; border-color: var(--accent); }
+.btn-white:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212,160,23,0.5); }
+
+/* ===== FOOTER ===== */
+footer {
+  padding: 24px 0; text-align: center;
+  background: var(--navy-dark); color: var(--bg-border); font-size: 0.85rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+  .pricing-card.recommended { transform: scale(1.02); }
+  .pricing-card.recommended:hover { transform: scale(1.02) translateY(-4px); }
+}
+@media (max-width: 768px) {
+  .hero h1 { font-size: 1.8rem; }
+  .hero p { font-size: 1rem; }
+  .section-title { font-size: 1.5rem; }
+  .features-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+  .pricing-card.recommended { transform: none; animation: goldGlow 3s ease-in-out infinite; }
+  .pricing-card.recommended:hover { transform: translateY(-4px); }
+  .addons-grid { grid-template-columns: 1fr; }
+  .comparison-grid { grid-template-columns: 1fr; }
+  .hero-logo .logo-main { font-size: 2.5rem; }
+}
+@media (max-width: 480px) {
+  .features-grid { grid-template-columns: 1fr; }
+  .container { padding: 0 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-logo">
+      <span class="logo-main">Zuri</span>
+      <span class="logo-thai">ซูริ</span>
+    </div>
+    <h1>ทุกอย่างที่ธุรกิจบริการต้องการ ในที่เดียว</h1>
+    <p>CRM + Inbox + POS + AI — เริ่มใช้ฟรี ไม่ต้องผูกบัตร</p>
+    <div class="hero-buttons">
+      <a href="#pricing" class="btn btn-primary">เริ่มใช้ฟรี</a>
+      <a href="#pricing" class="btn btn-secondary">ดูราคา</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="features">
+  <div class="container">
+    <h2 class="section-title fade-in">ทำไมต้อง Zuri?</h2>
+    <p class="section-subtitle fade-in">เครื่องมือครบ จบในที่เดียว</p>
+    <div class="features-grid">
+      <div class="feature-card fade-in">
+        <div class="feature-icon">💬</div>
+        <h3>Unified Inbox</h3>
+        <p>รวม LINE + Facebook ในหน้าเดียว</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">👥</div>
+        <h3>CRM</h3>
+        <p>รู้จักลูกค้าทุกคน ทุกช่องทาง</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">💳</div>
+        <h3>POS</h3>
+        <p>ขายของได้ทันทีใน chat</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">🤖</div>
+        <h3>AI</h3>
+        <p>AI ช่วยตอบ ช่วยสรุป ช่วยขาย</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <h2 class="section-title fade-in">เลือกแพ็คเกจที่เหมาะกับธุรกิจคุณ</h2>
+    <p class="section-subtitle fade-in">เริ่มฟรี อัพเกรดเมื่อพร้อม</p>
+
+    <div class="toggle-wrap fade-in">
+      <span class="toggle-label active" id="label-monthly">รายเดือน</span>
+      <div class="toggle-switch" id="billing-toggle" onclick="toggleBilling()"></div>
+      <span class="toggle-label" id="label-annual">รายปี</span>
+      <span class="save-badge">ฟรี 2 เดือน</span>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- FREE -->
+      <div class="pricing-card fade-in">
+        <div class="tier-accent tier-gray"></div>
+        <div class="pricing-tier-name">Free</div>
+        <div class="pricing-desc">ลองใช้ดูก่อน</div>
+        <div class="pricing-price">
+          <span class="pricing-amount">฿0</span>
+          <span class="pricing-period">/เดือน</span>
+        </div>
+        <ul class="pricing-features">
+          <li><span class="check">&#10003;</span> Inbox (FB+LINE) — 1 user, 50 conv/mo</li>
+          <li><span class="check">&#10003;</span> CRM พื้นฐาน — 100 contacts</li>
+          <li><span class="check">&#10003;</span> Task Management</li>
+          <li class="disabled"><span class="cross">&#10005;</span> POS</li>
+          <li class="disabled"><span class="cross">&#10005;</span> AI features</li>
+        </ul>
+        <button class="pricing-btn pricing-btn-outline">เริ่มฟรี — ไม่ต้องผูกบัตร</button>
+      </div>
+
+      <!-- STARTER -->
+      <div class="pricing-card fade-in">
+        <div class="tier-accent tier-blue"></div>
+        <div class="pricing-tier-name">Starter</div>
+        <div class="pricing-desc">เริ่มขายจริงจัง</div>
+        <div class="pricing-price">
+          <span class="pricing-original annual-price" style="display:none">฿990</span>
+          <span class="pricing-amount" data-monthly="990" data-annual="825">฿<span class="price-value">990</span></span>
+          <span class="pricing-period">/เดือน</span>
+        </div>
+        <ul class="pricing-features">
+          <li><span class="check">&#10003;</span> Everything in Free</li>
+          <li><span class="check">&#10003;</span> CRM full — 1,000 contacts</li>
+          <li><span class="check">&#10003;</span> Quick Sale (in chat)</li>
+          <li><span class="check">&#10003;</span> 3 users, 500 conv/mo</li>
+          <li class="disabled"><span class="cross">&#10005;</span> Ads Analytics</li>
+          <li class="disabled"><span class="cross">&#10005;</span> AI features</li>
+        </ul>
+        <button class="pricing-btn pricing-btn-navy">เริ่มใช้งาน</button>
+      </div>
+
+      <!-- PRO (RECOMMENDED) -->
+      <div class="pricing-card recommended fade-in">
+        <div class="tier-accent tier-gold"></div>
+        <span class="pricing-badge">&#11088; แนะนำ</span>
+        <div class="pricing-tier-name">Pro</div>
+        <div class="pricing-desc">ขายได้มากขึ้นด้วย AI</div>
+        <div class="pricing-price">
+          <span class="pricing-original annual-price" style="display:none">฿2,990</span>
+          <span class="pricing-amount" data-monthly="2990" data-annual="2492">฿<span class="price-value">2,990</span></span>
+          <span class="pricing-period">/เดือน</span>
+        </div>
+        <ul class="pricing-features">
+          <li><span class="check">&#10003;</span> Everything in Starter</li>
+          <li><span class="check">&#10003;</span> Full POS</li>
+          <li><span class="check">&#10003;</span> Ads Analytics + ROAS</li>
+          <li><span class="check">&#10003;</span> AI Compose Reply (100/mo)</li>
+          <li><span class="check">&#10003;</span> Slip OCR</li>
+          <li><span class="check">&#10003;</span> LINE Push Notifications</li>
+          <li><span class="check">&#10003;</span> 10 users, 2,000 conv/mo</li>
+        </ul>
+        <button class="pricing-btn pricing-btn-gold">เริ่มใช้งาน Pro</button>
+      </div>
+
+      <!-- BUSINESS -->
+      <div class="pricing-card fade-in">
+        <div class="tier-accent tier-dark"></div>
+        <div class="pricing-tier-name">Business</div>
+        <div class="pricing-desc">ธุรกิจเต็มรูปแบบ</div>
+        <div class="pricing-price">
+          <span class="pricing-original annual-price" style="display:none">฿5,990</span>
+          <span class="pricing-amount" data-monthly="5990" data-annual="4992">฿<span class="price-value">5,990</span></span>
+          <span class="pricing-period">/เดือน</span>
+        </div>
+        <ul class="pricing-features">
+          <li><span class="check">&#10003;</span> Everything in Pro</li>
+          <li><span class="check">&#10003;</span> AI Daily Sales Brief</li>
+          <li><span class="check">&#10003;</span> AI Unlimited</li>
+          <li><span class="check">&#10003;</span> Unlimited users & conversations</li>
+          <li><span class="check">&#10003;</span> Reports + API access</li>
+          <li><span class="check">&#10003;</span> Priority support</li>
+        </ul>
+        <button class="pricing-btn pricing-btn-dark">ติดต่อทีมงาน</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ADD-ONS ===== -->
+<section class="addons">
+  <div class="container">
+    <h2 class="section-title fade-in">เพิ่มเติมสำหรับธุรกิจเฉพาะทาง</h2>
+    <p class="section-subtitle fade-in">เลือกเพิ่มได้ตามต้องการ</p>
+    <div class="addons-grid">
+      <div class="addon-card fade-in">
+        <div class="addon-icon">🍳</div>
+        <div>
+          <h3>Kitchen Ops</h3>
+          <div class="addon-price">+฿790/เดือน</div>
+          <p>จัดการสูตร วัตถุดิบ สต็อค</p>
+        </div>
+      </div>
+      <div class="addon-card fade-in">
+        <div class="addon-icon">🎓</div>
+        <div>
+          <h3>Enrollment</h3>
+          <div class="addon-price">+฿790/เดือน</div>
+          <p>จัดการคอร์ส ลงทะเบียน ใบรับรอง</p>
+        </div>
+      </div>
+      <div class="addon-card fade-in">
+        <div class="addon-icon">🤖</div>
+        <div>
+          <h3>AI Agent</h3>
+          <div class="addon-price">+฿990/เดือน</div>
+          <p>AI ตอบลูกค้าอัตโนมัติ 24/7</p>
+        </div>
+      </div>
+      <div class="addon-card featured fade-in">
+        <div class="addon-icon">✨</div>
+        <div>
+          <div class="addon-badge">NEW</div>
+          <h3>AI Starter</h3>
+          <div class="addon-price">+฿890/เดือน</div>
+          <p>Web chat — ถามข้อมูลธุรกิจด้วยภาษาธรรมชาติ สูงสุด 100 ครั้ง/เดือน</p>
+        </div>
+      </div>
+      <div class="addon-card featured fade-in">
+        <div class="addon-icon">🧠</div>
+        <div>
+          <div class="addon-badge">NEW</div>
+          <h3>AI Pro</h3>
+          <div class="addon-price">+฿1,290/เดือน</div>
+          <p>Web + LINE Bot — ถามข้อมูล + บันทึกข้อมูลฟรีฟอร์ม ไม่จำกัดจำนวนครั้ง</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== COMPARISON ===== -->
+<section class="comparison">
+  <div class="container">
+    <h2 class="section-title fade-in">เปรียบเทียบกับการใช้หลายเครื่องมือ</h2>
+    <p class="section-subtitle fade-in">Zuri รวมทุกอย่างไว้ในที่เดียว ประหยัดกว่าเยอะ</p>
+    <div class="comparison-grid">
+      <div class="comparison-card old fade-in">
+        <h3>แบบเดิม (9 เครื่องมือ)</h3>
+        <ul class="comparison-list">
+          <li><span>LINE OA Chat + CRM</span> <span class="strike">฿3,500</span></li>
+          <li><span>Facebook Inbox Tool</span> <span class="strike">฿2,000</span></li>
+          <li><span>POS Software</span> <span class="strike">฿2,500</span></li>
+          <li><span>CRM (Hubspot/Salesforce)</span> <span class="strike">฿5,000</span></li>
+          <li><span>Ads Dashboard</span> <span class="strike">฿3,000</span></li>
+          <li><span>AI Chatbot</span> <span class="strike">฿4,000</span></li>
+          <li><span>Kitchen Management</span> <span class="strike">฿2,500</span></li>
+          <li><span>Enrollment System</span> <span class="strike">฿3,000</span></li>
+          <li><span>Task Management</span> <span class="strike">฿2,600</span></li>
+        </ul>
+        <div class="comparison-total">
+          <span>รวม</span>
+          <span class="strike" style="text-decoration: line-through; color: #DC2626;">฿28,100</span>
+        </div>
+      </div>
+      <div class="comparison-card zuri fade-in">
+        <h3>Zuri Business</h3>
+        <ul class="comparison-list">
+          <li><span>Unified Inbox (FB+LINE)</span> <span style="color:#16A34A">&#10003;</span></li>
+          <li><span>CRM ครบ</span> <span style="color:#16A34A">&#10003;</span></li>
+          <li><span>POS</span> <span style="color:#16A34A">&#10003;</span></li>
+          <li><span>Ads Analytics</span> <span style="color:#16A34A">&#10003;</span></li>
+          <li><span>AI Unlimited</span> <span style="color:#16A34A">&#10003;</span></li>
+          <li><span>Kitchen Ops*</span> <span style="color:#16A34A">&#10003;</span></li>
+          <li><span>Enrollment*</span> <span style="color:#16A34A">&#10003;</span></li>
+          <li><span>Task Management</span> <span style="color:#16A34A">&#10003;</span></li>
+          <li><span>Priority Support</span> <span style="color:#16A34A">&#10003;</span></li>
+        </ul>
+        <div class="comparison-total">
+          <span>รวม</span>
+          <span>฿5,990</span>
+        </div>
+      </div>
+    </div>
+    <div class="savings-banner fade-in">
+      <div class="savings-label">ประหยัดได้ถึง</div>
+      <div class="savings-amount">฿<span id="savings-counter">0</span>/เดือน</div>
+      <div class="savings-label">ประหยัด 79%</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SOCIAL PROOF ===== -->
+<section class="social-proof">
+  <div class="container">
+    <h2 class="section-title fade-in">ธุรกิจที่ใช้ Zuri</h2>
+    <p class="section-subtitle fade-in">เชื่อมั่นโดยผู้ประกอบการไทย</p>
+    <div class="testimonial fade-in">
+      <blockquote>"Zuri เปลี่ยนวิธีจัดการธุรกิจของเราทั้งหมด ลูกค้าแชทมาจาก LINE, Facebook เราเห็นหมดในที่เดียว ตอบเร็วขึ้น ขายได้มากขึ้น AI ช่วยสรุปยอดขายทุกเช้า ทำให้ตัดสินใจได้ทันที"</blockquote>
+      <cite>V School Bangkok</cite>
+      <div class="cite-role">โรงเรียนสอนทำอาหาร</div>
+    </div>
+    <div class="badges fade-in">
+      <div class="badge">
+        <span class="badge-icon">🛡️</span>
+        <span>PDPA Compliant</span>
+      </div>
+      <div class="badge">
+        <span class="badge-icon">🏛️</span>
+        <span>DEPA Approved</span>
+      </div>
+      <div class="badge">
+        <span class="badge-icon">☁️</span>
+        <span>Hosted on AWS Singapore</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="faq">
+  <div class="container">
+    <h2 class="section-title fade-in">คำถามที่พบบ่อย</h2>
+    <p class="section-subtitle fade-in">มีอะไรสงสัย ถามได้เลย</p>
+    <div class="faq-list">
+      <div class="faq-item fade-in">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          ฟรีจริงไหม ไม่ต้องผูกบัตร?
+          <span class="faq-arrow">&#9662;</span>
+        </button>
+        <div class="faq-answer">ฟรีจริง ไม่ต้องผูกบัตรเครดิต สมัครแล้วใช้ได้ทันที แพ็คเกจ Free ใช้ได้ตลอดไป ไม่มีวันหมดอายุ อัพเกรดเมื่อคุณพร้อม</div>
+      </div>
+      <div class="faq-item fade-in">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          เปลี่ยนแพ็คเกจได้ไหม?
+          <span class="faq-arrow">&#9662;</span>
+        </button>
+        <div class="faq-answer">ได้เลย สามารถอัพเกรดหรือดาวน์เกรดได้ทุกเมื่อ ระบบจะคำนวณค่าใช้จ่ายตามสัดส่วนวันที่ใช้งานจริง (prorated) ไม่มีค่าปรับ</div>
+      </div>
+      <div class="faq-item fade-in">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          ข้อมูลปลอดภัยไหม?
+          <span class="faq-arrow">&#9662;</span>
+        </button>
+        <div class="faq-answer">ปลอดภัยสูงสุด ข้อมูลเก็บบน Supabase (AWS Singapore) เข้ารหัสทั้ง at-rest และ in-transit ระบบผ่านมาตรฐาน PDPA และมี SOC2 Type II</div>
+      </div>
+      <div class="faq-item fade-in">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          ใช้กับ LINE Official Account ได้เลยไหม?
+          <span class="faq-arrow">&#9662;</span>
+        </button>
+        <div class="faq-answer">ได้เลย เชื่อมต่อ LINE OA ได้ภายใน 5 นาที แค่สแกน QR Code รองรับทั้ง LINE Messaging API และ Facebook Page เชื่อมกี่เพจก็ได้</div>
+      </div>
+      <div class="faq-item fade-in">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          ลด DEPA voucher ได้ไหม?
+          <span class="faq-arrow">&#9662;</span>
+        </button>
+        <div class="faq-answer">ได้! Zuri เป็น Digital Service Provider ที่ได้รับการรับรองจาก DEPA สามารถใช้ DEPA Mini Voucher สูงสุด 10,000 บาท ทีมเราช่วยทำเอกสารให้ฟรี</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER CTA ===== -->
+<section class="footer-cta">
+  <div class="container">
+    <h2 class="fade-in">เริ่มใช้ Zuri ฟรีวันนี้</h2>
+    <p class="fade-in">มีซูริ ไม่ต้องเป็นห่วง — Your business's best friend</p>
+    <a href="#" class="btn btn-white fade-in">เริ่มใช้ฟรี</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    &copy; 2026 Zuri Platform. All rights reserved.
+  </div>
+</footer>
+
+<script>
+// ===== INTERSECTION OBSERVER FOR FADE-IN =====
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// ===== BILLING TOGGLE =====
+let isAnnual = false;
+
+function toggleBilling() {
+  isAnnual = !isAnnual;
+  const toggle = document.getElementById('billing-toggle');
+  const labelMonthly = document.getElementById('label-monthly');
+  const labelAnnual = document.getElementById('label-annual');
+
+  toggle.classList.toggle('active', isAnnual);
+  labelMonthly.classList.toggle('active', !isAnnual);
+  labelAnnual.classList.toggle('active', isAnnual);
+
+  document.querySelectorAll('.annual-price').forEach(el => {
+    el.style.display = isAnnual ? 'inline' : 'none';
+  });
+
+  document.querySelectorAll('.pricing-amount[data-monthly]').forEach(el => {
+    const monthly = parseInt(el.dataset.monthly);
+    const annual = parseInt(el.dataset.annual);
+    const value = isAnnual ? annual : monthly;
+    el.querySelector('.price-value').textContent = value.toLocaleString();
+  });
+}
+
+// ===== FAQ ACCORDION =====
+function toggleFaq(btn) {
+  const answer = btn.nextElementSibling;
+  const wasOpen = btn.classList.contains('open');
+
+  // Close all
+  document.querySelectorAll('.faq-question').forEach(q => q.classList.remove('open'));
+  document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+
+  if (!wasOpen) {
+    btn.classList.add('open');
+    answer.classList.add('open');
+  }
+}
+
+// ===== ANIMATED COUNTER =====
+let counterDone = false;
+
+function animateCounter(el, target, duration) {
+  let start = 0;
+  const step = target / (duration / 16);
+  function update() {
+    start += step;
+    if (start >= target) {
+      el.textContent = target.toLocaleString();
+      return;
+    }
+    el.textContent = Math.floor(start).toLocaleString();
+    requestAnimationFrame(update);
+  }
+  update();
+}
+
+const savingsObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !counterDone) {
+      counterDone = true;
+      animateCounter(document.getElementById('savings-counter'), 22110, 2000);
+    }
+  });
+}, { threshold: 0.5 });
+
+const savingsEl = document.getElementById('savings-counter');
+if (savingsEl) savingsObserver.observe(savingsEl.closest('.savings-banner'));
+</script>
+</body>
+</html>

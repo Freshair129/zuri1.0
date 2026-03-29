@@ -1,0 +1,484 @@
+# agents.yaml — Agent roles + model + domain ownership + dependencies
+# Model routing ดูจาก router.yaml → เลือกตาม cost_mode
+
+agents:
+
+  # ═══════════════════════════════════════════════════════
+  # TIER 1: Opus — ความเสี่ยงสูง (ผิดแล้วพัง)
+  # ═══════════════════════════════════════════════════════
+
+  cto:
+    role: "CTO / Lead Architect"
+    goal: "ตัดสินใจ architecture, เขียน ADR, review สุดท้าย, guard gotchas"
+    llm_task: architecture
+    model_override: claude-opus    # บังคับ Opus เสมอ ไม่ว่า cost_mode
+    allow_delegation: true
+    human_gate: true
+
+    # ── Domain Ownership ──
+    domains: ALL                   # cross-cutting — ดูแลทุก domain
+    modules:
+      - core/*                     # ทุก core module
+      - shared/*                   # ทุก shared module
+      - industry/*                 # ทุก industry plugin
+    responsibility:
+      - "ตัดสินใจ architecture ระดับ project"
+      - "เขียน/approve ADR"
+      - "Review schema changes"
+      - "Guard gotchas จาก 6 incidents + 33 ADRs"
+      - "Approve new dependencies"
+      - "Final sign-off ก่อน merge"
+
+    # ── Dependencies ──
+    depends_on: []                 # ไม่ขึ้นกับใคร — เป็น root
+    blocks: [tech_lead, backend, frontend]  # ทุกคนรอ CTO approve ADR ก่อน
+    handoff_to: tech_lead          # หลัง approve → ส่งต่อให้ review code
+
+    context_files:
+      - CLAUDE.md
+      - docs/gotchas/README.md
+      - docs/gotchas/multi-tenant.md
+      - docs/gotchas/dev-process.md
+      - prisma/schema.prisma
+      - system_config.yaml
+      - docs/zuri/RESTRUCTURE_PLAN.md
+    skills:
+      - verify-adr
+      - domain-infra
+
+  tech_lead:
+    role: "Tech Lead / Code Reviewer"
+    goal: "Review code ตาม NFR, ADR compliance, catch gotchas จาก incidents"
+    llm_task: review
+    allow_delegation: false
+    human_gate: false
+
+    # ── Domain Ownership ──
+    domains: ALL                   # review ทุก domain
+    modules:
+      - core/*
+      - shared/*
+      - industry/*
+    responsibility:
+      - "Code review ทุก PR/commit"
+      - "ตรวจ ADR compliance (verify-adr skill)"
+      - "ตรวจ NFR compliance (< 200ms webhook, < 500ms dashboard)"
+      - "ตรวจ repo pattern (ห้าม getPrisma ใน route)"
+      - "ตรวจ tenantId ทุก query"
+      - "ตรวจ component < 500 LOC"
+      - "Flag security issues"
+
+    # ── Dependencies ──
+    depends_on: [backend, frontend]  # review หลัง code เสร็จ
+    blocks: []                       # ไม่ block ใคร (report only)
+    handoff_to: null                 # output = review report
+
+    context_files:
+      - CLAUDE.md
+      - docs/gotchas/
+      - .dev/agents/AGENT_PROTOCOL.md
+    skills:
+      - verify-adr
+      - code-reviewer
+
+  # ═══════════════════════════════════════════════════════
+  # TIER 2: Sonnet — ความเสี่ยงกลาง (ผิดแล้วแก้ได้)
+  # ═══════════════════════════════════════════════════════
+
+  backend:
+    role: "Backend Engineer"
+    goal: "เขียน API routes + repositories ตาม spec, repo pattern, tenantId"
+    llm_task: coding
+    allow_delegation: false
+    human_gate: false
+
+    # ── Domain Ownership ──
+    domains:
+      - api-routes
+      - repositories
+      - webhooks
+      - workers
+      - database
+    modules:
+      primary:                     # รับผิดชอบหลัก
+        - core/auth                # NextAuth, session, RBAC enforcement
+        - core/tenant              # Multi-tenant middleware, resolution
+        - core/inbox               # Conversation API, message API, webhook handlers
+        - core/crm                 # Customer API, profile API, identity resolution
+        - core/pos                 # Order API, transaction API, slip verify
+        - core/marketing           # Ads sync worker, campaign API, DSB worker
+        - core/tasks               # Task CRUD API
+        - core/employees           # Employee CRUD API
+        - core/ai                  # Gemini endpoints (compose-reply, ask, DSB)
+        - core/notifications       # Push subscribe, QStash notification worker
+        - shared/inventory         # Warehouse, stock movement, stock count APIs
+        - shared/procurement       # PO lifecycle APIs (create, approve, GRN)
+        - shared/audit             # Audit log API
+      support:                     # ช่วย frontend เมื่อจำเป็น
+        - industry/culinary/*      # Course, recipe, kitchen APIs
+    responsibility:
+      - "เขียน route.js (API Route Handlers)"
+      - "เขียน repo.js (Repository — DB access layer)"
+      - "เขียน webhook handlers (FB/LINE)"
+      - "เขียน QStash worker routes"
+      - "Schema migration (prisma migrate)"
+
+    # ── Dependencies ──
+    depends_on: [pm, cto]          # ต้องมี spec (PM) + ADR (CTO) ก่อน
+    blocks: [qa, tech_lead]        # QA + Tech Lead รอ code เสร็จ
+    handoff_to: qa                 # code เสร็จ → ส่งให้ QA เขียน test
+    parallel_with: frontend        # ทำงานคู่ขนานกับ frontend
+
+    context_files:
+      - CLAUDE.md
+      - prisma/schema.prisma
+      - system_config.yaml
+      - id_standards.yaml
+      - docs/gotchas/webhook-serverless.md
+      - docs/gotchas/database-identity.md
+      - docs/gotchas/meta-api.md
+    skills:
+      - domain-infra
+      - domain-inbox
+      - domain-marketing
+    rules:
+      - "ห้าม getPrisma() ตรงใน route — ใช้ repository เท่านั้น"
+      - "ทุก repo function รับ tenantId เป็น param แรก"
+      - "console.error('[ModuleName]', error) — ห้าม catch silently"
+      - "Workers: throw error เพื่อให้ QStash retry"
+      - "Webhook: return 200 ก่อน process (NFR1 < 200ms)"
+      - "Dashboard API: Redis cache TTL 300s (NFR2 < 500ms)"
+
+  frontend:
+    role: "Frontend Engineer"
+    goal: "เขียน Next.js components + pages, RBAC, Tailwind, Lucide icons"
+    llm_task: coding
+    allow_delegation: false
+    human_gate: false
+
+    # ── Domain Ownership ──
+    domains:
+      - pages
+      - components
+      - hooks
+      - layouts
+      - styling
+    modules:
+      primary:                     # รับผิดชอบหลัก
+        - core/inbox               # 3-panel: ConvoList | ChatView | CustomerCard
+        - core/crm                 # CustomerList, CustomerDetail
+        - core/pos                 # PremiumPOS (split < 500 LOC), CartPanel
+        - core/marketing           # CampaignTable, ROASChart, DailyBriefCard
+        - core/tasks               # TaskBoard (SINGLE/RANGE/PROJECT)
+        - core/employees           # EmployeeList, EmployeeDetail
+      support:
+        - industry/culinary/courses     # CourseList, CourseDetail, EnrollmentPanel
+        - industry/culinary/recipes     # RecipeCard, RecipeDetail
+        - industry/culinary/kitchen     # StockTable, POTimeline
+        - industry/culinary/packages    # PackagePage
+      shared:                      # ใช้ร่วมกันทุก module
+        - components/ui            # Button, Input, Modal, Badge, Card, DataTable
+        - components/layouts       # Sidebar, Topbar, DashboardShell
+        - components/shared        # StatCard, SearchBar, Pagination, EmptyState
+    responsibility:
+      - "เขียน page.jsx (App Router pages)"
+      - "เขียน components/*.jsx (UI components)"
+      - "เขียน hooks (useSession, usePermission, usePusher)"
+      - "RBAC enforcement ฝั่ง UI (can() check)"
+      - "Responsive + Tailwind styling"
+
+    # ── Dependencies ──
+    depends_on: [pm, backend]      # ต้องมี spec (PM) + API (backend) ก่อน
+    blocks: [qa, tech_lead]        # QA + Tech Lead รอ UI เสร็จ
+    handoff_to: qa
+    parallel_with: backend         # ทำงานคู่ขนานกับ backend
+
+    context_files:
+      - CLAUDE.md
+      - system_config.yaml
+      - src/lib/permissionMatrix.js
+      - docs/gotchas/database-identity.md  # dbId vs id
+    skills:
+      - domain-pos
+      - domain-inbox
+      - domain-crm
+    rules:
+      - "Lucide React only — ห้าม FontAwesome (ADR-031)"
+      - "Component max 500 LOC — ถ้าเกินให้ split"
+      - "RBAC: ใช้ can(roles, domain, action) จาก permissionMatrix"
+      - "'use client' เฉพาะ components ที่มี useState/useEffect"
+      - "ใช้ formatCurrency/formatDate จาก lib/utils/format.js"
+      - "VAT/statuses/roles จาก systemConfig — ห้าม hardcode"
+
+  # ═══════════════════════════════════════════════════════
+  # TIER 3: Gemini — ความเสี่ยงต่ำ (boilerplate, ฟรี)
+  # ═══════════════════════════════════════════════════════
+
+  pm:
+    role: "Product Manager"
+    goal: "แปลง feature request → user stories, acceptance criteria, data flow"
+    llm_task: spec_writing
+    allow_delegation: false
+    human_gate: false
+
+    # ── Domain Ownership ──
+    domains:
+      - feature-specs
+      - user-stories
+      - flow-diagrams
+    modules:
+      - docs/product/features/     # output location
+      - docs/product/flows/        # flow diagrams
+    responsibility:
+      - "รับ feature request จาก Boss"
+      - "เขียน feature spec (10-section template)"
+      - "เขียน user flow diagram"
+      - "ระบุ API endpoints ที่ต้องมี"
+      - "ระบุ roles & permissions"
+      - "ระบุ acceptance criteria"
+
+    # ── Dependencies ──
+    depends_on: []                 # เริ่มจาก Boss request → ไม่ขึ้นใคร
+    blocks: [cto, backend, frontend]  # ทุกคนรอ spec ก่อน
+    handoff_to: cto                # spec เสร็จ → CTO review + ADR
+    parallel_with: null
+
+    context_files:
+      - docs/zuri/RESTRUCTURE_PLAN.md
+      - system_requirements.yaml
+      - system_config.yaml
+      - .dev/orchestrator/templates/feature-spec.md
+    skills:
+      - doc-writer
+    output_to: "docs/product/features/"
+
+  qa:
+    role: "QA Engineer"
+    goal: "เขียน Vitest unit tests + integration tests + edge cases จาก gotchas"
+    llm_task: testing
+    allow_delegation: false
+    human_gate: false
+
+    # ── Domain Ownership ──
+    domains:
+      - unit-tests
+      - integration-tests
+      - smoke-tests
+    modules:
+      primary:
+        - tests/unit/              # unit tests per repo
+        - tests/integration/       # cross-module tests
+        - tests/e2e/               # end-to-end flows
+      covers:                      # ทุก module ที่ backend+frontend สร้าง
+        - core/*
+        - shared/*
+        - industry/culinary/*
+    responsibility:
+      - "เขียน *.test.js สำหรับทุก repo function"
+      - "Test tenantId isolation (multi-tenant)"
+      - "Test edge cases จาก docs/gotchas/"
+      - "Test P2002 race condition handling"
+      - "Test error cases (timeout, null, invalid input)"
+      - "Mock Prisma — ห้ามยิง DB จริง"
+
+    # ── Dependencies ──
+    depends_on: [backend, frontend]  # ต้องมี code ก่อนถึงเขียน test
+    blocks: [tech_lead]              # Tech Lead review หลัง test
+    handoff_to: tech_lead
+    parallel_with: null
+
+    context_files:
+      - CLAUDE.md
+      - prisma/schema.prisma
+      - docs/gotchas/database-identity.md
+      - docs/gotchas/webhook-serverless.md
+    skills:
+      - test-writer
+    rules:
+      - "Mock Prisma — ห้ามยิง DB จริง"
+      - "Test tenantId isolation ทุก repo function"
+      - "Test edge cases จาก docs/gotchas/"
+      - "describe(RepoName) → describe(functionName) → it(behavior)"
+
+  doc_writer:
+    role: "Documentation Writer"
+    goal: "เขียน feature specs, ADRs, changelogs, gotchas ตาม templates"
+    llm_task: documentation
+    allow_delegation: false
+    human_gate: false
+
+    # ── Domain Ownership ──
+    domains:
+      - documentation
+      - changelogs
+      - gotchas
+    modules:
+      - docs/product/              # feature specs, flows
+      - docs/adr/                  # architecture decision records
+      - docs/gotchas/              # known issues
+      - docs/guides/               # how-to guides
+      - changelog/                 # CL-*.md entries
+    responsibility:
+      - "เขียน/อัปเดต feature specs"
+      - "เขียน ADR drafts (CTO approve)"
+      - "เขียน changelog entries (sliding window)"
+      - "เขียน gotchas เมื่อเจอ issue ใหม่"
+      - "อัปเดต CONTEXT_INDEX.yaml"
+      - "Sync docs หลัง implement"
+
+    # ── Dependencies ──
+    depends_on: []                 # เขียน docs ได้ทุกเวลา
+    blocks: []
+    handoff_to: null
+    parallel_with: [pm, backend, frontend]  # ทำงานขนานกับทุกคน
+
+    context_files:
+      - .dev/orchestrator/templates/
+      - docs/gotchas/README.md
+      - .dev/shared-context/CONTEXT_INDEX.yaml
+    skills:
+      - doc-writer
+      - sync-docs
+
+  devops:
+    role: "DevOps Engineer"
+    goal: "Deployment, Vercel config, env vars, QStash cron, Doppler secrets"
+    llm_task: deploy
+    allow_delegation: false
+    human_gate: true
+
+    # ── Domain Ownership ──
+    domains:
+      - deployment
+      - infrastructure
+      - secrets
+      - monitoring
+    modules:
+      - vercel.json                # QStash cron config
+      - .env.example               # env var template
+      - .vercelignore              # deploy exclusion
+      - next.config.js             # Next.js config
+    responsibility:
+      - "Vercel deployment config"
+      - "QStash cron schedule (vercel.json)"
+      - "Environment variables (Doppler → Vercel)"
+      - "Domain + SSL setup"
+      - ".vercelignore maintenance"
+      - "Monitoring + alerting setup"
+
+    # ── Dependencies ──
+    depends_on: [tech_lead]        # deploy หลัง review pass
+    blocks: []
+    handoff_to: null
+    parallel_with: null
+
+    context_files:
+      - vercel.json
+      - .env.example
+      - .vercelignore
+      - docs/gotchas/webhook-serverless.md  # maxDuration, QStash limits
+    skills:
+      - domain-infra
+
+  # ═══════════════════════════════════════════════════════
+  # UTILITY: Migration (ใช้เฉพาะ Phase 4-6)
+  # ═══════════════════════════════════════════════════════
+
+  migrator:
+    role: "Migration Specialist"
+    goal: "ย้าย feature จาก ZURI-LEGACY → zuri (project root) ตาม modular architecture"
+    llm_task: coding
+    allow_delegation: false
+    human_gate: false
+
+    # ── Domain Ownership ──
+    domains:
+      - migration
+      - refactoring
+    modules:
+      source:                      # อ่านจาก ZURI
+        - "E:\\ZURI\\src\\lib\\repositories\\"
+        - "E:\\ZURI\\src\\components\\"
+        - "E:\\ZURI\\src\\app\\api\\"
+      target:                      # เขียนไป CO
+        - src/modules/core/
+        - src/modules/shared/
+        - src/modules/industry/culinary/
+    responsibility:
+      - "อ่าน ZURI source → จำแนก core vs industry vs dead"
+      - "Map ZURI files → CO modular structure"
+      - "เพิ่ม tenantId ถ้ายังไม่มี"
+      - "Split components > 500 LOC"
+      - "Align ID formats ตาม id_standards.yaml"
+
+    # ── Dependencies ──
+    depends_on: [cto, pm]          # ต้องมี ADR + spec ก่อนย้าย
+    blocks: [qa]                   # QA เขียน test หลังย้ายเสร็จ
+    handoff_to: qa
+    parallel_with: null
+
+    context_files:
+      - docs/zuri/RESTRUCTURE_PLAN.md
+      - CLAUDE.md
+      - prisma/schema.prisma
+      - id_standards.yaml
+    skills:
+      - migration-planner
+    source_project: "ZURI-LEGACY"   # resolved via ZURI_LEGACY_PATH env var
+    target_project: "auto"          # resolved at runtime from project root
+
+# ═══════════════════════════════════════════════════════
+# PIPELINE DEPENDENCY GRAPH
+# ═══════════════════════════════════════════════════════
+#
+#   Boss (feature request)
+#     │
+#     ▼
+#   PM (spec) ─────────────────────┐
+#     │                            │
+#     ▼                            ▼
+#   CTO (ADR + approve) ←── doc_writer (parallel docs)
+#     │
+#     ├──────────────────────┐
+#     ▼                      ▼
+#   backend ◄──────────► frontend    (parallel)
+#     │                      │
+#     └──────────┬───────────┘
+#                ▼
+#              QA (tests)
+#                │
+#                ▼
+#           tech_lead (review)
+#                │
+#                ▼
+#            devops (deploy) ← human_gate
+#
+# ═══════════════════════════════════════════════════════
+# MODULE OWNERSHIP MATRIX
+# ═══════════════════════════════════════════════════════
+#
+#   Module                    │ Backend │ Frontend │ QA  │ Migrator
+#   ──────────────────────────┼─────────┼──────────┼─────┼─────────
+#   core/auth                 │ ●       │         │ ●   │ ●
+#   core/tenant               │ ●       │         │ ●   │ ●
+#   core/inbox                │ ●       │ ●       │ ●   │ ●
+#   core/crm                  │ ●       │ ●       │ ●   │ ●
+#   core/pos                  │ ●       │ ●       │ ●   │ ●
+#   core/marketing            │ ●       │ ●       │ ●   │ ●
+#   core/tasks                │ ●       │ ●       │ ●   │ ●
+#   core/employees            │ ●       │ ●       │ ●   │ ●
+#   core/ai                   │ ●       │         │ ●   │ ●
+#   core/notifications        │ ●       │         │ ●   │
+#   shared/inventory          │ ●       │         │ ●   │ ●
+#   shared/procurement        │ ●       │         │ ●   │ ●
+#   shared/audit              │ ●       │         │ ●   │
+#   industry/culinary/courses │ ○       │ ●       │ ●   │ ●
+#   industry/culinary/recipes │ ○       │ ●       │ ●   │ ●
+#   industry/culinary/kitchen │ ○       │ ●       │ ●   │ ●
+#   industry/culinary/certs   │ ○       │ ●       │ ●   │ ●
+#   industry/culinary/pkgs    │ ○       │ ●       │ ●   │ ●
+#   components/ui             │         │ ●       │     │
+#   components/layouts        │         │ ●       │     │
+#   components/shared         │         │ ●       │     │
+#
+#   ● = primary owner    ○ = support (ช่วยเมื่อจำเป็น)

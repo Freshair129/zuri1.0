@@ -1,0 +1,98 @@
+# router.yaml — LLM routing per task type
+# ใช้ทรัพยากรให้คุ้ม: Opus สำหรับงานเสี่ยง, Gemini สำหรับงานฟรี
+
+# ─── Cost Modes ──────────────────────────────────────
+# quality:  Opus ทำ review + arch, Sonnet ทำ code
+# balanced: Sonnet ทำ review + code, Gemini ทำ spec + tests
+# speed:    Sonnet ทำ code, Gemini Flash ทำที่เหลือ
+# free:     Gemini ทำทุกอย่าง (ฟรี แต่เสี่ยง hallucinate)
+
+cost_mode: balanced
+
+# ─── Model Aliases ───────────────────────────────────
+models:
+  claude-opus:
+    provider: anthropic
+    model: claude-opus-4-0520
+    via: claude-code        # ใช้ผ่าน Claude Code CLI (subscription)
+    cost_per_1k: high
+    strengths: [architecture, review, gotcha-detection, complex-reasoning]
+
+  claude-sonnet:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    via: claude-code        # ใช้ผ่าน Claude Code CLI (subscription)
+    cost_per_1k: medium
+    strengths: [code-generation, refactoring, migration, fast-implementation]
+
+  gemini-pro:
+    provider: google
+    model: gemini-2.0-pro
+    via: gemini-cli         # ฟรี
+    cost_per_1k: free
+    strengths: [spec-writing, analysis, planning, documentation]
+
+  gemini-flash:
+    provider: google
+    model: gemini-2.0-flash
+    via: gemini-cli         # ฟรี
+    cost_per_1k: free
+    strengths: [boilerplate, tests, comments, simple-tasks]
+
+# ─── Task → Model Routing ────────────────────────────
+
+# cost_mode: quality
+quality:
+  architecture:  claude-opus      # ADR, schema design — ผิดไม่ได้
+  review:        claude-opus      # catch gotchas, ADR compliance
+  coding:        claude-sonnet    # fast + accurate code gen
+  analysis:      claude-opus      # spec review, risk assessment
+  spec_writing:  gemini-pro       # feature specs — Boss review อยู่แล้ว
+  testing:       gemini-flash     # boilerplate tests — ฟรี
+  documentation: gemini-flash     # docs, comments — ฟรี
+  design:        claude-sonnet    # UI components
+  deploy:        claude-sonnet    # Vercel, infra
+
+# cost_mode: balanced (DEFAULT — แนะนำ)
+balanced:
+  architecture:  claude-opus      # ยังใช้ Opus — ผิดไม่ได้
+  review:        claude-sonnet    # Sonnet review ดีพอ
+  coding:        claude-sonnet    # Sonnet เขียน code
+  analysis:      gemini-pro       # ฟรี + Boss review ตาม
+  spec_writing:  gemini-pro       # ฟรี + Boss review ตาม
+  testing:       gemini-flash     # ฟรี
+  documentation: gemini-flash     # ฟรี
+  design:        gemini-flash     # ฟรี
+  deploy:        gemini-pro       # ฟรี
+
+# cost_mode: speed
+speed:
+  architecture:  claude-sonnet
+  review:        claude-sonnet
+  coding:        claude-sonnet
+  analysis:      gemini-flash
+  spec_writing:  gemini-flash
+  testing:       gemini-flash
+  documentation: gemini-flash
+  design:        gemini-flash
+  deploy:        gemini-flash
+
+# cost_mode: free
+free:
+  architecture:  gemini-pro
+  review:        gemini-pro
+  coding:        gemini-flash
+  analysis:      gemini-pro
+  spec_writing:  gemini-pro
+  testing:       gemini-flash
+  documentation: gemini-flash
+  design:        gemini-flash
+  deploy:        gemini-pro
+
+# ─── Fallback Chain ──────────────────────────────────
+# ถ้า model หลักไม่ตอบ → ลองตัวถัดไป
+fallback:
+  claude-opus:   claude-sonnet
+  claude-sonnet: gemini-pro
+  gemini-pro:    gemini-flash
+  gemini-flash:  gemini-pro

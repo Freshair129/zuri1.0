@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "co-dev"
+version = "3.1.0"
+description = "Multi-agent dev tool for Claude Code — dispatches free tasks to Gemini"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0",
+    "python-dotenv",
+    "pyyaml",
+]
+
+[project.scripts]
+co-dev = "cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "config*"]
