@@ -2,7 +2,14 @@
 
 ## Product
 Zuri is a Vertical SaaS for culinary schools and food businesses in Thailand.
-Modules: CRM, Unified Inbox (FB+LINE), POS, Marketing/Ads Analytics, Kitchen Ops, Enrollment, Tasks, Daily Sales Brief (AI).
+
+**Core Modules:** CRM, Unified Inbox (FB+LINE), POS, Marketing/Ads Analytics, Kitchen Ops, Enrollment, Tasks, Daily Sales Brief (AI)
+
+**Add-ons (sold separately):**
+- AI Assistant (FEAT-AI-ASSISTANT.md) — Web FAB + LINE Bot + NL2SQL + NL2Data + Group Monitor + Slip OCR
+- Accounting Platform (FEAT-ACCOUNTING-PLATFORM.md) — FlowAccount API auto-sync + Express X-import
+
+**DOC TO CODE:** Never implement without approved spec + ADR. Check `docs/product/specs/` for APPROVED specs before coding.
 
 ## Tech Stack
 - **Framework:** Next.js 14 (App Router) — deployed on Vercel (serverless)
@@ -12,7 +19,7 @@ Modules: CRM, Unified Inbox (FB+LINE), POS, Marketing/Ads Analytics, Kitchen Ops
 - **Queue:** Upstash QStash — cron workers (no BullMQ, no local Redis)
 - **Realtime:** Pusher Channels (new-message, customer-updated)
 - **Auth:** NextAuth.js v4 (JWT, credentials provider, bcrypt)
-- **AI:** Gemini 2.0 Flash (compose-reply, ask-AI, daily brief analysis)
+- **AI:** Gemini 2.0 Flash — compose-reply, ask-AI, daily brief, NL2SQL (AI Assistant), Gemini Vision (slip OCR + สลิปใน LINE)
 - **Styling:** Tailwind CSS + Framer Motion + Lucide icons + Recharts
 
 ## Architecture Rules
@@ -59,4 +66,13 @@ Modules: CRM, Unified Inbox (FB+LINE), POS, Marketing/Ads Analytics, Kitchen Ops
 - `src/app/api/workers/` — QStash cron targets
 - `src/app/api/webhooks/` — FB + LINE inbound
 - `src/middleware.js` — tenant resolution + auth guard
-- `docs/` — PRD, ADRs, architecture, feature specs
+
+## Obsidian — Second Brain (SSOT for Docs)
+- Vault: `docs/` — accessible via Obsidian MCP (`mcp__obsidian__*`)
+- `docs/product/PRD.md` — product requirements v2.2
+- `docs/product/ROADMAP.md` — milestones M1–M7
+- `docs/product/specs/` — FEAT-*.md approved specs (read before implement)
+- `docs/decisions/adrs/` — ADR-*.md architecture decisions (read before schema/arch changes)
+- `docs/decisions/log.md` — decision history
+- `docs/gotchas/` — incident rules (read if unsure)
+- **Rule:** ถ้า context หาย → query Obsidian ก่อนถาม Boss
