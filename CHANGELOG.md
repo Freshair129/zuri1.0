@@ -35,6 +35,29 @@
   - **Shared (3):** auth, ai, multi-tenant
   - Each covers: read/write flows, external integrations, realtime events, cache strategy, cross-module deps
 
+### Added — Phase 5: Shared Module Migration
+- `prisma/schema.prisma` — 19 new models (Inventory: 5, Procurement: 12, Audit: 2), AuditLog tenantId added
+- `src/lib/repositories/inventoryRepo.js` — stock levels, FEFO movements, stock counts ($transaction)
+- `src/lib/repositories/poRepo.js` — PO lifecycle, approval chain, GRN receipt ($transaction)
+- `src/lib/repositories/supplierRepo.js` — supplier CRUD with search
+- `src/lib/repositories/auditRepo.js` — updated with tenantId, added findByTenant
+- `src/modules/shared/inventory/index.js` + `audit/index.js` — new module barrels
+- `src/app/api/procurement/suppliers/` — new supplier API routes (GET, POST, PATCH, DELETE)
+- All existing stub API routes wired to real repo calls
+
+### Added — Phase 7: Integration Testing
+- `vitest.config.mjs` — Vitest config with `@` alias, node env, v8 coverage
+- `src/tests/setup.js` — global mock setup with Prisma proxy
+- `src/tests/mocks/prismaMock.js` — mock Prisma client factory
+- `src/tests/mocks/sessionMock.js` — mock session/tenant helpers
+- `src/lib/repositories/inventoryRepo.test.js` — 3 tests
+- `src/lib/repositories/poRepo.test.js` — 4 tests
+- `src/lib/repositories/supplierRepo.test.js` — 4 tests
+- `src/tests/integration/multi-tenant.test.js` — 4 tests (tenant isolation)
+- `scripts/migrate-zuri-to-co.js` — 9-phase migration skeleton
+- `src/tests/perf/benchmark.js` — NFR2 p95 < 500ms checker
+- **15 tests, all passing**
+
 ### Added — Phase 3: Orchestrator CLI Update
 - Updated all 7 orchestrator commands to use new paths (specs/, decisions/adrs/)
 - Updated feature-spec template to match FEAT-*.md format (9 sections)

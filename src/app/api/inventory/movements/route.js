@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
+import * as inventoryRepo from '@/lib/repositories/inventoryRepo'
 
 // POST /api/inventory/movements - Record a stock movement (in/out/transfer/adjustment)
 export async function POST(request) {
@@ -30,10 +31,15 @@ export async function POST(request) {
       return NextResponse.json({ error: `type must be one of: ${validTypes.join(', ')}` }, { status: 400 })
     }
 
-    // TODO: Import inventoryRepo and call createMovement({ tenantId, ...fields })
-    // TODO: Update stock_levels table accordingly (atomic transaction)
-    // TODO: Check for negative stock and return error if not allowed
-    const movement = {} // TODO: replace with real data
+    const movement = await inventoryRepo.createMovement(tenantId, {
+      productId,
+      warehouseId,
+      type,
+      qty,
+      referenceId,
+      referenceType,
+      note,
+    })
 
     return NextResponse.json({ data: movement }, { status: 201 })
   } catch (error) {

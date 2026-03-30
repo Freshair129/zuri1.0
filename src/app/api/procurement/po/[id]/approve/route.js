@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
+import * as poRepo from '@/lib/repositories/poRepo'
 
 // POST /api/procurement/po/[id]/approve - Approve or reject a purchase order
 export async function POST(request, { params }) {
@@ -17,19 +18,15 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'action must be approve or reject' }, { status: 400 })
     }
 
-    // TODO: Import poRepo and call getPurchaseOrderById({ tenantId, id })
-    const po = null // TODO: replace with real data
-    if (!po) {
+    const { approverId } = body
+    const poAction = action === 'approve' ? 'APPROVE' : 'REJECT'
+
+    const updated = await poRepo.approve(tenantId, id, approverId, poAction, note)
+    if (!updated) {
       return NextResponse.json({ error: 'Purchase order not found' }, { status: 404 })
     }
 
-    // TODO: Verify PO is in pending_approval status
-    // TODO: Verify requesting user has approval permission (check permissionMatrix)
-    // TODO: Update PO status to 'approved' or 'rejected' via poRepo.updatePOStatus(...)
-    // TODO: Record approver and timestamp
-    // TODO: If approved, optionally notify requestor
-
-    return NextResponse.json({ success: true, poId: id, action })
+    return NextResponse.json({ success: true, poId: id, action, data: updated })
   } catch (error) {
     console.error('[Procurement/PO/Approve]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

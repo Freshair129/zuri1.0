@@ -29,9 +29,9 @@
 | 2 | ADRs | ✅ Done | 8 ADRs (060-067) written, pending Boss approval |
 | 3 | Orchestrator CLI | ✅ Done | Updated paths, templates, module choices |
 | 4 | Core Module Migration | ✅ Done | src/modules/core/ (8) + shared/ (3) created |
-| 5 | Shared Module Migration | 🔲 | Inventory, Procurement, Audit |
+| 5 | Shared Module Migration | ✅ Done | 19 Prisma models, 3 repos, module indexes, API routes wired |
 | 6 | Industry Plugin (Culinary) | ✅ Done | src/modules/industry/culinary/ + handlers |
-| 7 | Integration Testing | 🔲 | E2E, multi-tenant, performance |
+| 7 | Integration Testing | ✅ Done | Vitest, 15 tests pass, migration script, benchmark |
 
 ---
 

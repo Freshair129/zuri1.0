@@ -2,17 +2,10 @@ import { getPrisma } from '@/lib/db'
 
 const prisma = getPrisma()
 
-/**
- * Create an audit log entry.
- *
- * @param {string} actor   - User ID or system identifier performing the action
- * @param {string} action  - Action performed, e.g. 'create', 'update', 'delete'
- * @param {string} target  - Target resource, e.g. 'order:abc123'
- * @param {object} details - Arbitrary payload (stored as JSON)
- */
-export async function create(actor, action, target, details = {}) {
+export async function create(tenantId, actor, action, target, details = {}) {
   return prisma.auditLog.create({
     data: {
+      tenantId,
       actor,
       action,
       target,
@@ -22,15 +15,20 @@ export async function create(actor, action, target, details = {}) {
   })
 }
 
-/**
- * Retrieve audit log entries for a specific actor.
- *
- * @param {string} actor
- * @param {{ limit?: number, skip?: number }} options
- */
-export async function findByActor(actor, { limit = 50, skip = 0 } = {}) {
+export async function findByActor(tenantId, actor, { limit = 50, skip = 0 } = {}) {
   return prisma.auditLog.findMany({
-    where: { actor },
+    where: { tenantId, actor },
+    take: limit,
+    skip,
+    orderBy: { createdAt: 'desc' },
+  })
+}
+
+export async function findByTenant(tenantId, { action, limit = 50, skip = 0 } = {}) {
+  const where = { tenantId }
+  if (action) where.action = action
+  return prisma.auditLog.findMany({
+    where,
     take: limit,
     skip,
     orderBy: { createdAt: 'desc' },

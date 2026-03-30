@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
+import * as poRepo from '@/lib/repositories/poRepo'
 
 // GET /api/procurement/po - List purchase orders
 export async function GET(request) {
@@ -15,10 +16,13 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit') ?? '20')
     const status = searchParams.get('status') // draft | pending_approval | approved | received | cancelled
 
-    // TODO: Import poRepo and call getPurchaseOrders({ tenantId, page, limit, status })
-    const orders = [] // TODO: replace with real data
+    const supplierId = searchParams.get('supplierId')
+    const dateFrom = searchParams.get('dateFrom')
+    const dateTo = searchParams.get('dateTo')
 
-    return NextResponse.json({ data: orders, page, limit })
+    const result = await poRepo.findMany(tenantId, { status, supplierId, dateFrom, dateTo, page, limit })
+
+    return NextResponse.json(result)
   } catch (error) {
     console.error('[Procurement/PO]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -41,9 +45,9 @@ export async function POST(request) {
       return NextResponse.json({ error: 'supplierId and items are required' }, { status: 400 })
     }
 
-    // TODO: Calculate totals
-    // TODO: Import poRepo and call createPurchaseOrder({ tenantId, supplierId, items, ... })
-    const po = {} // TODO: replace with real data
+    const { requestedById } = body
+
+    const po = await poRepo.create(tenantId, { supplierId, requestedById, items, warehouseId, expectedDeliveryDate, notes: note })
 
     return NextResponse.json({ data: po }, { status: 201 })
   } catch (error) {

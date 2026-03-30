@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
+import * as inventoryRepo from '@/lib/repositories/inventoryRepo'
 
 // GET /api/inventory/stock - Get current stock levels by warehouse
 export async function GET(request) {
@@ -15,8 +16,7 @@ export async function GET(request) {
     const productId = searchParams.get('productId')
     const lowStockOnly = searchParams.get('lowStockOnly') === 'true'
 
-    // TODO: Import inventoryRepo and call getStockLevels({ tenantId, warehouseId, productId, lowStockOnly })
-    const stock = [] // TODO: replace with real data
+    const stock = await inventoryRepo.getStockLevels(tenantId, { warehouseId, productId, lowStockOnly })
 
     return NextResponse.json({ data: stock })
   } catch (error) {

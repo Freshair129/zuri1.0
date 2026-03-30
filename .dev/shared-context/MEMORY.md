@@ -246,6 +246,25 @@
 24. Created 2 event handler skeletons (onOrderCreated, onClassStarted)
 25. Created industry plugin registry with lazy-loading
 
+**Phase 5: Shared Module Migration ✅**
+26. Added 19 Prisma models (Inventory: 5, Procurement: 12, Audit: 2)
+27. Created inventoryRepo.js (8 functions, $transaction for movements + stock counts)
+28. Created poRepo.js (6 functions, status transition guard, GRN cross-module)
+29. Created supplierRepo.js (5 functions)
+30. Updated auditRepo.js with tenantId + findByTenant
+31. Created shared/inventory/ + shared/audit/ module indexes
+32. Wired all stub API routes to real repo calls
+33. Created 2 new supplier API routes
+
+**Phase 7: Integration Testing ✅**
+34. Installed vitest + @vitest/coverage-v8
+35. Created vitest.config.mjs with @ alias + v8 coverage
+36. Created test infrastructure: setup.js (Prisma proxy), prismaMock.js, sessionMock.js
+37. Created 4 test files: inventoryRepo, poRepo, supplierRepo, multi-tenant isolation
+38. All 15 tests passing
+39. Created migration script skeleton (scripts/migrate-zuri-to-co.js)
+40. Created performance benchmark (src/tests/perf/benchmark.js)
+
 ### สถานะปัจจุบัน (updated)
 - Total specs: 15 files in docs/product/specs/
 - Task 1.1 ✅ Complete (all feature specs done)

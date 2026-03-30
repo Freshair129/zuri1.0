@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
+import * as poRepo from '@/lib/repositories/poRepo'
+import * as inventoryRepo from '@/lib/repositories/inventoryRepo'
 
 // POST /api/procurement/po/[id]/grn - Record goods received note (GRN) for a PO
 // This triggers stock-in movements for each received item.
@@ -19,19 +21,35 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'receivedItems and warehouseId are required' }, { status: 400 })
     }
 
-    // TODO: Import poRepo and call getPurchaseOrderById({ tenantId, id })
-    const po = null // TODO: replace with real data
+    const po = await poRepo.findById(tenantId, id)
     if (!po) {
       return NextResponse.json({ error: 'Purchase order not found' }, { status: 404 })
     }
 
-    // TODO: Validate PO is in approved status
-    // TODO: For each receivedItem, create a stock movement (type: 'in') via inventoryRepo
-    // TODO: Update PO received quantities via poRepo.recordGRN(...)
-    // TODO: If all items fully received, update PO status to 'received'
-    // TODO: Update average cost if using weighted average costing
+    const { receivedById } = body
 
-    return NextResponse.json({ success: true, poId: id })
+    const grn = await poRepo.recordGRN(tenantId, id, {
+      warehouseId,
+      receivedById,
+      items: receivedItems,
+      note,
+    })
+
+    // Create stock-in movements for each received item
+    for (const item of receivedItems) {
+      await inventoryRepo.createMovement(tenantId, {
+        warehouseId,
+        productId: item.productId,
+        productType: item.productType ?? 'PRODUCT',
+        type: 'RECEIVE',
+        qty: item.qtyReceived,
+        unitCost: item.unitCost,
+        referenceId: id,
+        referenceType: 'po',
+      })
+    }
+
+    return NextResponse.json({ success: true, poId: id, data: grn })
   } catch (error) {
     console.error('[Procurement/PO/GRN]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
