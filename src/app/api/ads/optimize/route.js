@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 import { getTenantId } from '@/lib/tenant'
 import { getCampaignById, updateCampaignStatus } from '@/lib/repositories/campaignRepo'
 

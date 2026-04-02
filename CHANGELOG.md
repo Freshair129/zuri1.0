@@ -1,7 +1,19 @@
 # Changelog — Zuri Platform v2
 
 > Format: [version] date — summary
-> LATEST → v2.5.1
+> LATEST → v2.5.2
+
+---
+
+## [2.5.2] 2026-04-02
+
+### Fixed — Deep Architecture Audit & Build Restoration
+- [x] **Security**: Fixed QStash signature verification in all worker routes (previously bypassed due to object-check bug).
+- [x] **Data Isolation (NFR7)**: Enforced `tenantId` scoping across `campaignRepo`, `orderRepo`, and `conversationRepo` to prevent cross-tenant leaks.
+- [x] **Build Restoration**: Restored 12+ missing repository exports (`getOrders`, `getCampaignMetrics`, etc.) identified during deployment failures.
+- [x] **AI Standard**: Standardized all AI-driven features to use **Google Gemini 2.0 Flash** (updated from v1.5).
+- [x] **Infrastructure**: Added `postinstall: prisma generate` to `package.json` to resolve Vercel build-sync errors.
+- [x] **RBAC Alignment**: Updated `system_requirements.yaml` to match the 12-role matrix (ADR-045).
 
 ---
 

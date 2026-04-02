@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 import { verifyQStashSignature } from '@/lib/qstash'
 import { getConversations } from '@/lib/repositories/conversationRepo'
 

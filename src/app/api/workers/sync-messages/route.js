@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 import { verifyQStashSignature } from '@/lib/qstash'
 
 // POST /api/workers/sync-messages - QStash worker: sync FB/LINE messages to DB

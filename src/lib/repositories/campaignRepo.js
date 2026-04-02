@@ -67,3 +67,19 @@ export async function updateCampaignStatus({ tenantId, campaignId, adId, action 
     })
   }
 }
+
+export async function getCampaignMetrics(tenantId, campaignId) {
+  return prisma.adDailyMetric.groupBy({
+    by: ['adId'],
+    where: {
+      tenantId,
+      ad: { campaignId }
+    },
+    _sum: {
+      impressions: true,
+      clicks: true,
+      spend: true,
+      conversions: true
+    }
+  })
+}
