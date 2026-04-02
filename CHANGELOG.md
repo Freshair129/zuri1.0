@@ -1,7 +1,7 @@
 # Changelog — Zuri Platform v2
 
 > Format: [version] date — summary
-> LATEST → v2.5.0
+> LATEST → v2.5.0 (Deployment Triggered)
 
 ---
 
