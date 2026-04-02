@@ -50,8 +50,8 @@ functional_requirements:
       - name: "FR1.3: Role-Based Access Control (RBAC v2)"
         status: "✅ Working"
         description: |
-          8-tier role hierarchy (UPPERCASE in DB):
-          DEVELOPER > MANAGER > ADMIN > MARKETING > HEAD_CHEF > EMPLOYEE > AGENT > GUEST
+          12-tier role hierarchy (ADR-045):
+          DEV, TEC, MGR, MKT, HR, PUR, PD, ADM, ACC, SLS, AGT, STF (+ OWNER)
           Centralized config: src/lib/permissionMatrix.js (can() helper)
 
   # ── MODULE 2: MESSAGING & WEBHOOK ─────────────────────

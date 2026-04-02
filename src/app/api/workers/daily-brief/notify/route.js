@@ -5,7 +5,7 @@ import { getDailyBriefByDate } from '@/lib/repositories/dailyBriefRepo'
 // POST /api/workers/daily-brief/notify - QStash worker: send daily brief via LINE notification
 export async function POST(request) {
   // Verify QStash signature — reject all other callers
-  const isValid = await verifyQStashSignature(request)
+  const { isValid, body: rawBody } = await verifyQStashSignature(request)
   if (!isValid) {
     return NextResponse.json({ error: 'Invalid QStash signature' }, { status: 401 })
   }

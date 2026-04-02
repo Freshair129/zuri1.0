@@ -9,8 +9,8 @@ import * as campaignRepo from '@/lib/repositories/campaignRepo'
  * UI ดึงจาก DB เท่านั้น ไม่เรียก Graph API โดยตรง
  */
 export async function POST(req) {
-  // Verify QStash signature
-  const isValid = await verifyQStashSignature(req)
+  // Verify QStash signature first
+  const { isValid, body: rawBody } = await verifyQStashSignature(req)
   if (!isValid) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }

@@ -6,7 +6,7 @@ import { getConversations } from '@/lib/repositories/conversationRepo'
 // Produces a daily brief summary and stores it in DB.
 export async function POST(request) {
   // Verify QStash signature — reject all other callers
-  const isValid = await verifyQStashSignature(request)
+  const { isValid, body: rawBody } = await verifyQStashSignature(request)
   if (!isValid) {
     return NextResponse.json({ error: 'Invalid QStash signature' }, { status: 401 })
   }

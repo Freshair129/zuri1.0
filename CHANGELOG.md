@@ -1,7 +1,15 @@
 # Changelog — Zuri Platform v2
 
 > Format: [version] date — summary
-> LATEST → v2.5.0 (Deployment Triggered)
+> LATEST → v2.5.1
+
+---
+
+## [2.5.1] 2026-04-02
+
+### Fixed — Vercel Deployment (Cron Limit)
+- [x] `vercel.json` — Removed cron jobs to comply with Hobby plan limitations (1 Cron/Day).
+- [x] Transitioning background tasks to **QStash** for high-frequency scheduling.
 
 ---
 
