@@ -209,6 +209,6 @@ class AgentProcessor {
 
 - ADR-054: LINE Webhook Agent Mode
 - ADR-028: Facebook Messaging Integration (webhook pattern)
-- FEAT-INBOX.md (Unified Inbox ที่จะแสดง AI conversations)
-- FEAT-AGENT.md (AI Assistant ใน Right Panel — คนละ feature)
+- FEAT04-INBOX.md (Unified Inbox ที่จะแสดง AI conversations)
+- FEAT13-AGENT.md (AI Assistant ใน Right Panel — คนละ feature)
 - `src/lib/agent/agentProcessor.js` (to be created in AG-2)

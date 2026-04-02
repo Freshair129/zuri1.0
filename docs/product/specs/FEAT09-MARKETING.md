@@ -342,9 +342,9 @@ ROAS calculation:
 
 - **ADR-039:** Revenue Attribution Model (first-touch chat attribution)
 - **ADR-050:** MCP Server for Meta Ads AI Tools
-- **FEAT-INBOX.md** — `firstTouchAdId` ตั้งค่าใน webhook handler ของ Inbox
-- **FEAT-POS.md** — orders ที่ใช้ใน ROAS calculation
-- **FEAT-AI-ASSISTANT.md** — AI สามารถ query marketing data ผ่าน NL2SQL (role: MKT)
+- **FEAT04-INBOX.md** — `firstTouchAdId` ตั้งค่าใน webhook handler ของ Inbox
+- **FEAT06-POS.md** — orders ที่ใช้ใน ROAS calculation
+- **FEAT11-AI-ASSISTANT.md** — AI สามารถ query marketing data ผ่าน NL2SQL (role: MKT)
 - `src/lib/repositories/marketingRepo.js` — repository หลักของ module นี้
 - `src/app/api/workers/sync-hourly/route.js` — QStash worker สำหรับ sync Meta Ads data
 - `prisma/schema.prisma` — models: Campaign, AdSet, Ad, AdDailyMetric, AdHourlyMetric, AdDailyDemographic, AdDailyPlacement, AdCreative, AdActivity, AdLiveStatus, AdsOptimizeRequest

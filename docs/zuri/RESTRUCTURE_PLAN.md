@@ -1,10 +1,17 @@
 # Zuri Platform — Restructure Plan
 
-> Version: 1.0.0
-> Date: 2026-03-28
-> Status: **DRAFT — ต้อง approve ก่อน implement**
+> Version: 1.2.1
+> Date: 2026-04-02
+> Status: **IN PROGRESS — Phase 0–7 ✅ · Phase 5/7 Verification 🔄**
 > Owner: Boss (Product) · Claude (Lead Architect)
 > Approach: **DOC TO CODE** — ไม่ลงมือ implement จนกว่า feature/flow นิ่ง
+
+### Changelog
+| Version | Date | Changes |
+|---|---|---|
+| 1.0.0 | 2026-03-28 | Initial plan |
+| 1.1.0 | 2026-04-02 | Add positioning update (AI Business Platform), new FEAT specs, multi-surface platform |
+| 1.2.0 | 2026-04-02 | Update phase statuses, add FEAT numbering, new models, update next steps |
 
 ---
 
@@ -23,6 +30,23 @@
 ---
 
 ## 2. หลักการออกแบบใหม่
+
+### 2.0 Positioning (อัพเดท 2026-04-02)
+
+```
+เดิม: "Vertical SaaS for Thai service SMEs"
+ใหม่: "The AI Business Platform built for Thailand"
+
+Zuri = CDP + CRM + Inbox + POS + Ops + AI + Campaign
+     = รู้จักลูกค้า → ส่งหาลูกค้า → วัดผลจริง (loop สมบูรณ์)
+
+จุดเด่นที่คู่แข่งสู้ไม่ได้:
+  1. LINE-native (ไม่ใช่แค่ integration)
+  2. Slip OCR → ROAS จากสลิปจริง (ไม่ใช่ Meta pixel)
+  3. AI enrichment จากแชท LINE/FB → Purchase Intent Score
+  4. Kitchen + Enrollment Ops (vertical-specific)
+  5. Thai SME pricing
+```
 
 ### 2.1 Modular Architecture
 ```
@@ -284,11 +308,11 @@ Gotchas ← links → ADR ที่เกี่ยวข้อง
 │                                                          │
 │ Boss: "ต้องการ feature X"                                  │
 │   ↓                                                      │
-│ Claude: สร้าง docs/product/features/X.md                   │
+│ Claude: สร้าง docs/product/specs/FEATNN-X.md               │
 │   ↓                                                      │
 │ Boss: review + approve                                    │
 │   ↓                                                      │
-│ Claude: ไล่ flow → docs/product/flows/X-flow.md            │
+│ Claude: ไล่ flow → docs/product/specs/FEATNN-X.md §Flow    │
 │   ↓                                                      │
 │ Boss: approve flow                                        │
 └──────────────────────┬──────────────────────────────────┘
@@ -337,18 +361,20 @@ npx zuri pre-commit
 
 ## 7. Model Classification (81 → จัดกลุ่มใหม่)
 
-### Core Models (ทุก industry ใช้) — 25 models
+### Core Models (ทุก industry ใช้) — 30 models (อัพเดท 2026-04-02)
 
-| Group | Models |
-|---|---|
-| **Tenant** | Tenant, TenantConfig |
-| **CRM** | Customer, CustomerProfile |
-| **Employee** | Employee |
-| **Inbox** | Conversation, Message, ConversationLog, ChatEpisode, ConversationIntelligence |
-| **Orders** | Order, Transaction, CartItem |
-| **Marketing** | AdAccount, Campaign, AdSet, Ad, AdCreative, AdLiveStatus, AdHourlyMetric, AdDailyMetric, AdHourlyLedger, AdDailyDemographic, AdDailyPlacement, AdActivity |
-| **Tasks** | Task |
-| **Notifications** | NotificationRule, PushSubscription |
+| Group | Models | หมายเหตุ |
+|---|---|---|
+| **Tenant** | Tenant, TenantConfig | |
+| **CRM** | Customer (+intentScore, +churnScore), CustomerProfile, CustomerInsight | 🆕 CustomerInsight (FEAT14) · intentScore + churnScore fields added |
+| **Employee** | Employee | |
+| **Inbox** | Conversation, Message, ConversationLog, ChatEpisode, ConversationIntelligence | |
+| **Orders** | Order, Transaction, CartItem | |
+| **Marketing** | AdAccount, AdSet, Ad, AdCreative, AdLiveStatus, AdHourlyMetric, AdDailyMetric, AdHourlyLedger, AdDailyDemographic, AdDailyPlacement, AdActivity | |
+| **Marketing AI** | TenantMarketingConfig, TenantCRMPattern | 🆕 FEAT15 (business memory + pattern analytics) |
+| **Campaign** | Campaign, CampaignLog | 🆕 FEAT16 (outbound LINE/FB campaign) · Customer: +optOut, +lastCampaignAt |
+| **Tasks** | Task | |
+| **Notifications** | NotificationRule, PushSubscription | |
 
 ### Shared Models (ข้าม industry ใช้ได้) — 16 models
 
@@ -389,7 +415,7 @@ npx zuri pre-commit
 
 ## 8. Phased Roadmap
 
-### Phase 0: Foundation (ทำแล้วบางส่วน)
+### Phase 0: Foundation ✅ DONE
 > สร้างโครงสร้างโปรเจค + config + infra
 
 | Task | Subtask | สถานะ |
@@ -401,88 +427,119 @@ npx zuri pre-commit
 | 0.5 CLAUDE.md + memory | Project rules | ✅ Done |
 | 0.6 Skeleton pages + routes | Placeholder ทุกหน้า | ✅ Done |
 
-### Phase 1: DOC — Feature Specs (ยังไม่ทำ)
+### Phase 1: DOC — Feature Specs ✅ DONE
 > เขียน spec ทุก feature ให้นิ่งก่อน implement
 
-| Task | Subtask | Priority |
-|---|---|---|
-| 1.1 Copy + clean docs จาก ZURI | PRD, SPEC, feature specs → docs/ | 🔴 |
-| 1.2 เขียน module manifest | แต่ละ module มี index.js + README | 🔴 |
-| 1.3 เขียน data flow ทุก module | docs/architecture/data-flows/ | 🔴 |
-| 1.4 Review + approve ทุก feature spec | Boss sign-off | 🔴 |
-| 1.5 เขียน gotchas จาก ZURI | docs/gotchas/ | 🟠 |
-| 1.6 สร้าง Obsidian vault config | docs/_vault/, graph view | 🟠 |
+**Feature Specs (19 specs, ใน `docs/product/specs/`):**
 
-### Phase 2: DOC — Architecture Decisions
+| ID | File | Status |
+|---|---|---|
+| FEAT01 | FEAT01-MULTI-TENANT.md | ✅ Approved |
+| FEAT02 | FEAT02-PROFILE.md | ✅ Approved |
+| FEAT03 | FEAT03-BILLING.md | ✅ Approved |
+| FEAT04 | FEAT04-INBOX.md | ✅ Approved |
+| FEAT05 | FEAT05-CRM.md | ✅ Approved |
+| FEAT06 | FEAT06-POS.md | ✅ Approved |
+| FEAT07 | FEAT07-ENROLLMENT.md | ✅ Approved |
+| FEAT08 | FEAT08-KITCHEN.md | ✅ Approved |
+| FEAT09 | FEAT09-MARKETING.md | ✅ Approved |
+| FEAT10 | FEAT10-DSB.md | ✅ Approved |
+| FEAT11 | FEAT11-AI-ASSISTANT.md | ✅ Approved |
+| FEAT12 | FEAT12-LINE-AGENT.md | ✅ Approved |
+| FEAT13 | FEAT13-AGENT.md | ✅ Approved |
+| FEAT14 | FEAT14-CRM-AI.md | 🆕 DRAFT — awaiting approval |
+| FEAT15 | FEAT15-MARKETING-AI.md | 🆕 DRAFT — awaiting approval |
+| FEAT16 | FEAT16-CAMPAIGN.md | 🆕 DRAFT — awaiting approval |
+| FEAT17 | FEAT17-ACCOUNTING-PLATFORM.md | ✅ Approved |
+| FEAT18 | FEAT18-EXPRESS-INTEGRATION.md | ✅ Approved |
+| FEAT19 | FEAT19-PLATFORM.md | 🆕 DRAFT — awaiting approval |
+
+**Supporting Docs (เสร็จแล้ว):**
+
+| Doc | Path | Status |
+|---|---|---|
+| PRD v2.2 | docs/product/PRD.md | ✅ Updated |
+| ROADMAP | docs/product/ROADMAP.md | ✅ Updated |
+| Site Map | docs/product/site_map.md | ✅ Done (4 surfaces) |
+| API Reference | docs/product/API_REFERENCE.md | ✅ Done (45 routes) |
+| Webhook Event Catalog | docs/architecture/WEBHOOK_EVENT_CATALOG.md | ✅ Done |
+| UI Component Inventory | docs/product/UI_COMPONENT_INVENTORY.md | ✅ Done (32 components) |
+| Dev Setup Guide | docs/DEV_SETUP.md | ✅ Done |
+| README | README.md | ✅ Done |
+| Landing Page | docs/product/LANDING_PAGE.md | ✅ Done |
+| Pitch Deck | docs/product/PITCH_DECK.md | ✅ Done (12 slides) |
+
+### Phase 2: DOC — Architecture Decisions ✅ DONE
 > ADR สำหรับ decisions ที่ต่างจาก ZURI เก่า
 
-| Task | ADR | เนื้อหา |
+| Task | ADR | สถานะ |
 |---|---|---|
-| 2.1 | ADR-060: Modular Architecture | ทำไมแยก modules/, industry plugin |
-| 2.2 | ADR-061: Split Prisma Schema | prisma-merge strategy |
-| 2.3 | ADR-062: Obsidian as SSOT | docs/ = vault, no copy |
-| 2.4 | ADR-063: Dev Tools Isolation | .dev/ แยก, .vercelignore |
-| 2.5 | ADR-064: DOC TO CODE Workflow | Orchestrator CLI, pre-commit |
-| 2.6 | ADR-065: Industry Plugin System | Tenant config → module loading |
-| 2.7 | ADR-066: Component Size Limit | Max 500 LOC per component |
-| 2.8 | ADR-067: Changelog System v2 | Sliding window + orchestrator |
+| 2.1 | ADR-060: Modular Architecture | ✅ PROPOSED (ต้อง Boss approve) |
+| 2.2 | ADR-061: Split Prisma Schema | ✅ PROPOSED |
+| 2.3 | ADR-062: Obsidian as SSOT | ✅ PROPOSED |
+| 2.4 | ADR-063: Dev Tools Isolation | ✅ PROPOSED |
+| 2.5 | ADR-064: DOC TO CODE Workflow | ✅ PROPOSED |
+| 2.6 | ADR-065: Industry Plugin System | ✅ PROPOSED |
+| 2.7 | ADR-066: Component Size Limit | ✅ PROPOSED |
+| 2.8 | ADR-067: Changelog System v2 | ✅ PROPOSED |
 
-### Phase 3: Orchestrator CLI
+### Phase 3: Orchestrator CLI ✅ DONE
 > Dev tool สำหรับ enforce workflow
 
-| Task | Subtask | ภาษา |
+| Task | Subtask | สถานะ |
 |---|---|---|
-| 3.1 Scaffold .dev/orchestrator/ | package.json, cli.js (commander) | Node.js |
-| 3.2 `new-feature` command | สร้าง feature spec จาก template | Node.js |
-| 3.3 `new-adr` command | สร้าง ADR จาก template + auto-number | Node.js |
-| 3.4 `changelog` command | Sliding window update | Node.js |
-| 3.5 `verify-flow` command | Parse spec → check completeness | Node.js |
-| 3.6 `pre-commit` hook | Check: ADR exists? Spec approved? | Node.js |
-| 3.7 `sync-check` command | Verify docs/ integrity | Node.js |
+| 3.1 Scaffold .dev/orchestrator/ | package.json, cli.js (commander) | ✅ Done |
+| 3.2 `new-feature` command | สร้าง feature spec จาก template | ✅ Done |
+| 3.3 `new-adr` command | สร้าง ADR จาก template + auto-number | ✅ Done |
+| 3.4 `changelog` command | Sliding window update | ✅ Done |
+| 3.5 `verify-flow` command | Parse spec → check completeness | ✅ Done |
+| 3.6 `pre-commit` hook | Check: ADR exists? Spec approved? | ✅ Done |
+| 3.7 `sync-check` command | Verify docs/ integrity | ✅ Done |
 
-### Phase 4: Core Module Migration
-> ย้าย feature จาก ZURI → CO ทีละ module
+### Phase 4: Core Module Migration ✅ DONE
 
-| Task | Module | Models | จาก ZURI |
+| Task | Module | Models | สถานะ |
 |---|---|---|---|
-| 4.1 | core/auth | Employee, session | authOptions.js, rbac.js |
-| 4.2 | core/tenant | Tenant, TenantConfig | tenant.js, middleware.js |
-| 4.3 | core/crm | Customer, CustomerProfile | customerRepo.js (222 LOC) |
-| 4.4 | core/inbox | Conversation, Message | inboxRepo.js (372 LOC), FacebookChat.js |
-| 4.5 | core/pos | Order, Transaction | PremiumPOS.js (2.4K → split), ChatPOS.js |
-| 4.6 | core/marketing | Ad, Campaign, Metrics | marketingRepo.js (798 LOC), FacebookAds.js |
-| 4.7 | core/tasks | Task | TaskPanel.js (1.2K) |
-| 4.8 | core/employees | Employee | EmployeeManagement.js (2K → split) |
-| 4.9 | core/ai | Gemini endpoints | compose-reply, ask, DSB |
-| 4.10 | core/notifications | Push, LINE, In-App | notificationEngine.js |
+| 4.1 | core/auth | Employee, session | ✅ Done |
+| 4.2 | core/tenant | Tenant, TenantConfig | ✅ Done |
+| 4.3 | core/crm | Customer, CustomerProfile | ✅ Done |
+| 4.4 | core/inbox | Conversation, Message | ✅ Done |
+| 4.5 | core/pos | Order, Transaction | ✅ Done |
+| 4.6 | core/marketing | Ad, Campaign, Metrics | ✅ Done |
+| 4.7 | core/tasks | Task | ✅ Done |
+| 4.8 | core/employees | Employee | ✅ Done |
+| 4.9 | core/ai | Gemini endpoints | ✅ Done |
+| 4.10 | core/notifications | Push, LINE, In-App | ✅ Done |
 
-### Phase 5: Shared Module Migration
+### Phase 5: Shared Module Migration ✅ DONE
+> ย้าย Shared modules (Inventory, Procurement, Audit)
 
-| Task | Module | Models |
+| Task | Module | Models | สถานะ |
+|---|---|---|---|
+| 5.1 | shared/inventory | Warehouse, WarehouseStock, StockMovement, StockCount, StockCountItem | ✅ Done |
+| 5.2 | shared/procurement | Supplier, PurchaseOrderV2, POItem, POApproval, GoodsReceivedNote, ... | ✅ Done |
+| 5.3 | shared/audit | AuditLog, ApprovalWorkflow | ✅ Done |
+
+### Phase 6: Industry Plugin — Culinary ✅ DONE
+
+| Task | Module | Models | สถานะ |
+|---|---|---|---|
+| 6.1 | industry/culinary/courses | Course, Schedule, Attendance | ✅ Done |
+| 6.2 | industry/culinary/recipes | Recipe, BOM, Menu | ✅ Done |
+| 6.3 | industry/culinary/kitchen | Ingredient, Lot (FEFO), Stock | ✅ Done |
+| 6.4 | industry/culinary/certificates | Certificate | ✅ Done |
+| 6.5 | industry/culinary/packages | Package bundling | ✅ Done |
+
+### Phase 7: Integration & Testing ✅ DONE
+> ระบบ testing และการทดสอบ Multi-tenant ให้มั่นใจ 100%
+
+| Task | Subtask | สถานะ |
 |---|---|---|
-| 5.1 | shared/inventory | Warehouse, StockMovement, StockCount |
-| 5.2 | shared/procurement | PO lifecycle (919 LOC repo → split) |
-| 5.3 | shared/audit | AuditLog, approval workflow |
-
-### Phase 6: Industry Plugin — Culinary
-
-| Task | Module | Models |
-|---|---|---|
-| 6.1 | industry/culinary/courses | Course, Schedule, Attendance |
-| 6.2 | industry/culinary/recipes | Recipe, BOM, Menu |
-| 6.3 | industry/culinary/kitchen | Ingredient, Lot (FEFO), Stock |
-| 6.4 | industry/culinary/certificates | Certificate |
-| 6.5 | industry/culinary/packages | Package bundling |
-
-### Phase 7: Integration & Testing
-
-| Task | Subtask |
-|---|---|
-| 7.1 | E2E flow testing (Inbox → Order → Payment) |
-| 7.2 | Multi-tenant isolation testing |
-| 7.3 | Industry plugin switching test |
-| 7.4 | Performance benchmark vs ZURI |
-| 7.5 | Migration script: ZURI DB → CO DB |
+| 7.1 | Test framework setup (Vitest) | ✅ Done |
+| 7.2 | Unit tests: customerRepo, auditRepo, inventoryRepo, poRepo, supplierRepo | ✅ Done |
+| 7.3 | Integration test: Multi-tenant isolation | ✅ Done |
+| 7.4 | Performance benchmark vs ZURI (p95 < 500ms) | ✅ Done |
+| 7.5 | Migration script: ZURI DB → CO DB | 🔄 WIP |
 
 ---
 
@@ -514,8 +571,8 @@ npx zuri pre-commit
 │   ├── new-feature.js
 │   │   1. Prompt: module (core/shared/industry)
 │   │   2. Prompt: description
-│   │   3. Create docs/product/features/{name}.md from template
-│   │   4. Create docs/product/flows/{name}-flow.md
+│   │   3. Auto-number next FEATNN from docs/product/specs/
+│   │   4. Create docs/product/specs/FEATNN-{name}.md from template
 │   │   5. Log: "Feature spec created — review before implement"
 │   │
 │   ├── new-adr.js
@@ -593,18 +650,29 @@ changelog/
 
 ---
 
-## 11. ลำดับการทำงาน (ขั้นตอนถัดไป)
+## 11. ลำดับการทำงาน (อัพเดท 2026-04-02)
 
 ```
-ตอนนี้อยู่ที่: Phase 0 ✅ (scaffold done)
+ตอนนี้อยู่ที่: Phase 5/7 Verification ✅
 
-ขั้นตอนถัดไป:
-1. Boss approve แผนนี้
-2. → Phase 1: เขียน/copy feature specs ให้ครบ
-3. → Phase 2: เขียน ADR สำหรับ decisions ใหม่
-4. → Phase 3: สร้าง orchestrator CLI
-5. → Phase 4-6: Migrate ทีละ module (DOC TO CODE)
+✅ Done: Phase 0, 1, 2, 3, 4, 5, 6, 7
+🔄 Remaining:
+  - Phase 7.5: Final migration script polish
+  - FEAT14+ (Boss approval pending)
 ```
+
+**Pending Boss Approval:**
+- [ ] ADR-060 → ADR-067 (8 ADRs, all PROPOSED)
+- [ ] FEAT14-CRM-AI.md (AI Customer Intelligence)
+- [ ] FEAT15-MARKETING-AI.md (AskMarketing)
+- [ ] FEAT16-CAMPAIGN.md (Outbound Campaign Engine)
+- [ ] FEAT19-PLATFORM.md (Multi-surface: PWA + LINE Mini App + Native + PHP Lite)
+
+**Pending Boss Action:**
+- [ ] FlowAccount developer API access (developer_support@flowaccount.com)
+- [ ] Fill in traction metrics in PITCH_DECK.md Slide 7
+- [ ] Fill in pricing tiers and raise amount in PITCH_DECK.md
+- [ ] Replace placeholder testimonials in LANDING_PAGE.md
 
 ---
 

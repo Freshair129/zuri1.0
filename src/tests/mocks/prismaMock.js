@@ -36,6 +36,8 @@ export function createMockPrisma() {
     // CRM
     customer: createModelMock(),
     customerProfile: createModelMock(),
+    customerInsight: createModelMock(),
+    tenantCRMPattern: createModelMock(),
     // Inbox
     conversation: createModelMock(),
     message: createModelMock(),

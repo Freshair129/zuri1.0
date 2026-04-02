@@ -13,9 +13,15 @@ const prismaProxy = new Proxy({}, {
 })
 
 // Mock the database module globally
-vi.mock('@/lib/db', () => ({
-  getPrisma: () => prismaProxy,
-}))
+vi.mock('@/lib/db', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    getPrisma: () => prismaProxy,
+    // Use the real tenantContext to allow AsyncLocalStorage testing
+    tenantContext: actual.tenantContext, 
+  }
+})
 
 // Set test env vars
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test'

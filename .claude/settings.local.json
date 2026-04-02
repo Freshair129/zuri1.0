@@ -20,7 +20,12 @@
       "Bash(rm -rf main.py vibecode/ state/ tools/ utils/ MULTIAGENT_CONCEPT.md)",
       "Bash(rm -f project_state.json history_log.jsonl gates.json)",
       "Bash(find /e/CO -type f \\\\\\(-iname *prd* \\\\\\))",
-      "mcp__obsidian__obsidian_list_files_in_vault"
+      "mcp__obsidian__obsidian_list_files_in_vault",
+      "mcp__obsidian__obsidian_list_files_in_dir"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "obsidian"
+  ]
 }

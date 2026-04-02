@@ -8,7 +8,7 @@
 **Reviewer:** Claude (Architect)
 
 > Note: นี่คือ AI Assistant **ใน Inbox Right Panel** (compose-reply + ask-AI)
-> สำหรับ AI Assistant add-on ตัวเต็ม (Web FAB + LINE Bot + NL2SQL) ดู FEAT-AI-ASSISTANT.md
+> สำหรับ AI Assistant add-on ตัวเต็ม (Web FAB + LINE Bot + NL2SQL) ดู FEAT11-AI-ASSISTANT.md
 
 ---
 
@@ -146,7 +146,7 @@ Model config อยู่ใน `system_config.yaml` — ห้าม hardcode m
 ## 9. Related
 
 - ADR-050: MCP AI-Native Operations
-- FEAT-INBOX.md (Chat panel ที่รับ draft จาก AI)
-- FEAT-PROFILE.md (customer context ที่ inject ให้ AI)
-- FEAT-AI-ASSISTANT.md (AI add-on ตัวเต็ม — Web FAB + LINE Bot + NL2SQL)
+- FEAT04-INBOX.md (Chat panel ที่รับ draft จาก AI)
+- FEAT02-PROFILE.md (customer context ที่ inject ให้ AI)
+- FEAT11-AI-ASSISTANT.md (AI add-on ตัวเต็ม — Web FAB + LINE Bot + NL2SQL)
 - `src/app/api/ai/` (AI endpoints)

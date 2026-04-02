@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
-const V_SCHOOL_TENANT_ID = '10000000-0000-0000-0000-000000000001'
-
 export async function middleware(req) {
   const { pathname } = req.nextUrl
 
@@ -11,17 +9,22 @@ export async function middleware(req) {
     return NextResponse.next()
   }
 
-  // Tenant resolution priority:
-  // 1. Subdomain: vschool.zuri.app
-  // 2. Session JWT: token.tenantId
-  // 3. Header: X-Tenant-Slug (QStash/internal)
-  // 4. Default: vschool
-  let tenantId = V_SCHOOL_TENANT_ID
-  let tenantSlug = 'vschool'
+  // Tenant resolution:
+  // 1. Extract from subdomain (e.g. vschool.zuri.app -> vschool)
+  const host = req.headers.get('host') || ''
+  let slug = host.split('.')[0]
 
-  // Check JWT session
+  // Handle local dev (localhost:3000) or main domains
+  if (slug === 'www' || slug === 'zuri' || slug === 'localhost:3000') {
+    // If local dev, we could query params or fallback to vschool
+    const searchParams = req.nextUrl.searchParams
+    slug = searchParams.get('tenant') || 'vschool'
+  }
+
+  // 2. Check JWT session
   const token = await getToken({ req })
 
+  let tenantId = null
   if (token?.tenantId) {
     tenantId = token.tenantId
   }
@@ -35,8 +38,10 @@ export async function middleware(req) {
 
   // Inject tenant context for downstream API routes
   const headers = new Headers(req.headers)
-  headers.set('x-tenant-id', tenantId)
-  headers.set('x-tenant-slug', tenantSlug)
+  if (tenantId) {
+    headers.set('x-tenant-id', tenantId)
+  }
+  headers.set('x-tenant-slug', slug)
 
   return NextResponse.next({ request: { headers } })
 }

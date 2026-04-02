@@ -418,8 +418,8 @@ Worker `check-completion` ต้อง guard ไม่สร้าง Certificat
 - `src/app/api/workers/mark-absent/route.js` — QStash worker
 - `src/app/api/workers/check-completion/route.js` — QStash worker
 - `src/app/api/workers/send-class-reminders/route.js` — QStash worker
-- `docs/product/specs/FEAT-POS.md` — POS module (Order สร้างก่อน Enrollment)
-- `docs/product/specs/FEAT-BILLING.md` — Billing module
+- `docs/product/specs/FEAT06-POS.md` — POS module (Order สร้างก่อน Enrollment)
+- `docs/product/specs/FEAT03-BILLING.md` — Billing module
 - `docs/decisions/adrs/` — ดู ADR-056 (multi-tenant), ADR-045 (RBAC)
 
 **ADR Required ก่อน implement:**

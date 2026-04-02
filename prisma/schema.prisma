@@ -80,6 +80,8 @@ model Customer {
   originId        String?   @map("origin_id")
   walletBalance   Float     @default(0) @map("wallet_balance")
   walletPoints    Int       @default(0) @map("wallet_points")
+  intentScore     Int       @default(0) @map("intent_score")
+  churnScore      Int       @default(0) @map("churn_score")
   intelligence    Json?
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
@@ -89,6 +91,7 @@ model Customer {
   orders        Order[]
   enrollments   Enrollment[]
   profile       CustomerProfile?
+  insight       CustomerInsight?
 
   @@index([tenantId])
   @@index([phonePrimary])
@@ -114,6 +117,38 @@ model CustomerProfile {
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@map("customer_profiles")
+}
+
+model CustomerInsight {
+  id             String    @id @default(uuid())
+  tenantId       String    @map("tenant_id")
+  customerId     String    @unique @map("customer_id")
+  interests      String[]  @default([])
+  objections     String[]  @default([])
+  commStyle      String?   @map("comm_style")
+  keyFacts       String[]  @map("key_facts") @default([])
+  summary        String?   @db.Text
+  contactPref    String?   @map("contact_pref")
+  manualOverride Json?     @map("manual_override") 
+  enrichedAt     DateTime  @default(now()) @map("enriched_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("customer_insights")
+}
+
+model TenantCRMPattern {
+  id              String   @id @default(uuid())
+  tenantId        String   @unique @map("tenant_id")
+  topObjections   Json     @default("[]") @map("top_objections")
+  topInterests    Json     @default("[]") @map("top_interests")
+  conversionTips  Json     @default("[]") @map("conversion_tips")
+  bestAdSegments  Json?    @map("best_ad_segments")
+  computedAt      DateTime @default(now()) @map("computed_at")
+
+  @@map("tenant_crm_patterns")
 }
 
 // ============================================

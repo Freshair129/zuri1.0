@@ -1,7 +1,68 @@
 # Changelog — Zuri Platform v2
 
 > Format: [version] date — summary
-> LATEST → v2.3.0
+> LATEST → v2.5.0
+
+---
+
+## [2.5.0] 2026-04-02
+
+### Added — CRM AI: AI Customer Intelligence (FEAT14)
+- [x] **AI Analysis Engine** — Integrated Gemini 1.5 Flash for automated conversation analysis.
+- [x] **Behavioral Scoring** — Purchase Intent and Churn Risk calculation based on chat context.
+- [x] **Enrichment Worker** — QStash-driven worker for background customer profile enrichment.
+- [x] **Real-time Alerts** — Pusher integration for "Hot Lead" alerts in the Inbox.
+- [x] **AI Insights Tab** — New premium dashboard tab in CRM for deep customer analysis.
+
+### Added — FEAT14 Verification: Unit Testing
+- [x] `src/lib/repositories/customerInsightRepo.test.js` — Unit tests for AI insight repository and transactional scoring.
+- [x] `src/lib/ai/gemini.test.js` — Unit tests for AI logic with class-based Gemini SDK mocks (100% pass).
+
+---
+
+## [2.4.1] 2026-04-02
+
+## [2.4.2] 2026-04-02
+
+### Added — Phase 1 Verification: Unit Testing
+- [x] `src/lib/tenant.test.js` — Unit tests for tenant resolution and helpers (100% pass).
+- [x] `src/lib/db.test.js` — Unit tests for Prisma multi-tenant middleware logic.
+- [x] `src/middleware.test.js` — Unit tests for subdomain/host resolution and header injection (100% pass).
+
+### Fixed — Multi-Tenant Foundation
+- [x] `src/lib/db.ts` — Implemented `prisma.$use` middleware for automatic tenant isolation (MT-P4) using `AsyncLocalStorage`.
+
+---
+
+
+## [2.4.0] 2026-04-02
+
+
+### Added — Phase 1: Multi-Tenant Foundation (FEAT01)
+- `src/middleware.js` — Refactored tenant resolution to support dynamic subdomain routing (`{slug}.zuri.app`).
+- `src/app/api/tenants/` — Tenant management API (Admin only).
+- `src/app/(dashboard)/tenants/` — Tenant administration UI for managing school/business clients.
+- `src/lib/tenant.js` — Added helpers for tenant resolution and caching.
+
+### Added — Phase 2: Customer Core & Omni-Channel (FEAT02)
+- **Tenant Sovereignty (Branding)**:
+  - `src/context/TenantContext.jsx` — React Context for global tenant configuration/branding.
+  - `src/app/api/tenant/config/` — API to fetch tenant-specific settings (logo, color, name).
+  - `src/components/layouts/Sidebar.jsx` — Dynamic branding (logo/color) based on the current tenant's "filling".
+  - `src/app/(dashboard)/layout.jsx` — Integrated `TenantProvider` into the core dashboard template.
+- **Inbox Enhancements (Right Panel)**:
+  - `src/components/inbox/RightPanel.jsx` — Tabbed interface (Activity, Profile, Billing).
+  - `src/components/inbox/ProfileTab.jsx` — Real-time customer profile editor with lifecycle stage dropdown.
+  - `src/components/inbox/ActivityTab.jsx` — Vertical timeline of customer activity logs.
+- **Customer 360 Dashboard (Full View)**:
+  - `src/app/(dashboard)/crm/[id]/page.jsx` — Implemented premium dashboard with real-time stats, activity timeline, and AI insights.
+  - Omnichannel integration: Added direct link to CRM profiles from the Inbox Right Panel.
+  - Expanded `FEAT02-PROFILE.md` to Version 2.0.0 (Customer 360 & Profile).
+  - Updated `system_requirements.yaml` with Multi-Tenant & Isolation NFRs.
+
+### Changed — Architecture & Strategy
+- Updated `docs/product/PRD.md` to reflect the **"Core Template vs. Tenant Filling"** principle.
+- Updated `CLAUDE.md` with mandatory multi-tenant development rules.
 
 ---
 

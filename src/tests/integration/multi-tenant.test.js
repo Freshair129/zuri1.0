@@ -49,4 +49,34 @@ describe('Multi-tenant isolation', () => {
     expect(call.where.tenantId).toBe(TENANT_A)
     expect(call.where.action).toBe('CREATE')
   })
+
+  it('customerRepo.findById should scope to tenant', async () => {
+    const { findById } = await import('@/lib/repositories/customerRepo.js')
+    mockPrisma.customer.findFirst.mockResolvedValue(null)
+
+    await findById(TENANT_B, 'some-id')
+    const call = mockPrisma.customer.findFirst.mock.calls[0][0]
+    expect(call.where.tenantId).toBe(TENANT_B)
+    expect(call.where.id).toBe('some-id')
+  })
+
+  it('customerRepo.updateCustomer should scope to tenant', async () => {
+    const { updateCustomer } = await import('@/lib/repositories/customerRepo.js')
+    mockPrisma.customer.update.mockResolvedValue({})
+
+    await updateCustomer(TENANT_A, 'cust-1', { facebookName: 'Isolated Name' })
+    const call = mockPrisma.customer.update.mock.calls[0][0]
+    expect(call.where.tenantId).toBe(TENANT_A)
+    expect(call.where.id).toBe('cust-1')
+  })
+
+  it('auditRepo.create should save tenantId', async () => {
+    const { create } = await import('@/lib/repositories/auditRepo.js')
+    mockPrisma.auditLog.create.mockResolvedValue({})
+
+    await create(TENANT_B, 'actor-1', 'ACTION', 'target-1')
+    const call = mockPrisma.auditLog.create.mock.calls[0][0]
+    expect(call.data.tenantId).toBe(TENANT_B)
+  })
 })
+

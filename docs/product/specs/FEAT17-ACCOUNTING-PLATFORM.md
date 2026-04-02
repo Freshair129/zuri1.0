@@ -44,7 +44,7 @@ Zuri หน้าที่เดียวคือ **ส่งข้อมูล
 | Platform | วิธี | Auto? | Phase |
 |---|---|---|---|
 | **FlowAccount** | REST API (OAuth 2.0) | ✅ Full auto | 1 |
-| **Express** (ESG) | Excel Export → X-import | 🟡 Semi-auto | 1 |
+| **Express** (ESG) | Excel Export → X-import | 🟡 Semi-auto | 2 |
 | **PEAK** | TBD | TBD | 3 |
 | **Sage** | TBD | TBD | 3 |
 
@@ -55,25 +55,26 @@ Zuri หน้าที่เดียวคือ **ส่งข้อมูล
 
 ## 5. Scope
 
-### Phase 1
+### Phase 1 — Core (FlowAccount only)
 
 **FlowAccount (Full Auto via API):**
 - [x] Sync ยอดขาย POS → ใบกำกับภาษี/ใบเสร็จ
 - [x] Sync ลูกค้า CRM → สมุดรายชื่อ
 - [x] Push รายจ่าย (Expense)
 - [x] OAuth Connect per tenant
-
-**Express (Semi-auto via X-import Excel):**
-- [x] Export ยอดขาย POS → Excel (X-import format)
-- [x] Export ลูกค้า CRM → Excel (X-import format)
-- [x] Export รายจ่าย → Excel (X-import format)
-- [x] Auto-email ให้นักบัญชีทุกวัน หรือ download manual
-
-**ร่วมกัน:**
-- [x] Config หน้า tenant (เลือก platform, mapping, schedule)
+- [x] Config หน้า tenant (mapping, schedule)
 - [x] Sync log + error report
 
-### Phase 2
+### Phase 2 — Enhanced UX (Express + deeper sync)
+
+**Express (Semi-auto via X-import Excel):**
+> เสริมประสบการณ์ผู้ใช้ — ไม่ใช่ฟีเจอร์หลัก
+- [ ] Export ยอดขาย POS → Excel (X-import format)
+- [ ] Export ลูกค้า CRM → Excel (X-import format)
+- [ ] Export รายจ่าย → Excel (X-import format)
+- [ ] Auto-email ให้นักบัญชีทุกวัน หรือ download manual
+
+**FlowAccount (deeper sync):**
 - [ ] Sync สต็อค/วัตถุดิบ
 - [ ] รับ vendor invoice กลับจาก FlowAccount
 - [ ] Reconcile ยอดรายวัน

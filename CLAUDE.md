@@ -1,13 +1,16 @@
 # Zuri Platform — Claude Code Rules
 
 ## Product
-Zuri is a Vertical SaaS for culinary schools and food businesses in Thailand.
+Zuri is an **AI Business Platform** for Thai service SMEs — starting with culinary schools, expandable to any service business via industry plugins.
+
+> **Positioning:** "The AI Business Platform built for Thailand"
+> Thai-first · Vertical AI · All-in-one (Inbox + CRM + POS + Ops)
 
 **Core Modules:** CRM, Unified Inbox (FB+LINE), POS, Marketing/Ads Analytics, Kitchen Ops, Enrollment, Tasks, Daily Sales Brief (AI)
 
 **Add-ons (sold separately):**
-- AI Assistant (FEAT-AI-ASSISTANT.md) — Web FAB + LINE Bot + NL2SQL + NL2Data + Group Monitor + Slip OCR
-- Accounting Platform (FEAT-ACCOUNTING-PLATFORM.md) — FlowAccount API auto-sync + Express X-import
+- AI Assistant (FEAT11-AI-ASSISTANT.md) — Web FAB + LINE Bot + NL2SQL + NL2Data + Group Monitor + Slip OCR
+- Accounting Platform (FEAT17-ACCOUNTING-PLATFORM.md) — FlowAccount API auto-sync + Express X-import
 
 **DOC TO CODE:** Never implement without approved spec + ADR. Check `docs/product/specs/` for APPROVED specs before coding.
 
@@ -38,6 +41,8 @@ Zuri is a Vertical SaaS for culinary schools and food businesses in Thailand.
 - Every core table has `tenant_id` column
 - Middleware resolves tenant → injects `x-tenant-id` header
 - V School default: `10000000-0000-0000-0000-000000000001`
+- **Tenant Sovereignty Rule**: Use `TenantContext` for all UI branding (logo, colors). Never hardcode tenant-specific UI. "Core once, Filling many."
+
 
 ### RBAC (ADR-045)
 - 12 roles: DEV, TEC, MGR, MKT, HR, PUR, PD, ADM, ACC, SLS, AGT, STF + OWNER

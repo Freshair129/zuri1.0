@@ -407,7 +407,7 @@ QStash cron 20:00 ทุกวัน:
 | Roadmap | `docs/product/ROADMAP.md` | M2: Kitchen Ops milestone |
 | ADR-043 | `docs/decisions/adrs/ADR-043.md` | Thai fuzzy search strategy |
 | ADR-056 | `docs/decisions/adrs/ADR-056.md` | Multi-tenant architecture |
-| FEAT-POS | `docs/product/specs/FEAT-POS.md` | POS ใช้ Recipe/Ingredient data ร่วมกัน |
+| FEAT-POS | `docs/product/specs/FEAT06-POS.md` | POS ใช้ Recipe/Ingredient data ร่วมกัน |
 | DB Schema | `prisma/schema.prisma` | Ingredient, IngredientLot, Recipe models |
 | Repositories | `src/lib/repositories/` | `kitchenRepository.js`, `recipeRepository.js`, `ingredientRepository.js` |
 | QStash Workers | `src/app/api/workers/` | `kitchen-deduct.js`, `kitchen-prep-sheet.js` |

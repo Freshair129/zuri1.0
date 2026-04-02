@@ -24,17 +24,22 @@ export function getReceiver() {
 /**
  * Verify QStash signature on worker endpoints
  * @param {Request} req
- * @returns {Promise<boolean>}
+ * @returns {Promise<{isValid: boolean, body: string|null}>}
  */
 export async function verifyQStashSignature(req) {
   const signature = req.headers.get('upstash-signature')
-  if (!signature) return false
+  if (!signature) return { isValid: false, body: null }
 
   const body = await req.text()
   try {
-    await getReceiver().verify({ signature, body })
-    return true
-  } catch {
-    return false
+    await getReceiver().verify({ 
+      signature, 
+      body,
+      url: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}/api/workers/` : undefined 
+    })
+    return { isValid: true, body }
+  } catch (err) {
+    console.error('QStash Verification Error:', err)
+    return { isValid: false, body: null }
   }
 }

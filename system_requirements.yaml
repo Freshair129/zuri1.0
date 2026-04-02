@@ -1,10 +1,7 @@
-# ZURI PLATFORM v2 — SYSTEM REQUIREMENTS
-# Vertical SaaS สำหรับ culinary schools + food businesses ในไทย
-# Last updated: 2026-03-23 (v2.1.0)
-# ─────────────────────────────────────────────────────────
-
 system_name: "Zuri Platform v2"
-version: "2.1.0"
+version: "2.4.0"
+last_updated: "2026-04-02"
+
 description: |
   Greenfield CRM สำหรับ Zuri Platform — เขียนใหม่ทั้งหมด (ไม่ใช่ refactor)
   รวม Meta Ads sync, Messenger/LINE inbox, AI (Gemini), Kitchen Ops,
@@ -36,8 +33,9 @@ functional_requirements:
   - module: "Authentication & RBAC"
     ui_tab: "LoginPage"
     status: "✅ Working"
-    adr: "ADR-026, ADR-035, ADR-045"
-    description: "Email+Password login, 8-tier RBAC, centralized permissionMatrix.js"
+    adr: "ADR-026, ADR-035, ADR-045, ADR-056"
+    description: "Email+Password login, 12-role RBAC, Multi-tenant JWT context"
+
     features:
       - name: "FR1.1: Email & Password Login"
         status: "✅ Working"
@@ -101,8 +99,9 @@ functional_requirements:
 
   - module: "Identity Resolution"
     ui_tab: ["customers"]
-    status: "✅ Partially Working"
+    status: "✅ Working"
     adr: "ADR-025"
+
     features:
       - name: "FR3.1: Phone Number Normalization (E.164)"
         status: "✅ Working"
@@ -684,6 +683,47 @@ functional_requirements:
         status: "✅ Working"
         description: "AI Agent access to intelligence data via intelligence.get_chat_tree tool"
 
+  # ── MODULE 26: MULTI-TENANCY (FEAT01) ─────────────────
+
+  - module: "Multi-Tenancy Foundation"
+    status: "✅ Working"
+    adr: "ADR-056"
+    features:
+      - name: "FR26.1: Subdomain Routing"
+        status: "✅ Working"
+        description: "{slug}.zuri.app based tenant resolution via middleware"
+
+      - name: "FR26.2: Tenant Context Injection"
+        status: "✅ Working"
+        description: "Inject x-tenant-id into API/Request headers & JWT session"
+
+      - name: "FR26.3: Tenant Admin UI"
+        status: "✅ Working"
+        description: "Manage multiple school/business clients via /tenants (Admin only)"
+
+      - name: "FR26.4: Dynamic Branding (Filling)"
+        status: "✅ Working"
+        description: "TenantProvider + /api/tenant/config for logos, colors, and names"
+
+  # ── MODULE 27: CUSTOMER PROFILE (FEAT02) ──────────────
+
+  - module: "Customer Profile & Activity"
+    ui_tab: "UnifiedInbox (Right Panel)"
+    status: "✅ Working"
+    features:
+      - name: "FR27.1: Interactive Profile Tab"
+        status: "✅ Working"
+        description: "Edit lifecycle stage, contact info, and view ads attribution"
+
+      - name: "FR27.2: Lifecycle Tracking"
+        status: "✅ Working"
+        values: ["NEW", "CONTACTED", "INTERESTED", "ENROLLED", "PAID"]
+
+      - name: "FR27.3: Activity Log Timeline"
+        status: "✅ Working"
+        description: "Vertical timeline of customer-specific audit logs (createdBy, changes)"
+
+
 # ─────────────────────────────────────────────────────────
 # NON-FUNCTIONAL REQUIREMENTS
 # ─────────────────────────────────────────────────────────
@@ -754,6 +794,16 @@ non_functional_requirements:
       - name: "CON (Conversion Efficiency)"
         logic: "Total Transactions / Cost Per Result (CPR)"
 
+  - category: "Multi-Tenancy & Isolation"
+    requirements:
+      - name: "NFR7 — Tenant Data Isolation"
+        description: "Zero cross-tenant leak — tenantId mandatory in all repository calls and WHERE clauses."
+        status: "✅ Enforced"
+
+      - name: "NFR8 — Tenant Branding Separation"
+        description: "UI components must use TenantProvider for all branding (logo, colors, names). No hardcoding per tenant."
+        status: "✅ Enforced"
+
 # ─────────────────────────────────────────────────────────
 # API SPECIFICATION (RESTful — Next.js App Router)
 # ─────────────────────────────────────────────────────────
@@ -818,7 +868,11 @@ api_specification:
         purpose: "List + create customers"
       - method: "GET/PATCH"
         path: "/api/customers/[id]"
-        purpose: "Customer detail + update"
+        purpose: "Customer detail + update (with profile & audit logging)"
+      - method: "GET"
+        path: "/api/customers/[id]/activity"
+        purpose: "Customer-specific activity log timeline"
+
 
   - module: "Enrollments"
     endpoints:
@@ -922,6 +976,13 @@ api_specification:
         path: "/api/workers/notification"
         purpose: "Upstash QStash serverless worker — verify signature + LINE push"
         note: "ห้ามเรียกตรง ต้องผ่าน QStash เท่านั้น (signature required)"
+
+  - module: "Tenant"
+    endpoints:
+      - method: "GET"
+        path: "/api/tenant/config"
+        purpose: "Fetch tenant branding (logo, name, colors) for dynamic UI"
+
 
   - module: "Sheets Sync"
     endpoints:

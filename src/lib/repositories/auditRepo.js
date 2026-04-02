@@ -34,3 +34,11 @@ export async function findByTenant(tenantId, { action, limit = 50, skip = 0 } = 
     orderBy: { createdAt: 'desc' },
   })
 }
+export async function findByTarget(tenantId, target, { limit = 50, skip = 0 } = {}) {
+  return prisma.auditLog.findMany({
+    where: { tenantId, target },
+    take: limit,
+    skip,
+    orderBy: { createdAt: 'desc' },
+  })
+}

@@ -22,7 +22,41 @@ export async function findMany(tenantId, { search, limit = 50, offset = 0 } = {}
 export async function findById(tenantId, id) {
   return prisma.customer.findFirst({
     where: { id, tenantId },
-    include: { profile: true },
+    include: { 
+      profile: true,
+      insight: true,
+      enrollments: { 
+        take: 5, 
+        orderBy: { enrolledAt: 'desc' },
+        include: { product: true }
+      },
+      _count: {
+        select: { orders: true, enrollments: true }
+      }
+    },
+  })
+}
+
+// Alias for findById for consistency with API routes
+export const getCustomerById = findById
+
+export async function updateCustomer(tenantId, id, data) {
+  const { profile: profileData, ...customerData } = data
+
+  return prisma.customer.update({
+    where: { id, tenantId },
+    data: {
+      ...customerData,
+      ...(profileData && {
+        profile: {
+          upsert: {
+            create: { ...profileData, tenantId },
+            update: profileData,
+          }
+        }
+      })
+    },
+    include: { profile: true }
   })
 }
 

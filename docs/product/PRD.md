@@ -8,20 +8,50 @@ owner: ["Boss (Product)", "Claude (Lead Architect)"]
 supersedes: "E:\\ZURI\\docs\\zuri\\PRD.md v1.0.0"
 ---
 
-# Zuri Platform — PRD v2.1.0
+# Zuri Platform — PRD v2.2.0
 
-> **"Your business's best friend"** / **"มีซูริ ไม่ต้องเป็นห่วง"**
+> **"The AI Business Platform built for Thailand"**
+> **"ซูริ — ผู้ช่วย AI ที่รู้จักธุรกิจไทยดีที่สุด"**
 
 ---
 
 ## 1. Product Vision
 
-Zuri คือ **Vertical SaaS** สำหรับ **SME ธุรกิจบริการในไทย** — เริ่มจาก culinary school แล้วขยายไปธุรกิจอื่นได้
+Zuri คือ **AI Business Platform** สำหรับ **SME ธุรกิจบริการในไทย** — เริ่มจาก culinary school แล้วขยายไปธุรกิจอื่นได้ผ่าน industry plugin
 
 ```
-Zuri = CRM + Unified Inbox + POS + Marketing Analytics + Operations + AI
+Zuri = CDP + CRM + Unified Inbox + POS + Marketing Analytics + Operations + AI
      = ทุกอย่างที่ธุรกิจบริการต้องการ ในที่เดียว
      = เปลี่ยน industry ได้ด้วยการสลับ tenant config
+```
+
+> Zuri ไม่ใช่แค่ CRM — Zuri คือ **CDP ที่รู้จักลูกค้าครบทุก touchpoint**
+> ตั้งแต่คลิกโฆษณาครั้งแรก จนถึงสลิปที่โอนมา และคอร์สที่เรียนอยู่
+
+### Positioning Statement
+
+| | รายละเอียด |
+|---|---|
+| **For** | SME ธุรกิจบริการในไทย ที่ขายผ่าน LINE / Facebook |
+| **Who** | จัดการงานด้วย Excel, กระดาษ, หรือหลายแอปแยกกัน |
+| **Zuri is** | AI Business Platform + CDP ครบวงจร |
+| **That** | รวม Inbox, CRM, POS และ Ops ไว้ในที่เดียว — AI รู้จักลูกค้าและบอกว่าต้องทำอะไรต่อ |
+| **Unlike** | HubSpot / Salesforce (ไม่รู้จัก LINE/สลิป) และ Lightfield (ไม่รู้จักธุรกิจไทย) |
+| **Our moat** | Thai-first CDP · Real revenue (slip OCR) · Vertical AI · All-in-one (chat→CRM→POS→บัญชี) |
+
+### CDP Layer — Zuri ต่างจาก CRM ทั่วไปอย่างไร
+
+```
+CRM ทั่วไป = สมุดจดข้อมูลลูกค้า (ต้องคีย์เอง)
+
+Zuri CDP   = ระบบที่รู้จักลูกค้าอัตโนมัติจากทุก touchpoint:
+
+LINE chat ──────────────────┐
+Facebook Messenger ──────────┤
+POS order + slip OCR ────────┼──▶ Single Customer View (360°)
+Marketing ad (first touch) ──┤    + AI Enrichment
+Enrollment + attendance ─────┤    + Purchase Intent Score
+Kitchen / schedule ──────────┘    + Outbound Campaign Engine
 ```
 
 ### v1 → v2 Pivot
@@ -145,6 +175,10 @@ Strategy: Shared DB + tenant_id column
 Isolation: Application layer (repository pattern)
 Default:   V School (10000000-0000-0000-0000-000000000001)
 Routing:   {slug}.zuri.app → middleware → inject x-tenant-id
+
+**Core-Tenant Sovereignty:**
+ระบบต้องถูกออกแบบให้มี "Core Template" (โค้ดมาตรฐาน) ที่แยกออกจาก "Tenant Filling" (ข้อมูลเฉพาะแบรนด์) อย่างชัดเจน การเพิ่ม Tenant ใหม่ต้องทำผ่านการแก้ไข Configuration ในฐานข้อมูลเท่านั้น ไม่มีการแก้ไข Source Code ของแอปพลิเคชัน
+
 ```
 
 ---
@@ -203,7 +237,7 @@ Routing:   {slug}.zuri.app → middleware → inject x-tenant-id
 | **Revenue** | `Order.conversationId = null` → Store, `= UUID` → Ads |
 | **IDs** | `ORD-YYYYMMDD-NNN`, `PAY-YYYYMMDD-NNN` |
 | **ADR** | ADR-039 (slip OCR), ADR-030 (revenue split), ADR-046 (receipts), ADR-057 (QR ordering), ADR-058 (floor plan), ADR-059 (loyalty idempotency) |
-| **Spec** | FEAT-POS.md ✅ APPROVED 2026-03-30 |
+| **Spec** | FEAT06-POS.md ✅ APPROVED 2026-03-30 |
 
 ### 5.5 Marketing & Ads Analytics
 
@@ -260,7 +294,7 @@ Routing:   {slug}.zuri.app → middleware → inject x-tenant-id
 | DSB Analyzer | `/api/workers/daily-brief/process` | Analyze conversations → brief |
 | LINE Agent | `/api/agent/process` | Auto-respond (ADR-054) |
 
-**AI Assistant Add-on (ขายแยก — FEAT-AI-ASSISTANT.md ✅ APPROVED):**
+**AI Assistant Add-on (ขายแยก — FEAT11-AI-ASSISTANT.md ✅ APPROVED):**
 
 | Feature | Tier | Detail |
 |---|---|---|
@@ -272,7 +306,7 @@ Routing:   {slug}.zuri.app → middleware → inject x-tenant-id
 | Slip (Gemini Vision) | Pro | ส่งภาพสลิปใน LINE → AI อ่าน → confirm → save |
 | NL2Data | Pro | พิมพ์ข้อความอิสระ → structured records → confirmation |
 
-### 5.10 Accounting Platform Integration (ขายแยก — FEAT-ACCOUNTING-PLATFORM.md ✅ APPROVED)
+### 5.10 Accounting Platform Integration (ขายแยก — FEAT17-ACCOUNTING-PLATFORM.md ✅ APPROVED)
 
 | Platform | วิธี | Auto? |
 |---|---|---|

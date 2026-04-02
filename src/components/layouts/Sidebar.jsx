@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTenant } from '@/context/TenantContext';
 import {
   LayoutDashboard,
   MessageSquare,
@@ -25,12 +26,27 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { tenant, loading } = useTenant();
+
+  const brandColor = tenant?.config?.brandColor || '#4f46e5'; // Default indigo-600
+  const logoUrl = tenant?.config?.logoUrl;
 
   return (
     <aside className="flex flex-col w-20 h-screen bg-gray-900 border-r border-gray-800 shrink-0">
-      {/* Logo */}
+      {/* Logo Section (Dynamic Branding) */}
       <div className="flex items-center justify-center h-16 border-b border-gray-800">
-        <span className="text-2xl font-black text-indigo-400">Z</span>
+        {loading ? (
+          <div className="h-8 w-8 rounded-lg bg-gray-800 animate-pulse" />
+        ) : logoUrl ? (
+          <img src={logoUrl} alt={tenant?.name} className="h-8 w-8 object-contain" />
+        ) : (
+          <div 
+            className="flex items-center justify-center h-10 w-10 rounded-xl text-white font-black text-xl shadow-lg"
+            style={{ backgroundColor: brandColor }}
+          >
+            {tenant?.name?.[0]?.toUpperCase() ?? 'Z'}
+          </div>
+        )}
       </div>
 
       {/* Nav items */}
@@ -42,12 +58,13 @@ export default function Sidebar() {
               key={href}
               href={href}
               title={label}
+              style={isActive ? { backgroundColor: brandColor } : {}}
               className={`
                 flex flex-col items-center justify-center w-14 h-14 rounded-xl gap-1
-                transition-colors text-xs font-medium
+                transition-all text-xs font-medium duration-200
                 ${isActive
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                  ? 'text-white shadow-md scale-105'
+                  : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
                 }
               `}
             >

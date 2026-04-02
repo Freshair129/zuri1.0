@@ -49,9 +49,43 @@ Layout แบ่งเป็น 3 ส่วน:
 
 - แสดงรายการ conversation ทั้งหมดเรียงตามเวลาล่าสุด
 - แต่ละการ์ดแสดง: ชื่อลูกค้า, preview ข้อความล่าสุด, เวลา, badge ช่องทาง
-- **Filter bar:** กรองตาม agent, status (open/pending/closed), unread
+- **Filter bar:** กรองตาม agent, status (pipeline stage), unread
 - unread badge แสดงจำนวนข้อความยังไม่อ่าน
 - Real-time update ผ่าน Pusher เมื่อมีข้อความใหม่
+
+### 3.1b Custom Pipeline Status
+
+Tenant กำหนด conversation pipeline stages ได้เอง — ไม่ใช่ fixed open/pending/closed
+
+**Default pipeline (culinary school):**
+```
+สอบถาม → ส่ง Brochure → รอตัดสินใจ → ลงทะเบียน → ปิดการขาย
+```
+
+**ตัวอย่าง pipeline อื่น (food business):**
+```
+ทักมา → กำลังจัดการ → รอชำระ → จัดส่งแล้ว → เสร็จสิ้น
+```
+
+**Features:**
+- Tenant สร้าง/แก้ไข/เรียงลำดับ pipeline stages ได้ใน Settings → Inbox → Pipeline
+- แต่ละ stage มี: ชื่อ, สี, icon (optional)
+- Stage แสดงเป็น tab bar ด้านบน Inbox list — คลิกกรอง conversation ตาม stage ได้ทันที
+- Conversation card แสดง stage badge
+- Staff เปลี่ยน stage ได้จาก: dropdown ใน chat view หรือ right-click card ใน list
+- เปลี่ยน stage บันทึก audit log + แสดงใน Activity Timeline ของ CRM
+- stage เชื่อมกับ CRM lifecycle: stage "ลงทะเบียน" → auto-update customer stage = `ENROLLED`
+
+**DB:**
+```sql
+-- conversation_pipelines
+id, tenant_id, name, color, icon, position, is_default, created_at
+
+-- conversations.pipeline_stage_id → FK → conversation_pipelines
+```
+
+**Workflow Automation integration:**
+- Workflow trigger `PIPELINE_STAGE_CHANGED` — เช่น เมื่อเปลี่ยนเป็น "รอตัดสินใจ" → ส่ง brochure อัตโนมัติ
 
 ### 3.2 Chat View (Center Panel)
 
@@ -87,7 +121,7 @@ Layout แบ่งเป็น 3 ส่วน:
 - ตั้งส่วนลด, เลือกช่องทางชำระ (โอน/เงินสด)
 - กด **สร้างออเดอร์** → POST `/api/orders` พร้อม `customerId` + `conversationId`
 - เปลี่ยน conversation → panel ปิดอัตโนมัติ
-- ดู spec เพิ่มเติม: **FEAT-POS.md**
+- ดู spec เพิ่มเติม: **FEAT06-POS.md**
 
 ---
 
@@ -134,8 +168,8 @@ Load Conversations:
 
 | Role | สิทธิ์ |
 |---|---|
-| SLS, AGT | อ่าน + ตอบ conversation, ใช้ Quick Sale |
-| MGR, ADM | อ่าน + ตอบ ทุก conversation, ใช้ Quick Sale |
+| SLS, AGT | อ่าน + ตอบ conversation, ใช้ Quick Sale, เปลี่ยน pipeline stage |
+| MGR, ADM | อ่าน + ตอบ ทุก conversation, ใช้ Quick Sale, เปลี่ยน stage, **จัดการ pipeline (CRUD stages)** |
 | STF | ดูอย่างเดียว |
 
 ---
@@ -154,6 +188,6 @@ Load Conversations:
 - ADR-028: Facebook Messaging Integration
 - ADR-033: Unified Inbox Implementation
 - ADR-044: Web Push Inbox Realtime
-- FEAT-POS.md (Quick Sale / ChatPOS spec)
-- FEAT-PROFILE.md (customer identity ที่ link กับ conversation)
-- FEAT-AGENT.md (AI ช่วยร่างคำตอบ)
+- FEAT06-POS.md (Quick Sale / ChatPOS spec)
+- FEAT02-PROFILE.md (customer identity ที่ link กับ conversation)
+- FEAT13-AGENT.md (AI ช่วยร่างคำตอบ)

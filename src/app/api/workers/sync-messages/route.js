@@ -4,14 +4,14 @@ import { verifyQStashSignature } from '@/lib/qstash'
 // POST /api/workers/sync-messages - QStash worker: sync FB/LINE messages to DB
 // This endpoint must be called by QStash only — signature is verified before processing.
 export async function POST(request) {
-  // Verify QStash signature first — reject all other callers
-  const isValid = await verifyQStashSignature(request)
+  // Verify QStash signature first
+  const { isValid, body: rawBody } = await verifyQStashSignature(request)
   if (!isValid) {
     return NextResponse.json({ error: 'Invalid QStash signature' }, { status: 401 })
   }
 
   try {
-    const body = await request.json()
+    const body = JSON.parse(rawBody)
     const { tenantId, channel, since } = body
     // channel: 'facebook' | 'line'
 
