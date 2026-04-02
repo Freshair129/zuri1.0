@@ -11,7 +11,7 @@ const A = 'A'  // Approve
 const R = 'R'  // Read
 const N = 'N'  // None
 
-export const PERMISSIONS = {
+export const permissionMatrix = {
   DEV: { dashboard: F, customers: F, inbox: F, marketing: F, kitchen: F, orders: F, employees: F, system: F },
   TEC: { dashboard: F, customers: F, inbox: F, marketing: F, kitchen: F, orders: F, employees: F, system: F },
   MGR: { dashboard: F, customers: F, inbox: F, marketing: F, kitchen: F, orders: F, employees: F, system: N },
@@ -27,6 +27,8 @@ export const PERMISSIONS = {
   OWNER: { dashboard: R, customers: R, inbox: R, marketing: R, kitchen: R, orders: R, employees: R, system: R },
 }
 
+export const PERMISSIONS = permissionMatrix // Legacy alias
+
 /**
  * Check if role(s) can perform action on domain
  * @param {string|string[]} roles
@@ -39,7 +41,7 @@ export function can(roles, domain, action = 'R') {
   const levels = { N: 0, R: 1, A: 2, F: 3 }
 
   return roleList.some(role => {
-    const perm = PERMISSIONS[role]?.[domain]
+    const perm = permissionMatrix[role]?.[domain]
     return perm && levels[perm] >= levels[action]
   })
 }

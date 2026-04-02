@@ -29,6 +29,29 @@ export async function findMany(tenantId, { channel, status, limit = 50, offset =
   })
 }
 
+export async function getConversations({ tenantId, date, limit = 50, offset = 0 } = {}) {
+  const where = { tenantId }
+  
+  if (date) {
+    const start = new Date(date)
+    start.setHours(0, 0, 0, 0)
+    const end = new Date(date)
+    end.setHours(23, 59, 59, 999)
+    where.createdAt = { gte: start, lte: end }
+  }
+
+  return prisma.conversation.findMany({
+    where,
+    take: limit,
+    skip: offset,
+    orderBy: { updatedAt: 'desc' },
+    include: {
+      customer: true,
+      messages: { take: 5, orderBy: { createdAt: 'desc' } }
+    }
+  })
+}
+
 export async function findByConversationId(conversationId) {
   return prisma.conversation.findUnique({
     where: { conversationId },

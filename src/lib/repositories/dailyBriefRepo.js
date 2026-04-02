@@ -6,6 +6,16 @@ export async function findByDate(briefDate) {
   return prisma.dailyBrief.findUnique({ where: { briefDate } })
 }
 
+export async function getDailyBriefByDate({ tenantId, date }) {
+  // TODO: Add tenantId filter once Schema is updated (NFR7)
+  const briefDate = new Date(date)
+  briefDate.setHours(0, 0, 0, 0)
+  
+  return prisma.dailyBrief.findUnique({
+    where: { briefDate }
+  })
+}
+
 export async function findMany({ limit = 30 } = {}) {
   return prisma.dailyBrief.findMany({
     take: limit,
