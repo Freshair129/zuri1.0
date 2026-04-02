@@ -41,3 +41,29 @@ export async function upsertDailyMetric(tenantId, adId, date, data) {
     update: data,
   })
 }
+
+export async function getCampaignById({ tenantId, id }) {
+  return prisma.campaign.findFirst({
+    where: { id, tenantId }
+  })
+}
+
+export async function updateCampaignStatus({ tenantId, campaignId, adId, action }) {
+  const status = action === 'pause' ? 'PAUSED' : 'ACTIVE'
+  
+  // Update Campaign
+  if (campaignId) {
+    await prisma.campaign.update({
+      where: { id: campaignId, tenantId },
+      data: { status }
+    })
+  }
+
+  // Update Ad if provided
+  if (adId) {
+    await prisma.ad.update({
+      where: { id: adId, tenantId },
+      data: { status }
+    })
+  }
+}

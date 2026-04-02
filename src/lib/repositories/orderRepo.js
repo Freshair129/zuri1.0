@@ -13,10 +13,19 @@ export async function findById(id) {
   })
 }
 
-export async function findByCustomerId(customerId, { limit = 20 } = {}) {
+export async function findByCustomerId(tenantId, customerId, { limit = 20 } = {}) {
   return prisma.order.findMany({
-    where: { customerId },
+    where: { customerId, tenantId },
     take: limit,
     orderBy: { date: 'desc' },
+  })
+}
+
+export async function getOrdersByCustomer({ tenantId, customerId, limit = 20 }) {
+  return prisma.order.findMany({
+    where: { customerId, tenantId },
+    take: limit,
+    orderBy: { createdAt: 'desc' },
+    include: { transactions: true }
   })
 }

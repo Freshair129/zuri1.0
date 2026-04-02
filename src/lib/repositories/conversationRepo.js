@@ -40,6 +40,17 @@ export async function findByConversationId(conversationId) {
   })
 }
 
+export async function getConversationById({ tenantId, id }) {
+  return prisma.conversation.findFirst({
+    where: { id, tenantId },
+    include: { 
+      customer: {
+        include: { insight: true }
+      } 
+    },
+  })
+}
+
 export async function upsertConversation(tenantId, conversationId, data) {
   return prisma.conversation.upsert({
     where: { conversationId },

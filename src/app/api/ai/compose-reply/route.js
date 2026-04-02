@@ -26,7 +26,7 @@ export async function POST(request) {
 
     // TODO: Build Gemini prompt with conversation history, customer info, and tone instruction
     // TODO: const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-    // TODO: const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    // TODO: const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
     // TODO: const result = await model.generateContent(prompt)
     // TODO: const draft = result.response.text()
 

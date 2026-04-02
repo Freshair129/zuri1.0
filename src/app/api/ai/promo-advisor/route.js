@@ -32,7 +32,7 @@ export async function POST(request) {
     //   - Available promotions list
     //   - Instruction to recommend best promotions and explain why
     // TODO: const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-    // TODO: const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    // TODO: const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
     // TODO: const result = await model.generateContent(prompt)
 
     const recommendations = [] // TODO: parse Gemini response into structured recommendations
