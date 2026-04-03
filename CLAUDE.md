@@ -88,12 +88,70 @@ chore/<topic>          → tooling, config, cleanup
 - NFR3: QStash retry >= 5 times
 - NFR5: Identity upsert in `prisma.$transaction`
 
+## Checkpoint Protocol
+
+### ทุก 3-4 tasks:
+1. อ่าน CLAUDE.md ซ้ำ (refresh rules)
+2. ตรวจสอบ: code ตรงกับ spec ไหม?
+3. ตรวจสอบ: ไม่ violate gotchas?
+
+### ก่อน claim "DONE":
+1. อ่าน source file จริง (Read tool) — ห้าม assume
+2. Verify: imports ถูก? (Lucide ไม่ใช่ FontAwesome)
+3. Verify: `getPrisma()` → `await`? (G-AI-01)
+4. Verify: `tenantId` ใน query? (G-MT-01)
+5. Verify: `console.error` มี `[ModuleName]`?
+
+## Incident Prevention Checklist
+
+ก่อน commit code ที่เกี่ยวกับ:
+
+### Meta API:
+- `action_type` ใช้ `.includes()` ไม่ใช่ exact match (G-META-01)
+- `Promise.allSettled` ไม่ใช่ `Promise.all` (G-META-05)
+- `maxDuration = 300` ใส่แล้ว (G-WH-03)
+- `bulkUpsert` update ทุก field (G-META-06)
+
+### Webhook:
+- Return 200 ก่อน process (G-WH-01)
+- `upsert` ไม่ใช่ `find+create` (G-WH-02)
+- QStash signature verify (G-WH-05)
+
+### Database:
+- Array mutation ก่อน DB op (G-DB-04)
+- ทุก variable declared (G-DB-05)
+- `$transaction` สำหรับ identity + stock (G-DB-03)
+
+### Attribution:
+- Revenue match product (G-MKT-01)
+- `conversationId` = UUID ไม่ใช่ `t_xxx` (G-DB-02)
+
+## Communication with Boss
+
+### ถามเมื่อ:
+- ไม่แน่ใจว่า feature scope ถูกไหม
+- มี trade-off ที่ต้องเลือก (A vs B)
+- พบ gotcha ใหม่ที่ไม่มีใน docs
+- ต้อง deviate จาก approved spec
+
+### ไม่ต้องถาม:
+- Bug fix ที่ชัดเจน (มี evidence)
+- Code style / formatting
+- Dependency version bump (patch)
+- Test additions
+
 ## File Reference
 - `prisma/schema.prisma` — DB schema (single source of truth)
 - `src/lib/repositories/` — all DB access
 - `src/app/api/workers/` — QStash cron targets
 - `src/app/api/webhooks/` — FB + LINE inbound
 - `src/middleware.js` — tenant resolution + auth guard
+
+## Scripts (Python — run from project root)
+- `python scripts/changelog.py --version vX.Y.Z --severity PATCH --summary "..." --changes "..." --files "..."` — สร้าง changelog entry
+- `python scripts/new-adr.py "ADR Title"` — สร้าง ADR ใหม่ใน docs/decisions/adrs/
+- `python scripts/new-feature.py "Feature Name"` — สร้าง feature spec + flow skeleton
+- `python scripts/pre-commit.py` — ตรวจสอบ staged files ก่อน commit
 
 ## DevLog (MANDATORY)
 - เขียน `docs/devlog/YYYY-MM-DD.md` ท้าย session ทุกครั้งก่อนบอก Boss ว่าเสร็จ
