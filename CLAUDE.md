@@ -54,6 +54,12 @@ Zuri is an **AI Business Platform** for Thai service SMEs — starting with culi
 - `system_config.yaml` — roles, VAT, statuses, thresholds
 - Import via `src/lib/systemConfig.js` — never hardcode these values
 
+## Changelog (MANDATORY)
+- หลัง commit ทุกครั้ง ให้รัน: `python scripts/changelog.py --version vX.Y.Z --severity MINOR|PATCH|MAJOR|HOTFIX --summary "..." --changes "..." --files "..."`
+- Script จะสร้าง `changelog/CL-YYYYMMDD-NNN.md` และอัปเดต `CHANGELOG.md` sliding window ให้อัตโนมัติ
+- ถ้า context หมดก่อน → ทำเป็น task แรกของ session ถัดไป
+- ดูรายละเอียด format และ severity ที่ `docs/CHANGELOG_SYSTEM.md`
+
 ## Git Workflow
 
 ### Branch Naming
