@@ -186,7 +186,7 @@ The `_inflight` key uses a 10-minute watchdog TTL. If the worker crashes mid-syn
 | **Inbox (Unified Inbox)** | Marketing reads from Inbox | `Conversation.firstTouchAdId` — required for first-touch revenue attribution (ADR-039) |
 | **POS** | Marketing reads from POS | `Order.totalAmount` + `Order.conversationId` — used to compute revenue in ROAS calculation |
 | **CRM** | No direct dependency | Customer data not needed for ads analytics |
-| **Auth / RBAC** | Marketing respects RBAC | Only roles with `marketing:read` permission (MKT, MGR, DEV) can access dashboard APIs |
+| **Auth / RBAC** | Marketing respects RBAC | Only roles with `marketing:read` permission (SALES, MANAGER, DEV) can access dashboard APIs |
 
 ### Attribution Join (simplified)
 

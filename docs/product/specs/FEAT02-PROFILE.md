@@ -95,9 +95,8 @@ sequenceDiagram
 
 | Role | สิทธิ์ |
 |---|---|
-| SLS, AGT | ดู + แก้ข้อมูลลูกค้าที่ตัวเองดูแล |
-| MGR, ADM | ดู + แก้ ทุก customer / ย้าย Lifecycle |
-| MKT | ดู ads attribution + ประวัติการซื้อทั้งหมด |
+| SALES | ดู + แก้ข้อมูลลูกค้าที่ตัวเองดูแล |
+| MANAGER | ดู + แก้ ทุก customer / ย้าย Lifecycle |
 | OWNER | ดูภาพรวมและรายบุคคลได้ทั้งหมด |
 
 ---
@@ -105,7 +104,7 @@ sequenceDiagram
 ## 7. Known Gotchas
 - **Tenant Isolation**: ห้ามลืมส่ง `tenantId` ในทุก query มิฉะนั้นข้อมูลจะปนกัน
 - **Real-time**: การเปลี่ยนสถานะในหน้าหนึ่ง ควรสะท้อนในอีกหน้า (ใช้ Pusher ถ้าเป็นไปได้)
-- **Data Privacy**: ข้อมูลลูกค้าเป็นความลับสูง (PDPA Compliance) ห้าม Export โดยไม่มีสิทธิ์ MGR ขึ้นไป
+- **Data Privacy**: ข้อมูลลูกค้าเป็นความลับสูง (PDPA Compliance) ห้าม Export โดยไม่มีสิทธิ์ MANAGER ขึ้นไป
 
 ---
 

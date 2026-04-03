@@ -156,7 +156,7 @@ Cashier กรอกเบอร์โทร (หรือ scan QR member card)
 │ ✅ ส่วนลด Gold 10% (฿45)        │
 │ 🎁 [CRM] เครื่องดื่มฟรี (Gold tier) │
 │ 🎂 [CRM] Dessert ฟรี (เกิดเดือนนี้) │
-│ 🎁 [MKT] ซื้อครบ ฿500 แถม coffee  │
+│ 🎁 [SALES] ซื้อครบ ฿500 แถม coffee  │
 │ ⭐ วันนี้ได้ 2x points (โปรโมชัน) │
 ├─────────────────────────────────┤
 │ [Apply ส่วนลด]  [ไม่ใช้สิทธิ์]   │
@@ -215,12 +215,12 @@ Cashier กรอกเบอร์โทร (หรือ scan QR member card)
 
 | Report | Period | ใครดูได้ |
 |---|---|---|
-| ยอดขายรายวัน | daily | MGR, OWNER, ACC |
-| สรุปตาม order type | daily/monthly | MGR, OWNER |
-| รายงาน VAT | monthly | ACC, OWNER |
-| top-selling items | configurable | MGR, OWNER |
-| loyalty/member report | monthly | MGR, OWNER, MKT |
-| ส่วนลดที่ให้ไป | daily/monthly | MGR, OWNER, ACC |
+| ยอดขายรายวัน | daily | MANAGER, OWNER, FINANCE |
+| สรุปตาม order type | daily/monthly | MANAGER, OWNER |
+| รายงาน VAT | monthly | FINANCE, OWNER |
+| top-selling items | configurable | MANAGER, OWNER |
+| loyalty/member report | monthly | MANAGER, OWNER, SALES |
+| ส่วนลดที่ให้ไป | daily/monthly | MANAGER, OWNER, FINANCE |
 
 ---
 

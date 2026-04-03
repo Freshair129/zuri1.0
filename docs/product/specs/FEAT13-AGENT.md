@@ -128,9 +128,9 @@ Model config อยู่ใน `system_config.yaml` — ห้าม hardcode m
 
 | Role | สิทธิ์ |
 |---|---|
-| SLS, AGT | ใช้ Compose Reply + Ask AI |
-| MGR, ADM | ใช้ทุก feature + ดู token usage |
-| STF | ใช้ Compose Reply เท่านั้น |
+| SALES | ใช้ Compose Reply + Ask AI |
+| MANAGER | ใช้ทุก feature + ดู token usage |
+| STAFF | ใช้ Compose Reply เท่านั้น |
 
 ---
 

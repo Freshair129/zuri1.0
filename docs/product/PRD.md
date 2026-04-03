@@ -190,7 +190,7 @@ Routing:   {slug}.zuri.app → middleware → inject x-tenant-id
 | Item | Spec |
 |---|---|
 | Provider | NextAuth v4, JWT strategy, bcrypt |
-| Roles | 12+1: DEV, TEC, MGR, MKT, HR, PUR, PD, ADM, ACC, SLS, AGT, STF + OWNER |
+| Roles | 6+1: DEV, OWNER, MANAGER, SALES, KITCHEN, FINANCE, STAFF |
 | Matrix | `can(roles, domain, action)` — centralized in `permissionMatrix.js` |
 | Storage | `Employee.roles[]` (array, UPPERCASE) |
 | ADR | ADR-026, ADR-045 |
@@ -276,9 +276,9 @@ Routing:   {slug}.zuri.app → middleware → inject x-tenant-id
 
 | Item | Spec |
 |---|---|
-| ID | v3: `TVS-[TYPE]-[DEPT]-[NNN]` (e.g., TVS-EMP-MKT-001) |
+| ID | `ZRI-[TYPE]-[ROLE]-[NNN]` (e.g., ZRI-EMP-SALES-001) |
 | Types | EMP (full-time), FL (freelancer), CT (contract) |
-| Departments | 12 codes: MKT, MGT, PD, SLS, AM, ADM, GD, CG, MM, MGFX, ED, CC |
+| Roles | 6 persona codes: OWNER, MANAGER, SALES, KITCHEN, FINANCE, STAFF |
 | ADR | ADR-029, ADR-047 |
 | Gotcha | G-DEV-06 (backward compat v2 IDs) |
 
@@ -616,7 +616,7 @@ Routing:   {slug}.zuri.app → middleware → inject x-tenant-id
 | **SAP / NetSuite / Dynamics** | ฿12K-100K+ | Enterprise → ผิดตลาด 10-50x แพงกว่า |
 | **Prosoft / Business Plus** | ฿3K-15K | Legacy Thai ERP → ไม่มี social, ไม่มี AI |
 
-> **Zuri ไม่ได้แข่งกับ ERP** — Zuri เป็น front-office (ขาย, chat, AI) / ERP เป็น back-office (บัญชี, HR)
+> **Zuri ไม่ได้แข่งกับ ERP** — Zuri เป็น front-office (ขาย, chat, AI) / ERP เป็น back-office (บัญชี, MANAGER)
 > Strategy: **integrate กับ PEAK/FlowAccount** ไม่ใช่สร้างบัญชีเอง
 
 ### 13.4 AI Landscape (Honest Assessment)

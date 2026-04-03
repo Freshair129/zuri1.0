@@ -11,13 +11,13 @@
 
 ## 1. Overview
 
-ระบบ AI วิเคราะห์ conversation ทั้งหมดในแต่ละวัน แล้วส่ง summary ให้ MGR/MKT ตอน 8 โมงเช้าของวันถัดไป โดยอัตโนมัติ — ไม่ต้องรอ admin ส่งยอด
+ระบบ AI วิเคราะห์ conversation ทั้งหมดในแต่ละวัน แล้วส่ง summary ให้ MANAGER/SALES ตอน 8 โมงเช้าของวันถัดไป โดยอัตโนมัติ — ไม่ต้องรอ admin ส่งยอด
 
 ```
 00:00 — Admin ปิดยอดประจำวัน (cutoff)
 00:05 — QStash trigger: ดึง conversations ของวันที่ผ่านมาทั้งหมด
 00:05–07:55 — AI process + analyze (background)
-08:00 — ส่ง Daily Brief ให้ MGR/MKT ทาง LINE
+08:00 — ส่ง Daily Brief ให้ MANAGER/SALES ทาง LINE
 ```
 
 ---

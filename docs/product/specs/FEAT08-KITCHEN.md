@@ -15,9 +15,8 @@ Kitchen Operations module สำหรับโรงเรียนสอนท
 **Core value:** "รู้ก่อนเปิดคลาส — วัตถุดิบพร้อม ของไม่ขาด ต้นทุนโปร่งใส"
 
 **Primary users:**
-- **Kitchen Manager (KM)** — ดูแลสต๊อก, อนุมัติการจัดซื้อ, ออก Prep Sheet
-- **Chef / Instructor** — ดูสูตร, บันทึก wastage
-- **Purchasing (PUR)** — รับ Purchase Request อัตโนมัติจากระบบ
+- **MANAGER** — ดูแลสต๊อก, อนุมัติการจัดซื้อ, ออก Prep Sheet
+- **KITCHEN** — ดูสูตร, บันทึก wastage, รับ Purchase Request อัตโนมัติ
 
 ---
 
@@ -250,12 +249,12 @@ CourseSchedule.status → STARTING
 
 **Purchase Request:**
 - สร้าง record ใน PurchaseRequest table (scope: `src/lib/repositories/purchaseRequestRepository.js`)
-- แจ้ง Purchasing (PUR) ผ่าน in-app notification
+- แจ้ง KITCHEN ผ่าน in-app notification
 - ป้องกัน duplicate — ถ้า PR ที่ pending อยู่แล้วสำหรับ ingredient นั้น → ไม่สร้างซ้ำ
 
 **API Endpoints:**
 - `GET /api/kitchen/purchase-requests` — list (filter: PENDING/APPROVED/REJECTED)
-- `PATCH /api/kitchen/purchase-requests/[id]` — อัพเดทสถานะ (PUR/MGR)
+- `PATCH /api/kitchen/purchase-requests/[id]` — อัพเดทสถานะ (KITCHEN/MANAGER)
 
 ---
 
@@ -289,7 +288,7 @@ CourseSchedule ถูกสร้าง/อัพเดท
       IF currentStock <= minStock:
         CHECK PurchaseRequest WHERE ingredientId = ? AND status = PENDING
         IF ไม่มี pending PR → INSERT PurchaseRequest
-        → notify PUR role via in-app notification
+        → notify KITCHEN role via in-app notification
 ```
 
 ### 4.3 Goods Receipt Flow
@@ -319,19 +318,19 @@ QStash cron 20:00 ทุกวัน:
 
 ## 5. Roles & Permissions
 
-| Action | DEV | MGR | PD | PUR | STF | AGT | หมายเหตุ |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|---|
-| ดู Ingredient Catalog | ✓ | ✓ | ✓ | ✓ | ✓ | — | ทุก staff role |
-| เพิ่ม/แก้ไข Ingredient | ✓ | ✓ | ✓ | — | — | — | Kitchen Manager (MGR) + PD |
-| ดู IngredientLots | ✓ | ✓ | ✓ | ✓ | — | — | |
-| รับล็อตใหม่ (Goods Receipt) | ✓ | ✓ | — | ✓ | — | — | KM หรือ Purchasing |
-| Manual Stock Adjust | ✓ | ✓ | — | — | — | — | KM เท่านั้น |
-| CRUD Recipe | ✓ | ✓ | ✓ | — | — | — | KM + Chef (PD) |
-| ดู Recipe | ✓ | ✓ | ✓ | — | ✓ | — | Staff ดูได้ |
-| บันทึก Wastage | ✓ | ✓ | ✓ | — | ✓ | — | Chef + Staff |
-| ดู Prep Sheet | ✓ | ✓ | ✓ | ✓ | ✓ | — | |
-| อนุมัติ Purchase Request | ✓ | ✓ | — | ✓ | — | — | MGR + PUR |
-| ดู Stock Movement History | ✓ | ✓ | ✓ | ✓ | — | — | |
+| Action | DEV | MANAGER | KITCHEN | STAFF | SALES | หมายเหตุ |
+|---|:---:|:---:|:---:|:---:|:---:|---|
+| ดู Ingredient Catalog | ✓ | ✓ | ✓ | ✓ | — | ทุก staff role |
+| เพิ่ม/แก้ไข Ingredient | ✓ | ✓ | ✓ | — | — | MANAGER + KITCHEN |
+| ดู IngredientLots | ✓ | ✓ | ✓ | — | — | |
+| รับล็อตใหม่ (Goods Receipt) | ✓ | ✓ | ✓ | — | — | MANAGER หรือ KITCHEN |
+| Manual Stock Adjust | ✓ | ✓ | — | — | — | MANAGER เท่านั้น |
+| CRUD Recipe | ✓ | ✓ | ✓ | — | — | MANAGER + KITCHEN |
+| ดู Recipe | ✓ | ✓ | ✓ | ✓ | — | Staff ดูได้ |
+| บันทึก Wastage | ✓ | ✓ | ✓ | ✓ | — | KITCHEN + Staff |
+| ดู Prep Sheet | ✓ | ✓ | ✓ | ✓ | — | |
+| อนุมัติ Purchase Request | ✓ | ✓ | ✓ | — | — | MANAGER + KITCHEN |
+| ดู Stock Movement History | ✓ | ✓ | ✓ | — | — | |
 
 > Permission check ผ่าน `can(roles, 'kitchen', action)` จาก `src/lib/permissionMatrix.js`
 
@@ -386,7 +385,7 @@ QStash cron 20:00 ทุกวัน:
 | K-P0-7 | Insufficient stock Pusher alert | P0 | แจ้ง Kitchen Manager ทันที |
 | K-P1-1 | Prep Sheet API + Redis cache | P1 | Kitchen Manager ใช้ทุกวัน |
 | K-P1-2 | Daily Prep Sheet cron (QStash 20:00) + LINE delivery | P1 | ต้องการ LINE integration |
-| K-P1-3 | Purchase Request auto-generation + duplicate prevention | P1 | ผูกกับ PUR workflow |
+| K-P1-3 | Purchase Request auto-generation + duplicate prevention | P1 | ผูกกับ KITCHEN workflow |
 | K-P1-4 | Wastage tracking UI + API | P1 | Cost analysis |
 | K-P1-5 | Stock Movement history UI | P1 | Audit trail |
 | K-P1-6 | Low stock alert banner บน Kitchen Dashboard | P1 | UX |

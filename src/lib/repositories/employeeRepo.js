@@ -35,16 +35,16 @@ export async function getEmployees({ tenantId, page = 1, limit = 20 } = {}) {
 /**
  * Create a new employee — used by /api/employees POST
  */
-export async function createEmployee({ tenantId, name, email, role, phone, lineId }) {
+export async function createEmployee({ tenantId, name, email, role, phone }) {
   const bcrypt = await import('bcryptjs')
   const { generateEmployeeId } = await import('@/lib/idGenerator')
 
   const [firstName, ...rest] = (name ?? '').trim().split(' ')
   const lastName = rest.join(' ') || '-'
-  const department = 'GEN'
   const employmentType = 'EMP'
+  const finalRole = role ?? 'STAFF'
 
-  const employeeId = await generateEmployeeId(department, employmentType)
+  const employeeId = await generateEmployeeId(finalRole, employmentType)
   const passwordHash = await bcrypt.hash(`${email}_changeme`, 10)
 
   return prisma.employee.create({
@@ -55,8 +55,8 @@ export async function createEmployee({ tenantId, name, email, role, phone, lineI
       lastName,
       email,
       phone: phone ?? null,
-      role: role ?? 'STF',
-      roles: [role ?? 'STF'],
+      role: finalRole,
+      roles: [finalRole],
       passwordHash,
       status: 'ACTIVE',
     },

@@ -288,9 +288,9 @@ INV-20260327-001
 
 | Role | สิทธิ์ |
 |---|---|
-| SLS, AGT | ออก invoice, ยืนยันชำระ |
-| MGR, ADM, ACC | ออก invoice, ยืนยัน, ดูประวัติทั้งหมด, void invoice |
-| STF | ดูอย่างเดียว |
+| SALES | ออก invoice, ยืนยันชำระ |
+| MANAGER, FINANCE | ออก invoice, ยืนยัน, ดูประวัติทั้งหมด, void invoice |
+| STAFF | ดูอย่างเดียว |
 
 ---
 

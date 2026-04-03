@@ -168,9 +168,9 @@ Load Conversations:
 
 | Role | สิทธิ์ |
 |---|---|
-| SLS, AGT | อ่าน + ตอบ conversation, ใช้ Quick Sale, เปลี่ยน pipeline stage |
-| MGR, ADM | อ่าน + ตอบ ทุก conversation, ใช้ Quick Sale, เปลี่ยน stage, **จัดการ pipeline (CRUD stages)** |
-| STF | ดูอย่างเดียว |
+| SALES | อ่าน + ตอบ conversation, ใช้ Quick Sale, เปลี่ยน pipeline stage |
+| MANAGER | อ่าน + ตอบ ทุก conversation, ใช้ Quick Sale, เปลี่ยน stage, **จัดการ pipeline (CRUD stages)** |
+| STAFF | ดูอย่างเดียว |
 
 ---
 

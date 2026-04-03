@@ -67,14 +67,13 @@ export async function generateCustomerId(channel) {
   return `${prefix}-${String(serial).padStart(4, '0')}`
 }
 
-export async function generateEmployeeId(department, employmentType) {
-  const { getEmploymentTypes, getDepartmentCodes } = await import('@/lib/systemConfig')
+export async function generateEmployeeId(role, employmentType) {
+  const { getEmploymentTypes } = await import('@/lib/systemConfig')
   const types = getEmploymentTypes()
-  const depts = getDepartmentCodes()
 
   const typeCode = types[employmentType] || 'EMP'
-  const deptCode = depts[department] || 'GEN'
-  const prefix = `TVS-${typeCode}-${deptCode}`
+  const roleCode = role || 'STAFF'
+  const prefix = `ZRI-${typeCode}-${roleCode}`
 
   const last = await prisma.employee.findFirst({
     where: { employeeId: { startsWith: prefix } },

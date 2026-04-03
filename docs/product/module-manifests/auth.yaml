@@ -4,7 +4,7 @@
 module:
   name: auth
   group: shared
-  description: "Authentication & RBAC — NextAuth.js v4, JWT, bcrypt, 12+1 roles, permission matrix"
+  description: "Authentication & RBAC — NextAuth.js v4, JWT, bcrypt, 6+1 roles, permission matrix"
   spec: none  # covered in tech-spec.md and system_config.yaml
   status: scaffold
 
@@ -42,7 +42,7 @@ public_api:
   events:
     - employee-updated — Pusher: broadcasted when roles or profile change
   constants:
-    - ROLES  # sourced from system_config.yaml (DEV, TEC, MGR, MKT, HR, PUR, PD, ADM, ACC, SLS, AGT, STF, OWNER)
+    - ROLES  # sourced from system_config.yaml (MANAGER, SALES, KITCHEN, FINANCE, STAFF, OWNER, DEV)
 
 libs:
   - src/lib/permissionMatrix.js — can(roles, domain, action)

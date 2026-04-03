@@ -74,7 +74,7 @@ model Tenant {
 |---|---|
 | **CRM** | Customer, Conversation, Message, ConversationIntelligence, ChatEpisode, AIAssistLog |
 | **DSB (ใหม่)** | ConversationAnalysis, CustomerProfile, DailyBrief |
-| **HR** | Employee |
+| **MANAGER** | Employee |
 | **Sales** | Order, CartItem, Transaction, CreditNote, Advance |
 | **Course** | Enrollment, EnrollmentItem, Certificate, ClassAttendance, CourseSchedule, CourseMenu, CourseEquipment |
 | **Package** | Package, PackageCourse, PackageEnrollment, PackageEnrollmentCourse, PackageGift |
@@ -219,7 +219,7 @@ SET app.tenant_id = '{tenantId}';
    → FB Page ID, LINE OA, Meta Ad Account
    → per-tenant tokens
 
-3. สร้าง Employee แรก (Owner role)
+3. สร้าง Employee แรก (OWNER role)
    → ส่ง welcome email พร้อม login URL: {slug}.zuri.app
 
 4. Import ข้อมูลเริ่มต้น (optional)

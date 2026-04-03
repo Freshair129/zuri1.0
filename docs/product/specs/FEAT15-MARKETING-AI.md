@@ -343,11 +343,9 @@ upsertTenantMarketingConfig(tenantId, config)
 
 | Role | AskMarketing Panel | Business Memory Config | Execute Action (pause/resume) |
 |---|---|---|---|
-| **OWNER** | ✅ | ✅ | ✅ |
-| **MGR** | ✅ | ✅ | ✅ |
-| **MKT** | ✅ | ✅ | ✅ |
-| **SLS** | ✅ (read insight only) | ✗ | ✗ |
-| **ACC** | ✅ (spend/revenue only) | ✗ | ✗ |
+| **OWNER, MANAGER** | ✅ | ✅ | ✅ |
+| **SALES** | ✅ | ✅ | ✅ |
+| **FINANCE** | ✅ (spend/revenue only) | ✗ | ✗ |
 | **อื่นๆ** | ✗ | ✗ | ✗ |
 
 > ใช้ `can(roles, 'marketing', 'read')` และ `can(roles, 'marketing', 'write')`

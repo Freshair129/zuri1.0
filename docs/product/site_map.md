@@ -46,7 +46,7 @@
     │
     ├── /tasks                      ← Task board
     │
-    ├── /employees                  ← Staff list + HR
+    ├── /employees                  ← Staff list + MANAGER
     │   └── /employees/[id]         ← Employee profile, schedule
     │
     └── /settings                   ← Tenant configuration

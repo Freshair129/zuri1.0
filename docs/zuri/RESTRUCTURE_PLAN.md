@@ -83,7 +83,7 @@ E:\zuri\docs\               ← SSOT = Obsidian vault
 ## 3. โครงสร้างโปรเจคใหม่
 
 ```
-E:\CO/
+E:\Zuri/
 │
 ├── src/
 │   ├── app/                          # Next.js App Router
@@ -423,7 +423,7 @@ npx zuri pre-commit
 | 0.1 Project scaffold | โฟลเดอร์, package.json, configs | ✅ Done |
 | 0.2 Prisma schema (merged) | Copy จาก ZURI, ยังไม่ split | ✅ Done (basic) |
 | 0.3 Infra libs | db, redis, qstash, pusher, tenant | ✅ Done |
-| 0.4 RBAC + permissionMatrix | 12 roles, can() function | ✅ Done |
+| 0.4 RBAC + permissionMatrix | 6+1 roles, can() function | ✅ Done |
 | 0.5 CLAUDE.md + memory | Project rules | ✅ Done |
 | 0.6 Skeleton pages + routes | Placeholder ทุกหน้า | ✅ Done |
 
@@ -539,7 +539,7 @@ npx zuri pre-commit
 | 7.2 | Unit tests: customerRepo, auditRepo, inventoryRepo, poRepo, supplierRepo | ✅ Done |
 | 7.3 | Integration test: Multi-tenant isolation | ✅ Done |
 | 7.4 | Performance benchmark vs ZURI (p95 < 500ms) | ✅ Done |
-| 7.5 | Migration script: ZURI DB → CO DB | 🔄 WIP |
+| 7.5 | Migration script: ZURI DB → Zuri DB | 🔄 WIP |
 
 ---
 

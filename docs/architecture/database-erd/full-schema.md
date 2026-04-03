@@ -87,17 +87,17 @@ erDiagram
 
     Employee {
         uuid     id             PK
-        string   employeeId     UK  "TVS-[TYPE]-[DEPT]-[NNN]"
+        string   employeeId     UK  "ZRI-EMP-[ROLE]-[NNN]"
         uuid     tenantId       FK  "→ Tenant"
         string   firstName
         string   lastName
         string   nickName
         string   email          UK
         string   phone
-        string   department         "MKT | MGT | PD | SLS | ..."
+        string   department         "MANAGER | SALES | KITCHEN | ..."
         string   jobTitle
-        string   role               "primary role (UPPERCASE)"
-        string[] roles              "multi-role: ['SLS','MGR']"
+        string   role               "MANAGER | SALES | KITCHEN | ..."
+        string[] roles              "multi-role: ['SALES','MANAGER']"
         string   status             "ACTIVE | INACTIVE"
         string   passwordHash       "bcrypt salt=12"
         datetime hiredAt
@@ -114,7 +114,7 @@ erDiagram
 | `roles[]` | Multi-role array — permission = union of all roles |
 | `passwordHash` | bcrypt salt=12 via NextAuth CredentialsProvider |
 
-**ADR:** [[ADR-029]] Employee Registry, [[ADR-045]] RBAC Redesign, [[ADR-047]] Employee ID v3
+**ADR:** [[ADR-029]] Employee Registry, [[ADR-045]] RBAC Redesign, [[ADR-068]] Persona-Based RBAC, [[ADR-047]] Employee ID v3
 **Gotcha:** [[G-DEV-05]] Role must be UPPERCASE, [[G-DEV-06]] Login supports both v2+v3 ID formats
 
 ---
