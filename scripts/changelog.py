@@ -152,6 +152,7 @@ def update_main_changelog(cl_id, args, entry_content, main_changelog=MAIN_CHANGE
             index_rows = (new_row + "\n" + index_rows).strip()
 
     # Reconstruct with absolute clean structure
+    recent_joined = "\n\n".join(recent_entries)
     new_content = f"""# CHANGELOG
 
 **LATEST:** {cl_id} | {args.version} | {datetime.now().strftime('%Y-%m-%d')}
@@ -168,7 +169,7 @@ def update_main_changelog(cl_id, args, entry_content, main_changelog=MAIN_CHANGE
 
 ## 📝 Recent (last 5 — full content)
 
-{"\n\n".join(recent_entries)}
+{recent_joined}
 """
     
     with open(main_changelog, 'w', encoding='utf-8') as f:

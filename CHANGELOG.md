@@ -1,6 +1,6 @@
 # CHANGELOG
 
-**LATEST:** CL-20260404-002 | v2.7.1 | 2026-04-04
+**LATEST:** CL-20260404-003 | v3.0.1 | 2026-04-04
 
 ---
 
@@ -8,14 +8,38 @@
 
 | ID | Name | Version | Date | Severity | Tags |
 |---|---|---|---|---|---|
-| CL-20260403-001 | Roadmap & Branding Sync | v2.6.3 | 2026-04-03 | MINOR | #resync #branding |
-| CL-20260403-002 | RBAC Code Sync | v2.6.2 | 2026-04-03 | PATCH | #rbac #idgen |
-| CL-20260403-003 | Documentation Refactor | v2.6.1 | 2026-04-03 | MINOR | #docs #rbac |
-| CL-20260403-004 | UI Overhaul | v2.6.0 | 2026-04-03 | MAJOR | #ui #kitchen |
+
 
 ---
 
 ## 📝 Recent (last 5 — full content)
+
+### [CL-20260404-003] v3.0.1 — Consolidate agent tooling to Python + merge AGENT_PROTOCOL into CLAUDE.md
+
+# [CL-20260404-003] — Consolidate agent tooling to Python + merge AGENT_PROTOCOL into CLAUDE.md
+
+**Version:** v3.0.1
+**Date:** 2026-04-04
+**Severity:** PATCH
+**Tags:** #tooling #docs
+**Commits:** (pending)
+**Author:** Claude
+
+---
+
+## Summary
+Consolidate agent tooling to Python + merge AGENT_PROTOCOL into CLAUDE.md
+
+## Changes
+Merged AGENT_PROTOCOL.md unique sections into CLAUDE.md; Created new-adr.py, new-feature.py, pre-commit.py; Removed orchestrator changelog.js
+
+
+## Files Modified
+- CLAUDE.md scripts/new-adr.py scripts/new-feature.py scripts/pre-commit.py
+
+## Verification
+1. Verify CI/CD pipeline
+2. Ensure no regression in existing tests
 
 ### [CL-20260404-002] v2.7.1 — Fix changelog automation logic
 
