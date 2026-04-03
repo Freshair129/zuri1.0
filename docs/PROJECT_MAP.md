@@ -1,0 +1,278 @@
+# Zuri Platform — Project Map
+
+> **Version:** 1.0.0 · **Date:** 2026-04-04
+> Single source of truth สำหรับ navigate codebase ทั้งหมด
+
+---
+
+## 1. Repository Structure
+
+```
+zuri/
+├── src/                          ← Application code
+│   ├── app/                      ← Next.js 14 App Router
+│   │   ├── (auth)/               ← Public routes (login, register)
+│   │   ├── (dashboard)/          ← Protected routes (all modules)
+│   │   └── api/                  ← API endpoints
+│   ├── components/               ← React components (per domain)
+│   ├── modules/                  ← Business logic (ADR-060)
+│   ├── lib/                      ← Shared utilities + repositories
+│   ├── hooks/                    ← Custom React hooks
+│   ├── context/                  ← React context (TenantContext)
+│   ├── styles/                   ← globals.css
+│   └── tests/                    ← Integration + perf tests
+│
+├── prisma/                       ← DB schema (single source of truth)
+├── docs/                         ← Obsidian vault (all documentation)
+├── .claude/                      ← Claude Code config + skills
+├── .dev/                         ← Dev tools (orchestrator, co-dev)
+├── system_config.yaml            ← Config SSOT (roles, VAT, statuses)
+├── system_requirements.yaml      ← Non-functional requirements
+├── id_standards.yaml             ← ID format standards
+└── CLAUDE.md                     ← Root agent context
+```
+
+---
+
+## 2. Domain Map — Page → API → Repo → Model
+
+| Domain | Page | API Routes | Repository | Key Models |
+|---|---|---|---|---|
+| **Inbox** | `/inbox` | `/api/conversations` `/api/webhooks/fb\|line` | `conversationRepo` | Conversation, Message |
+| **CRM** | `/crm` `/crm/:id` | `/api/customers` `/api/customers/:id/*` | `customerRepo` `customerProfileRepo` `customerInsightRepo` | Customer, CustomerIdentity, CustomerProfile |
+| **POS** | `/pos` | `/api/orders` `/api/invoices` `/api/payments/verify-slip` | `orderRepo` `transactionRepo` | Order, OrderItem, Transaction, Invoice |
+| **Courses** | `/courses` `/courses/:id` | `/api/catalog` `/api/schedules` | `enrollmentRepo` `scheduleRepo` | Course, Package, Enrollment, EnrollmentItem |
+| **Schedule** | `/schedule` | `/api/schedules/:id` | `scheduleRepo` | ClassSession, Attendance |
+| **Kitchen** | `/kitchen/*` | `/api/inventory/*` `/api/recipes` `/api/procurement/*` | `inventoryRepo` `ingredientRepo` `poRepo` `supplierRepo` | Ingredient, IngredientLot, Recipe, PurchaseOrder |
+| **Marketing** | `/marketing/*` | `/api/marketing/dashboard` `/api/marketing/chat` `/api/ads/*` | `campaignRepo` `dailyBriefRepo` | Campaign, AdSet, Ad, AdDailyMetric, DailyBrief |
+| **Tasks** | `/tasks` | `/api/tasks` | `taskRepo` | Task |
+| **Employees** | `/employees` | `/api/employees` | `employeeRepo` | Employee, User |
+| **Settings** | `/settings/*` | `/api/tenant/config` | `tenantRepo` | Tenant, TenantConfig |
+| **AI** | (overlay FAB) | `/api/ai/ask` `/api/ai/compose-reply` | — | — |
+| **Admin** | `/tenants` | `/api/tenants` | `tenantRepo` | Tenant |
+
+---
+
+## 3. src/ Structure Detail
+
+### 3.1 app/(dashboard)/ — Pages
+```
+(dashboard)/
+├── inbox/              CLAUDE.md ✅
+├── crm/                CLAUDE.md ✅
+│   └── [id]/
+├── pos/                CLAUDE.md ✅
+├── courses/            CLAUDE.md ✅
+│   └── [id]/
+├── schedule/           CLAUDE.md ✅
+├── kitchen/            CLAUDE.md ✅
+│   ├── stock/
+│   ├── recipes/
+│   └── procurement/
+├── marketing/          CLAUDE.md ✅
+│   ├── campaigns/
+│   └── daily-brief/
+├── tasks/              CLAUDE.md ✅
+├── employees/          CLAUDE.md ✅
+│   └── [id]/
+├── settings/           CLAUDE.md ✅
+└── tenants/            (DEV only)
+```
+
+### 3.2 app/api/ — API Routes
+```
+api/
+├── ai/                 ask · compose-reply · promo-advisor
+├── conversations/      list · [id] · [id]/reply
+├── customers/          list · [id] · [id]/activity|enrich|profile
+├── orders/             CRUD
+├── invoices/           CRUD
+├── payments/           verify-slip
+├── inventory/          stock · movements
+├── recipes/            CRUD
+├── schedules/          list · [id]
+├── procurement/        po · po/[id]/approve|grn · suppliers
+├── marketing/          dashboard · chat/conversations
+├── ads/                optimize
+├── daily-brief/        [date]
+├── tasks/              list · [id]
+├── employees/          CRUD
+├── catalog/            course catalog
+├── products/           product list
+├── tenant/             config
+├── tenants/            DEV admin
+├── permissions/        check
+├── push/               subscribe
+├── mcp/                MCP server endpoint
+├── auth/               NextAuth
+├── webhooks/           facebook · line
+└── workers/            CLAUDE.md ✅
+    ├── sync-hourly/    Meta Ads sync
+    ├── sync-messages/  Message sync
+    ├── crm-enrich/     AI enrichment
+    └── daily-brief/    process · notify
+```
+
+### 3.3 components/ — UI Components
+```
+components/
+├── inbox/      ConversationList · ChatView · ReplyBox · RightPanel
+│               CustomerCard · ActivityTab · ProfileTab · ChatPOS
+├── crm/        CustomerList · CustomerDetail
+├── pos/        CartPanel · PremiumPOS
+├── kitchen/    StockTable · RecipeCard · POTimeline
+├── marketing/  CampaignTable · ROASChart · MetricCard · DailyBriefCard
+├── schedule/   CalendarView · AttendanceMarker
+├── layouts/    DashboardShell · Sidebar · Topbar
+├── shared/     EmptyState · LoadingSkeleton · Pagination · SearchBar · StatCard
+└── ui/         Badge · Button · Card · DataTable · Input · Modal
+```
+
+### 3.4 modules/ — Business Logic (ADR-060)
+```
+modules/
+├── core/           auth · crm · dsb · inbox · marketing · notifications · pos · tasks
+├── shared/         ai · audit · inventory · multi-tenant · procurement
+└── industry/
+    └── culinary/   enrollment (onOrderCreated) · kitchen (onClassStarted)
+```
+
+### 3.5 lib/ — Shared Utilities
+```
+lib/
+├── db.ts               Prisma singleton (getPrisma)
+├── auth.js             NextAuth config
+├── redis.js            Upstash Redis (getOrSet pattern)
+├── qstash.js           QStash client
+├── pusher.js           Pusher server client
+├── tenant.js           Tenant resolution
+├── permissionMatrix.js RBAC (ADR-068 — 6 roles)
+├── systemConfig.js     system_config.yaml loader
+├── idGenerator.js      ULID/ID generator
+├── ai/gemini.js        Gemini 2.0 Flash client
+├── utils/format.js     Date, currency, number formatters
+├── utils/validation.js Input validators
+└── repositories/       CLAUDE.md ✅
+    ├── customerRepo.js
+    ├── customerProfileRepo.js
+    ├── customerInsightRepo.js
+    ├── conversationRepo.js
+    ├── orderRepo.js
+    ├── enrollmentRepo.js
+    ├── scheduleRepo.js
+    ├── inventoryRepo.js
+    ├── ingredientRepo.js
+    ├── campaignRepo.js
+    ├── dailyBriefRepo.js
+    ├── taskRepo.js
+    ├── employeeRepo.js
+    ├── poRepo.js
+    ├── supplierRepo.js
+    ├── productRepo.js
+    ├── auditRepo.js
+    └── tenantRepo.js (implied)
+```
+
+### 3.6 hooks/ — Custom Hooks
+```
+hooks/
+├── useDebounce.js      debounce input
+├── usePermission.js    can(role, domain, action)
+├── usePusher.js        realtime subscription
+└── useSession.js       NextAuth session wrapper
+```
+
+---
+
+## 4. Module Dependency Map
+
+```
+Inbox ──────────────────────────────────────────┐
+                                                 ↓
+CRM ←──── Inbox (customer identity)         Customer 360
+          POS (order history)                    ↑
+          Enrollment (course history)       ─────┘
+
+POS ──────────────────────────────────────────→ Billing → Invoice → Accounting (add-on)
+  ↓
+Enrollment ──→ Schedule ──→ Kitchen (recipe/stock deduction)
+  ↓
+Certificate (auto-gen when hours complete)
+
+Marketing ←── CRM (ads attribution via adsId)
+  ↓
+Daily Brief (AI summary → LINE push 08:00)
+
+Tasks ←── AI (auto-create from DSB — M3)
+       ←── Manual (all roles)
+
+Settings ──→ Integrations (FB, LINE, Meta Ads, Accounting, AI Bot)
+```
+
+---
+
+## 5. Critical Infrastructure
+
+| Layer | Technology | Location | NFR |
+|---|---|---|---|
+| **Auth** | NextAuth.js v4 (JWT) | `src/lib/auth.js` | — |
+| **DB** | PostgreSQL via Supabase + Prisma | `prisma/schema.prisma` | — |
+| **Cache** | Upstash Redis (`getOrSet`) | `src/lib/redis.js` | NFR2: < 500ms |
+| **Queue** | Upstash QStash | `src/lib/qstash.js` | NFR3: retry ≥ 5 |
+| **Realtime** | Pusher Channels | `src/lib/pusher.js` | — |
+| **AI** | Gemini 2.0 Flash | `src/lib/ai/gemini.js` | < 2s |
+| **Webhook** | FB + LINE inbound | `src/app/api/webhooks/` | NFR1: < 200ms |
+| **Tenant** | Row-level isolation | `src/middleware.js` | ADR-056 |
+| **RBAC** | 6 Persona roles | `src/lib/permissionMatrix.js` | ADR-068 |
+
+---
+
+## 6. Docs Structure
+
+```
+docs/
+├── HOME.md                     ← Obsidian vault home / nav index
+├── PROJECT_MAP.md              ← This file
+├── CHANGELOG_SYSTEM.md         ← Changelog system spec
+├── product/
+│   ├── PRD.md                  ← Product Requirements v2.2
+│   ├── ROADMAP.md              ← Milestones M1–M7 v2.2.0
+│   ├── SITEMAP.md              ← URL map + roles v1.1.0
+│   └── specs/                  ← FEAT01–FEAT19 (all APPROVED)
+├── decisions/
+│   ├── adrs/                   ← ADR-057 to ADR-068 (ADR-069 pending)
+│   └── log.md
+├── architecture/
+│   ├── system-overview.md      ← Tech stack diagram
+│   ├── tech-spec.md            ← Stack detail
+│   ├── data-flows/             ← Per-module data flow (11 files)
+│   └── database-erd/           ← Schema + ERD
+├── gotchas/                    ← Incident rules + gotchas (12 files)
+├── guide/                      ← DEV_SETUP.md
+├── design/
+│   └── mockups/                ← HTML/PNG mockups (login, kitchen, landing)
+├── devlog/                     ← Development logs
+├── devtools/                   ← Dev tool docs
+└── templates/                  ← Spec/ADR templates
+```
+
+---
+
+## 7. Quick Reference
+
+| ต้องการ | ดูที่ |
+|---|---|
+| ฟีเจอร์ใหม่ — ก่อน code | `docs/product/specs/FEAT*.md` |
+| Architecture decision | `docs/decisions/adrs/ADR-*.md` |
+| DB schema | `prisma/schema.prisma` |
+| Config ค่าต่างๆ | `system_config.yaml` |
+| RBAC permission | `src/lib/permissionMatrix.js` |
+| ID format | `id_standards.yaml` |
+| Gotcha / incident rule | `docs/gotchas/` |
+| Milestone / roadmap | `docs/product/ROADMAP.md` |
+| URL ทุก page | `docs/product/SITEMAP.md` |
+| Domain context (agent) | `src/app/(dashboard)/[domain]/CLAUDE.md` |
+
+---
+
+*Generated by Claude · Zuri AI Business Platform · 2026-04-04*

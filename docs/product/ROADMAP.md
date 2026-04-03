@@ -1,13 +1,13 @@
 ---
 title: "Zuri Platform — Product Roadmap"
-version: "2.1.0"
-date: "2026-03-30"
+version: "2.2.0"
+date: "2026-04-04"
 status: APPROVED
 owner: ["Boss (Product)", "Claude (Lead Architect)"]
 approach: "DOC TO CODE — ไม่ implement จนกว่า spec + ADR approved"
 ---
 
-# Zuri Platform — Product Roadmap v2.0.0
+# Zuri Platform — Product Roadmap v2.2.0
 
 ---
 
@@ -49,7 +49,7 @@ M = Milestone
 
 | Phase | Task | Status | Owner |
 |---|---|---|---|
-| **0** | Project scaffold (E:\CO) | ✅ Done | Claude |
+| **0** | Project scaffold (E:\Zuri) | ✅ Done | Claude |
 | **0** | Prisma schema (17 core models) | ✅ Done | Claude |
 | **0** | Infra libs (db, redis, qstash, pusher, tenant, RBAC) | ✅ Done | Claude |
 | **0** | Skeleton pages (22) + API routes (38) + components (32) | ✅ Done | Claude |
@@ -58,22 +58,21 @@ M = Milestone
 | **0** | Multi-agent: vibecode + model routing (Opus/Sonnet/Gemini) | ✅ Done | Claude |
 | **0** | PRD v2.0 + ERD v2.0 | ✅ Done | Claude |
 | | | | |
-| **1** | Copy + clean feature specs จาก ZURI → CO docs/ | 🔲 | PM agent |
-| **1** | เขียน feature spec ทุก module (10 core + 3 shared + 5 culinary) | 🔲 | PM agent |
+| **1** | เขียน feature spec ทุก module (10 core + 3 shared + 5 culinary) | ✅ Done | PM agent |
 | **1** | เขียน data flow diagrams ทุก module | 🔲 | PM agent |
-| **1** | Boss review + approve ทุก spec | 🔲 | Boss |
+| **1** | Boss review + approve ทุก spec | ✅ Done | Boss |
 | **1** | สร้าง Obsidian vault config (docs/ = vault) | 🔲 | Claude |
 | | | | |
-| **2** | ADR-060: Modular Architecture | 🔲 | CTO agent |
-| **2** | ADR-061: Split Prisma Schema (prisma-merge) | 🔲 | CTO agent |
-| **2** | ADR-062: Obsidian as SSOT | 🔲 | CTO agent |
-| **2** | ADR-063: Dev Tools Isolation (.dev/) | 🔲 | CTO agent |
-| **2** | ADR-064: DOC TO CODE Workflow | 🔲 | CTO agent |
-| **2** | ADR-065: Industry Plugin System | 🔲 | CTO agent |
-| **2** | ADR-066: Component Size Limit (500 LOC) | 🔲 | CTO agent |
-| **2** | ADR-067: Changelog System v2 (sliding window) | 🔲 | CTO agent |
-| **2** | ADR-068: NotebookLM as AI Context Layer | 🔲 | CTO agent |
-| **2** | ADR-069: AI Feature Architecture (Compose/Agent/Analytics) | 🔲 | CTO agent |
+| **2** | ADR-060: Modular Architecture | ✅ Done | CTO agent |
+| **2** | ADR-061: Split Prisma Schema (prisma-merge) | ✅ Done | CTO agent |
+| **2** | ADR-062: Obsidian as SSOT | ✅ Done | CTO agent |
+| **2** | ADR-063: Dev Tools Isolation (.dev/) | ✅ Done | CTO agent |
+| **2** | ADR-064: DOC TO CODE Workflow | ✅ Done | CTO agent |
+| **2** | ADR-065: Industry Plugin System | ✅ Done | CTO agent |
+| **2** | ADR-066: Component Size Limit (500 LOC) | ✅ Done | CTO agent |
+| **2** | ADR-067: Changelog System v2 (sliding window) | ✅ Done | CTO agent |
+| **2** | ADR-068: Persona-Based RBAC (6 Roles) | ✅ Done | Boss + Claude |
+| **2** | ADR-069: AI Context Layer (NotebookLM) | 🔲 | CTO agent |
 | **2** | Boss approve ทุก ADR | 🔲 | Boss |
 
 **Deliverables:**
@@ -88,8 +87,8 @@ M = Milestone
 ### M2: Core Migration (May 2026)
 ### ═══════════════════════════════════════════
 
-> เป้าหมาย: ย้าย working features จาก ZURI → CO modular structure
-> V School ใช้งาน CO ได้เหมือนเดิม (feature parity)
+> เป้าหมาย: ย้าย working features จาก ZURI → Zuri modular structure
+> V School ใช้งาน Zuri ได้เหมือนเดิม (feature parity)
 
 | Phase | Task | Models | Owner |
 |---|---|---|---|
@@ -118,14 +117,14 @@ M = Milestone
 | **6.5** | industry/culinary/packages | +5 models | Backend + Frontend |
 | | | | |
 | **7** | Integration testing (E2E, multi-tenant, performance) | — | QA agent |
-| **7** | Migration script: ZURI DB → CO DB | — | Migrator agent |
+| **7** | Migration script: ZURI DB → Zuri DB | — | Migrator agent |
 | **7** | V School UAT (Boss verify) | — | Boss |
 
 **Deliverables:**
 - [ ] ~57 models migrated + working
 - [ ] V School feature parity กับ ZURI v3.7
 - [ ] E2E tests pass
-- [ ] V School cutover to CO
+- [ ] V School cutover to Zuri
 
 ---
 
@@ -350,7 +349,7 @@ Zuri POS/Expense data → FlowAccount (API auto) or Express (X-import email)
 | MT-2 | Per-tenant FB Page + LINE OA config | — |
 | MT-2 | Per-tenant Meta Ads account + token | — |
 | MT-2 | Per-tenant branding (logo, color) | — |
-| MT-2 | Per-tenant NLM notebooks (auto-create on onboard) | ADR-068 |
+| MT-2 | Per-tenant NLM notebooks (auto-create on onboard) | ADR-069 |
 | MT-2 | Per-tenant AI system prompt | ADR-054 |
 | MT-3 | Subdomain routing: {slug}.zuri.app | ADR-056 |
 | MT-3 | Tenant onboarding flow (signup → provision → first login) | — |
@@ -540,3 +539,4 @@ Output:  MarketPrice table → baseline สำหรับจัดซื้อ
 | **M6** | AI Content | Sales สร้าง content > 10 ชิ้น/สัปดาห์ |
 | **M7** | MRR | ≥ ฿15,000 |
 | **M7** | Paying tenants | ≥ 3 |
+                      

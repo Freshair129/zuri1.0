@@ -9,91 +9,76 @@
 #        const cfg = getConfig();
 #        cfg.vat.rate  // 0.07
 #
-# VERSION: 2.2.0
-# UPDATED: 2026-03-23
+# VERSION: 3.0.0
+# UPDATED: 2026-04-04
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # ─── RBAC: Roles & Hierarchy ────────────────────────────────────────────────
+# ADR-068: Persona-Based RBAC (6 roles) — supersedes ADR-045 (12 roles)
 rbac:
   roles:
     - code: DEV
       label: Developer
+      level: 6
+      tier: S0
+      description: Full system access — internal only, hidden in UI
+    - code: OWNER
+      label: Owner
       level: 5
       tier: S1
-      description: Full system access + tab switcher
-    - code: TEC
-      label: Technician
-      level: 3.5
-      tier: S2
-      description: System + read all operational
-    - code: MGR
+      description: เจ้าของ — ดูทุกอย่าง, approve สูงสุด
+    - code: MANAGER
       label: Manager
       level: 4
-      tier: R2
-      description: All operational views, approve, reports
-    - code: MKT
-      label: Marketing
-      level: 2.5
-      tier: R3
-      description: Ads + chat + courses + sales + revenue (for ROAS)
-    - code: HR
-      label: Human Resource
-      level: 3
-      tier: R4
-      description: Employee management
-    - code: PUR
-      label: Purchasing
-      level: 2.5
-      tier: R5
-      description: PO + kitchen procurement
-    - code: PD
-      label: Head Chef / Production
-      level: 2.5
-      tier: R6
-      description: Kitchen + recipes + schedule
-    - code: ADM
-      label: Admin
-      level: 2
-      tier: R7
-      description: Enrollment + documents
-    - code: ACC
-      label: Accounting
-      level: 3
-      tier: R8
-      description: Financial overview + reports
-    - code: SLS
+      tier: R1
+      description: ผู้จัดการ — ops ทั้งหมด + จัดการพนักงาน (เดิม MGR + ADM + HR)
+    - code: SALES
       label: Sales
-      level: 1.5
-      tier: R9
-      description: POS + customers + inbox
-    - code: AGT
-      label: Agent
-      level: 1
-      tier: R10
-      description: Inbox + own customers
-    - code: STF
+      level: 3
+      tier: R2
+      description: ทีมขาย — inbox + CRM + POS + marketing (เดิม SLS + AGT + MKT)
+    - code: KITCHEN
+      label: Kitchen
+      level: 2
+      tier: R3
+      description: ครัว — kitchen + stock + procurement + recipes (เดิม TEC + PUR + PD)
+    - code: FINANCE
+      label: Finance
+      level: 2
+      tier: R4
+      description: บัญชี — billing + accounting integration (เดิม ACC)
+    - code: STAFF
       label: Staff
-      level: 0.5
-      tier: R11
-      description: Tasks + schedule (view only)
+      level: 1
+      tier: R5
+      description: พนักงานทั่วไป — view-only, tasks, schedule (เดิม STF)
 
   # Roles that can see financial/executive data
-  exec_roles: [DEV, TEC, MGR, ACC, MKT]
+  exec_roles: [DEV, OWNER, MANAGER, FINANCE]
 
   # Dashboard mapping (role → dashboard component)
   dashboard_map:
     DEV: ManagerDash
-    TEC: ManagerDash
-    MGR: ManagerDash
-    MKT: ManagerDash    # needs revenue for ROAS
-    ACC: AdminDash
-    PD: HeadChefDash
-    PUR: HeadChefDash
-    HR: EmployeeDash
-    ADM: EmployeeDash
-    STF: EmployeeDash
-    SLS: AgentDash
-    AGT: AgentDash
+    OWNER: ManagerDash
+    MANAGER: ManagerDash
+    SALES: AgentDash
+    KITCHEN: HeadChefDash
+    FINANCE: AdminDash
+    STAFF: EmployeeDash
+
+  # Migration reference: old role → new role (ADR-068)
+  legacy_migration:
+    TEC: KITCHEN
+    MGR: MANAGER
+    MKT: SALES
+    HR: MANAGER
+    PUR: KITCHEN
+    PD: KITCHEN
+    ADM: MANAGER
+    ACC: FINANCE
+    SLS: SALES
+    AGT: SALES
+    STF: STAFF
 
 # ─── Employee ────────────────────────────────────────────────────────────────
 employee:

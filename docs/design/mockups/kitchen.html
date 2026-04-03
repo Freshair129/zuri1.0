@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Royal Ayutthaya - Kitchen Command Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;700;800&amp;family=Prompt:wght@300;400;600;900&amp;family=Be+Vietnam+Pro:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-container": "#dbe2f9",
+                    "on-secondary-fixed-variant": "#3f4759",
+                    "primary": "#795900",
+                    "surface-container-highest": "#e0e3e6",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#f6be39",
+                    "primary-fixed": "#ffdfa0",
+                    "surface-container-low": "#f1f4f7",
+                    "surface-container-high": "#e5e8eb",
+                    "on-primary-fixed-variant": "#5c4300",
+                    "on-error": "#ffffff",
+                    "background": "#f7fafd",
+                    "on-surface-variant": "#4f4634",
+                    "on-secondary-fixed": "#141b2c",
+                    "surface-bright": "#f7fafd",
+                    "surface-dim": "#d7dadd",
+                    "on-surface": "#181c1e",
+                    "tertiary": "#5f5e5e",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#aaa8a8",
+                    "secondary": "#565e71",
+                    "surface-container": "#ebeef1",
+                    "surface": "#f7fafd",
+                    "secondary-fixed": "#dbe2f9",
+                    "outline": "#817662",
+                    "on-secondary-container": "#5c6477",
+                    "tertiary-fixed": "#e5e2e1",
+                    "on-tertiary-fixed": "#1c1b1b",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-container": "#3e3d3d",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed-variant": "#474746",
+                    "on-primary-container": "#503a00",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#e0e3e6",
+                    "outline-variant": "#d3c5ae",
+                    "on-background": "#181c1e",
+                    "primary-fixed-dim": "#f6be39",
+                    "on-primary-fixed": "#261a00",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-surface": "#2d3133",
+                    "secondary-fixed-dim": "#bfc6dc",
+                    "tertiary-fixed-dim": "#c8c6c5",
+                    "inverse-on-surface": "#eef1f4",
+                    "surface-tint": "#795900",
+                    "primary-container": "#d4a017"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Manrope"],
+                    "label": ["Be Vietnam Pro"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-nav {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .thai-line-height {
+            line-height: 1.8;
+        }
+        .ornate-lead {
+            border-left: 4px solid #795900;
+            padding-left: 1.5rem;
+        }
+        .royal-gradient {
+            background: linear-gradient(135deg, #795900 0%, #d4a017 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+<nav class="fixed top-0 z-50 flex justify-between items-center w-full px-8 h-16 bg-[#f7fafd] dark:bg-[#181c1e] border-b-0 font-['Manrope'] text-sm tracking-tight glass-nav">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-[#181c1e] dark:text-[#f7fafd] tracking-tighter">Z U R I</span>
+<div class="hidden md:flex gap-6 items-end h-full pt-4">
+<a class="text-[#565e71] dark:text-[#d3c5ae] font-medium pb-2 hover:text-[#795900] transition-colors duration-200" href="#">Overview</a>
+<a class="text-[#565e71] dark:text-[#d3c5ae] font-medium pb-2 hover:text-[#795900] transition-colors duration-200" href="#">Inbox</a>
+<a class="text-[#565e71] dark:text-[#d3c5ae] font-medium pb-2 hover:text-[#795900] transition-colors duration-200" href="#">CRM</a>
+<a class="text-[#565e71] dark:text-[#d3c5ae] font-medium pb-2 hover:text-[#795900] transition-colors duration-200" href="#">POS</a>
+<a class="text-[#795900] dark:text-[#d4a017] border-b-2 border-[#795900] font-bold pb-2" href="#">Kitchen</a>
+<a class="text-[#565e71] dark:text-[#d3c5ae] font-medium pb-2 hover:text-[#795900] transition-colors duration-200" href="#">Enrollment</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-secondary hover:bg-surface-container-low rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden">
+<img alt="User profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9nU11DVsjMNqeqV7Vk3xtjRrTT1BSIux_tr-fGegwNuYKcEfh7x0fzbVELF18zLzv7HCVaTvFve5SyrDR8X1ycEC1MlIbkkfR2DJXcLHVGus5rMKtz5rlesw8V2WO1DITSrPgzQ_GIXVM70U_HE_YJ4-fJQZsB9cIa_UgQ4PSAUt_fxJMBCxUEUv4nz3q2zTGRD3BCp1ciBxFE1LarzvcE-HNyqTmcZq8Yn_P2k8e0l5Tn76Prh9CBH8aFrySXIIvCkaKGBMhG7g"/>
+</div>
+</div>
+</nav>
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex flex-col py-6 bg-white/80 dark:bg-[#181c1e]/80 backdrop-blur-xl shadow-[12px_0_40px_rgba(16,24,40,0.06)] z-40">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">restaurant_menu</span>
+</div>
+<div>
+<p class="font-['Prompt'] uppercase tracking-widest text-[10px] text-secondary">Kitchen ops</p>
+<h2 class="text-sm font-black text-[#565e71] uppercase tracking-wider text-[10px] font-['Prompt']">Operational Suite</h2>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-[#795900] bg-[#f1f4f7] dark:bg-[#795900]/10 rounded-r-full font-bold translate-x-1 transition-all" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-['Prompt'] uppercase tracking-widest text-[10px]">Recipe Book</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#565e71] dark:text-[#d3c5ae] hover:bg-[#f1f4f7] dark:hover:bg-[#ffffff]/5 transition-all" href="#">
+<span class="material-symbols-outlined">warning</span>
+<span class="font-['Prompt'] uppercase tracking-widest text-[10px]">Stock Alerts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#565e71] dark:text-[#d3c5ae] hover:bg-[#f1f4f7] dark:hover:bg-[#ffffff]/5 transition-all" href="#">
+<span class="material-symbols-outlined">checklist</span>
+<span class="font-['Prompt'] uppercase tracking-widest text-[10px]">Prep Lists</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#565e71] dark:text-[#d3c5ae] hover:bg-[#f1f4f7] dark:hover:bg-[#ffffff]/5 transition-all" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="font-['Prompt'] uppercase tracking-widest text-[10px]">Suppliers</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#565e71] dark:text-[#d3c5ae] hover:bg-[#f1f4f7] dark:hover:bg-[#ffffff]/5 transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-['Prompt'] uppercase tracking-widest text-[10px]">Analytics</span>
+</a>
+</nav>
+<div class="px-4 mt-auto pt-6 border-t border-outline-variant/15">
+<a class="flex items-center gap-3 px-4 py-3 text-[#565e71] dark:text-[#d3c5ae] hover:bg-[#f1f4f7] transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-['Prompt'] uppercase tracking-widest text-[10px]">Help Center</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#565e71] dark:text-[#d3c5ae] hover:bg-[#f1f4f7] transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-['Prompt'] uppercase tracking-widest text-[10px]">Logout</span>
+</a>
+</div>
+</aside>
+<main class="ml-64 pt-24 px-12 pb-12">
+<header class="mb-10 ornate-lead">
+<span class="font-['Prompt'] uppercase tracking-[0.2em] text-xs text-primary font-bold">Kitchen Intelligence</span>
+<h1 class="text-5xl font-extrabold tracking-tight text-on-surface mt-2 mb-4">Kitchen Command Center</h1>
+<p class="text-secondary max-w-2xl thai-line-height text-lg">
+            Manage your culinary heritage with precision. Real-time stock monitoring paired with high-end recipe documentation for the Royal Ayutthaya kitchens.
+        </p>
+</header>
+<div class="grid grid-cols-12 gap-8 mb-12">
+<div class="col-span-12 xl:col-span-6">
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/10 h-full">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h4 class="font-['Prompt'] font-bold uppercase tracking-widest text-xs text-primary mb-1">Live Stock Inventory</h4>
+<p class="text-xs text-secondary">Critical item levels monitoring</p>
+</div>
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">inventory</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-medium">
+<span>Organic Jasmine Rice</span>
+<span class="text-error font-bold">12% LEFT</span>
+</div>
+<div class="h-2 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-error w-[12%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-medium">
+<span>Coconut Cream (Premium)</span>
+<span class="text-primary font-bold">84% LEFT</span>
+</div>
+<div class="h-2 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[84%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-medium">
+<span>Bird's Eye Chili</span>
+<span class="text-on-secondary-container font-bold">45% LEFT</span>
+</div>
+<div class="h-2 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[45%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-medium">
+<span>Galangal Root</span>
+<span class="text-error font-bold">8% LEFT</span>
+</div>
+<div class="h-2 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-error w-[8%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-surface-container-low flex justify-end">
+<button class="border-2 border-primary/20 px-6 py-2.5 rounded-md font-['Prompt'] font-bold text-primary text-[10px] uppercase tracking-widest hover:bg-primary/5 transition-colors">
+                        Generate Reorder List
+                    </button>
+</div>
+</div>
+</div>
+<div class="col-span-12 xl:col-span-6">
+<div class="bg-surface-container-low/50 backdrop-blur-md p-8 rounded-xl border border-outline-variant/10 h-full flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h4 class="font-['Prompt'] font-bold uppercase tracking-widest text-xs text-primary mb-1">Kitchen Prep Efficiency</h4>
+<p class="text-xs text-secondary">Operational throughput analytics</p>
+</div>
+<span class="material-symbols-outlined text-primary text-3xl">speed</span>
+</div>
+<div class="flex flex-col md:flex-row gap-8 items-center flex-1">
+<div class="flex-1">
+<p class="text-secondary thai-line-height text-sm mb-6">Weekly analysis showing a 15% increase in prep speed following the new workstation layout.</p>
+<div class="flex gap-8">
+<div>
+<p class="text-2xl font-black text-primary">94%</p>
+<p class="text-[9px] font-['Prompt'] uppercase tracking-widest text-secondary mt-1">Accuracy Rate</p>
+</div>
+<div>
+<p class="text-2xl font-black text-on-secondary-container">22m</p>
+<p class="text-[9px] font-['Prompt'] uppercase tracking-widest text-secondary mt-1">Avg Ticket Time</p>
+</div>
+</div>
+</div>
+<div class="w-full md:w-56 h-32 bg-surface-container-lowest rounded-lg border border-outline-variant/15 flex items-end justify-between p-3 gap-1.5">
+<div class="w-full bg-primary/20 rounded-t h-[60%]"></div>
+<div class="w-full bg-primary/40 rounded-t h-[80%]"></div>
+<div class="w-full bg-primary/20 rounded-t h-[45%]"></div>
+<div class="w-full bg-primary/60 rounded-t h-[95%]"></div>
+<div class="w-full bg-primary/30 rounded-t h-[55%]"></div>
+<div class="w-full bg-primary/80 rounded-t h-[85%]"></div>
+<div class="w-full bg-primary rounded-t h-[70%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<section>
+<div class="flex flex-col md:flex-row justify-between items-end gap-4 mb-8">
+<div class="w-full md:w-auto">
+<h3 class="text-2xl font-bold mb-2">Recipe Repository</h3>
+<div class="flex gap-2">
+<button class="bg-primary text-white px-4 py-1.5 rounded-full text-[10px] font-['Prompt'] uppercase tracking-widest">All Recipes</button>
+<button class="bg-surface-container-high text-secondary px-4 py-1.5 rounded-full text-[10px] font-['Prompt'] uppercase tracking-widest hover:bg-surface-container-highest transition-colors">Signatures</button>
+<button class="bg-surface-container-high text-secondary px-4 py-1.5 rounded-full text-[10px] font-['Prompt'] uppercase tracking-widest hover:bg-surface-container-highest transition-colors">Soups</button>
+<button class="bg-surface-container-high text-secondary px-4 py-1.5 rounded-full text-[10px] font-['Prompt'] uppercase tracking-widest hover:bg-surface-container-highest transition-colors">Curries</button>
+</div>
+</div>
+<div class="relative w-full md:w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-xl">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest border-outline-variant/30 rounded-lg text-sm focus:ring-primary focus:border-primary" placeholder="Search culinary archives..." type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden group border border-outline-variant/10 hover:shadow-md transition-shadow">
+<div class="h-40 overflow-hidden relative">
+<img alt="Thai Green Curry" class="w-full h-full object-cover transition-transform group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw0Z9ldiyx_HhK4vx9_w_oMvyWTHkNXEUU8-nL7i0nNIgsHD80tEWNPa3J0ivwQhAQcCzFoyIJUDGpbf2JCJz9N8ohRi9GL8rpTS8--ZLS6dZ5i4VvI96xB3-bU8FnFlRh_g3ByBx91KF-hq06f98k3cGPVrKtGEX8ivansSOpzBgT-YVhbpekxB_OIf-_Ql6ACMLrOOtNG6aOXHhL0-2q4CBjDNDoHxZFqpjNWWDlv_PY4we-JIfQWntwogKqR33GxFGed6_E3rM"/>
+<div class="absolute top-3 left-3">
+<span class="px-2 py-0.5 bg-primary text-[8px] text-white font-['Prompt'] uppercase tracking-widest rounded-sm shadow-sm">Signature</span>
+</div>
+</div>
+<div class="p-4">
+<h5 class="font-bold text-md mb-1 line-clamp-1">Gaeng Keow Wan Gai</h5>
+<p class="text-[10px] text-secondary font-['Prompt'] uppercase tracking-widest mb-3">Signature • Spicy</p>
+<div class="flex justify-between items-center pt-3 border-t border-surface-container-low">
+<span class="text-[9px] text-secondary">Updated 1h ago</span>
+<span class="material-symbols-outlined text-secondary text-sm cursor-pointer hover:text-primary transition-colors">open_in_new</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden group border border-outline-variant/10 hover:shadow-md transition-shadow">
+<div class="h-40 overflow-hidden relative">
+<img alt="Tom Yum Goong" class="w-full h-full object-cover transition-transform group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCowEJX8uXXehyzl-ZiRgQYFa4PafiMvAONGbyMkEbq-PVch2qKCtf6-8L56d-TmkN9UFsiRWmHhE4MUgwcMwatRNherM8Kvdjf8L9reCBpOL2_cPI-Q0pBwXazZkmyYpuEWGFUgMmimV7HJH9pxn0Vumu6Y25F0iUHz0B1AfOH4n2X4l9Lel2JnBLtNujb4ddBFJFNt5lOm9bjEfYyYp9-yJpBsZbVANO_jTYQMh5dhYY-isgsTmvR4IG7Lj1TVXqikRxSwRy4qgw"/>
+</div>
+<div class="p-4">
+<h5 class="font-bold text-md mb-1 line-clamp-1">Tom Yum Goong</h5>
+<p class="text-[10px] text-secondary font-['Prompt'] uppercase tracking-widest mb-3">Soup • Med Spice</p>
+<div class="flex justify-between items-center pt-3 border-t border-surface-container-low">
+<span class="text-[9px] text-secondary">Updated 2h ago</span>
+<span class="material-symbols-outlined text-secondary text-sm cursor-pointer hover:text-primary transition-colors">open_in_new</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden group border border-outline-variant/10 hover:shadow-md transition-shadow">
+<div class="h-40 overflow-hidden relative">
+<img alt="Pad Thai" class="w-full h-full object-cover transition-transform group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqw2KOLgjUYqZ1E0VAObdy1BlogSIXpxvA5JXSmXj_mts1088Wdx3gFOqDDt7zMTlw5okAw5JOUa2nUiu6rnRHAdezLdlgJRWXpB6CdGPivdQq14ZxPIqjD4Y_Ec2tmrvPPKQQCp8839XpLHg_Ucfi8v-YAPUIx6b12nA13bW9oWiAOBv4MhoIghm32TM-wLVW4O-MfBRGZ1zpWiNpViq91dSgFHXcM3gBI7iVEDj1eR1cwonJVESaeof4mjyY_h_N27vX4tlZf1U"/>
+</div>
+<div class="p-4">
+<h5 class="font-bold text-md mb-1 line-clamp-1">Authentic Pad Thai</h5>
+<p class="text-[10px] text-secondary font-['Prompt'] uppercase tracking-widest mb-3">Stir-fry • Mild</p>
+<div class="flex justify-between items-center pt-3 border-t border-surface-container-low">
+<span class="text-[9px] text-secondary">Updated 1d ago</span>
+<span class="material-symbols-outlined text-secondary text-sm cursor-pointer hover:text-primary transition-colors">open_in_new</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden group border border-outline-variant/10 hover:shadow-md transition-shadow">
+<div class="h-40 overflow-hidden relative">
+<img alt="Massaman Curry" class="w-full h-full object-cover transition-transform group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIP1NzsUBbKV-hjtqN7aqzheZMqp_XjmdzHPr1VHmh922_-gKbTJBB4vWPY6sc2eUPUk4TfWVFSfThW80IcCX0eInVD4kRDvzY_h5exYEPQFX5ZZUJN8GsMmzLHaIjSLtAvhPWbsPOcI6-XjxxoquXrAYQRHPtxbTYmoI7sVkCdQ7nwOGgecfn1hIa0GVJKMq4KwI0ATB6VSothb5T2Kwy4bwWTM1loNJD3OsllJAitRH5ggUodLHZJ-O-7-wvgz4sKWDSouT1Qz4"/>
+</div>
+<div class="p-4">
+<h5 class="font-bold text-md mb-1 line-clamp-1">Beef Massaman</h5>
+<p class="text-[10px] text-secondary font-['Prompt'] uppercase tracking-widest mb-3">Slow-Cook • Mild</p>
+<div class="flex justify-between items-center pt-3 border-t border-surface-container-low">
+<span class="text-[9px] text-secondary">Updated 5h ago</span>
+<span class="material-symbols-outlined text-secondary text-sm cursor-pointer hover:text-primary transition-colors">open_in_new</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<button class="fixed bottom-10 right-10 w-16 h-16 royal-gradient rounded-full shadow-2xl flex items-center justify-center text-white active:scale-90 transition-all z-50">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+
+</body></html>

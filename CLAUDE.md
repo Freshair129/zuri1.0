@@ -44,10 +44,11 @@ Zuri is an **AI Business Platform** for Thai service SMEs — starting with culi
 - **Tenant Sovereignty Rule**: Use `TenantContext` for all UI branding (logo, colors). Never hardcode tenant-specific UI. "Core once, Filling many."
 
 
-### RBAC (ADR-045)
-- 12 roles: DEV, TEC, MGR, MKT, HR, PUR, PD, ADM, ACC, SLS, AGT, STF + OWNER
+### RBAC (ADR-068)
+- 7 roles: **DEV, OWNER, MANAGER, SALES, KITCHEN, FINANCE, STAFF**
 - Use `can(roles, domain, action)` from `src/lib/permissionMatrix.js`
 - Roles stored UPPERCASE in DB
+- Legacy mapping: MGR/ADM/HR → MANAGER | SLS/AGT/MKT → SALES | TEC/PUR/PD → KITCHEN | ACC → FINANCE | STF → STAFF
 
 ### Config SSOT
 - `system_config.yaml` — roles, VAT, statuses, thresholds
@@ -74,10 +75,13 @@ Zuri is an **AI Business Platform** for Thai service SMEs — starting with culi
 
 ## Obsidian — Second Brain (SSOT for Docs)
 - Vault: `docs/` — accessible via Obsidian MCP (`mcp__obsidian__*`)
+- `docs/HOME.md` — vault index (start here)
+- `docs/PROJECT_MAP.md` — codebase navigation (repo structure, domain map, infra)
 - `docs/product/PRD.md` — product requirements v2.2
-- `docs/product/ROADMAP.md` — milestones M1–M7
-- `docs/product/specs/` — FEAT-*.md approved specs (read before implement)
-- `docs/decisions/adrs/` — ADR-*.md architecture decisions (read before schema/arch changes)
+- `docs/product/ROADMAP.md` — milestones M1–M7 (v2.2.0)
+- `docs/product/SITEMAP.md` — URL map + roles (45 pages, 12 domains)
+- `docs/product/specs/` — FEAT01–FEAT19 approved specs (read before implement)
+- `docs/decisions/adrs/` — ADR-057–ADR-068 architecture decisions (read before schema/arch changes)
 - `docs/decisions/log.md` — decision history
 - `docs/gotchas/` — incident rules (read if unsure)
 - **Rule:** ถ้า context หาย → query Obsidian ก่อนถาม Boss

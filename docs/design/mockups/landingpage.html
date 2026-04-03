@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html lang="th"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Zuri - ระบบจัดการร้านครบวงจร</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700;800&amp;family=Prompt:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#565e71",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed-variant": "#5c4300",
+                    "primary-fixed-dim": "#f6be39",
+                    "on-surface": "#181c1e",
+                    "primary": "#795900",
+                    "inverse-primary": "#f6be39",
+                    "on-secondary-fixed-variant": "#3f4759",
+                    "tertiary-fixed": "#e5e2e1",
+                    "surface-container-high": "#e5e8eb",
+                    "surface-container-low": "#f1f4f7",
+                    "secondary-fixed": "#dbe2f9",
+                    "surface-container-highest": "#e0e3e6",
+                    "secondary-container": "#dbe2f9",
+                    "outline": "#817662",
+                    "primary-container": "#d4a017",
+                    "on-background": "#181c1e",
+                    "background": "#f7fafd",
+                    "on-primary-container": "#503a00",
+                    "on-tertiary-fixed": "#1c1b1b",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#261a00",
+                    "on-error-container": "#93000a",
+                    "error-container": "#ffdad6",
+                    "tertiary": "#5f5e5e",
+                    "primary-fixed": "#ffdfa0",
+                    "on-secondary-container": "#5c6477",
+                    "on-secondary-fixed": "#141b2c",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#c8c6c5",
+                    "surface-bright": "#f7fafd",
+                    "secondary-fixed-dim": "#bfc6dc",
+                    "on-surface-variant": "#4f4634",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-container": "#3e3d3d",
+                    "outline-variant": "#d3c5ae",
+                    "on-tertiary-fixed-variant": "#474746",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#aaa8a8",
+                    "surface-tint": "#795900",
+                    "surface-container": "#ebeef1",
+                    "surface-variant": "#e0e3e6",
+                    "inverse-on-surface": "#eef1f4",
+                    "on-error": "#ffffff",
+                    "surface": "#f7fafd",
+                    "surface-dim": "#d7dadd",
+                    "inverse-surface": "#2d3133"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["IBM Plex Sans Thai", "Manrope", "sans-serif"],
+                    "body": ["IBM Plex Sans Thai", "Manrope", "sans-serif"],
+                    "label": ["Prompt", "Be Vietnam Pro", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'IBM Plex Sans Thai', 'Manrope', sans-serif; background-color: #f7fafd; color: #181c1e; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-nav { background: rgba(247, 250, 253, 0.8); backdrop-filter: blur(20px); }
+        .gold-gradient { background: linear-gradient(135deg, #795900 0%, #d4a017 100%); }
+        .thai-line-height { line-height: 1.8; }
+        .ornate-lead { border-left: 4px solid #795900; padding-left: 1.5rem; }
+    </style>
+</head>
+<body class="bg-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopAppBar -->
+<nav class="fixed top-0 w-full flex justify-between items-center px-6 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-50 shadow-sm">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 gold-gradient rounded-lg flex items-center justify-center text-white font-bold">Z</div>
+<span class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-headline">Zuri</span>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-amber-700 dark:text-amber-500 font-bold font-label text-xs uppercase tracking-wider" href="#">Features</a>
+<a class="text-slate-600 dark:text-slate-400 font-label text-xs uppercase tracking-wider hover:text-amber-700 transition-colors" href="#">Pricing</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<a class="text-slate-600 dark:text-slate-400 font-label text-xs uppercase tracking-wider hover:bg-slate-50 px-4 py-2 rounded-lg transition-all" href="#">Login</a>
+<button class="gold-gradient text-white px-6 py-2 rounded-md font-label font-bold text-xs uppercase shadow-lg shadow-primary/20 active:scale-95 transition-all">เริ่มใช้ฟรี</button>
+</div>
+</nav>
+<main class="pt-32 pb-20 overflow-x-hidden">
+<!-- Hero Section -->
+<section class="container mx-auto px-6 lg:px-12">
+<div class="flex flex-col lg:flex-row items-center gap-16">
+<div class="w-full lg:w-3/5 space-y-8">
+<div class="ornate-lead">
+<span class="font-label text-primary font-bold uppercase tracking-[0.2em] text-xs">Modern Sovereign AI</span>
+<h1 class="text-5xl md:text-7xl font-bold font-headline mt-4 leading-tight tracking-tight text-on-surface">
+                            มีซูริ <br/><span class="text-primary-container">ไม่ต้องเป็นห่วง</span>
+</h1>
+</div>
+<p class="text-xl text-secondary font-body thai-line-height max-w-xl">
+                        ระบบจัดการร้านครบวงจรที่ถูกออกแบบมาเพื่อความเงียบสงบของคุณ ด้วยเทคโนโลยี AI ที่ช่วยดูแลงานหลังบ้านให้เป็นเรื่องง่ายในทุกขั้นตอน
+                    </p>
+<div class="flex flex-wrap gap-4 pt-4">
+<button class="gold-gradient text-white px-8 py-4 rounded-md font-label font-bold text-sm uppercase shadow-xl shadow-primary/25 hover:scale-105 active:scale-95 transition-all">
+                            เริ่มใช้ฟรี
+                        </button>
+<button class="border border-secondary/20 text-secondary px-8 py-4 rounded-md font-label font-bold text-sm uppercase hover:bg-surface-container-low transition-all">
+                            ดูฟีเจอร์ทั้งหมด
+                        </button>
+</div>
+</div>
+<div class="w-full lg:w-2/5 relative">
+<div class="relative z-10 rounded-2xl overflow-hidden shadow-[0_32px_64px_-12px_rgba(86,94,113,0.2)] bg-surface-container-lowest p-2">
+<img alt="Zuri Platform Dashboard" class="rounded-xl w-full h-auto" data-alt="Modern minimalist software dashboard on a laptop screen featuring clean data visualizations, saffron gold accents, and a professional workspace setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVK8ICMrGr5tAzKEE_RY0haggK-sg_PaB4SXysoKf2wlsjQfGuD6ZoR8NbHXRjkmmsl5ifkmJRbjphJ3GewAFwBbZ1zG8hyk818C3gqTqX3UMu-YQ--6eBYJi5y-NeXiWIK0_4SPdfQGKK7quD8d8HGP-ASCvwrCZsNmWn3VAxTbhuVrOKEpz2v0OoaOc9SyKQ34BBNPY6rztR6a2vUQ4-G8Tx1ITkEsv7LvuG6s8QUslPmZOB6W8H8twIJBeNTZ52Ot_B1nmIzas"/>
+</div>
+<!-- Decorative Elements -->
+<div class="absolute -top-12 -right-12 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-0"></div>
+<div class="absolute -bottom-12 -left-12 w-48 h-48 bg-secondary/5 rounded-full blur-3xl -z-0"></div>
+</div>
+</div>
+</section>
+<!-- Social Proof Bar -->
+<section class="mt-24 border-y border-outline-variant/10 bg-surface-container-low py-10">
+<div class="container mx-auto px-6 flex flex-col md:flex-row items-center justify-center gap-8 text-center md:text-left">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="font-body text-secondary italic">
+<span class="font-bold text-on-surface not-italic">V School</span> ใช้ Zuri จัดการนักเรียน <span class="text-primary font-bold">500+</span> คน อย่างมีประสิทธิภาพ
+                    </p>
+</div>
+<div class="h-px w-12 bg-outline-variant/30 hidden md:block"></div>
+<div class="flex gap-8 opacity-40 grayscale">
+<span class="font-headline font-extrabold text-xl">ACADEMY</span>
+<span class="font-headline font-extrabold text-xl">LMS+</span>
+<span class="font-headline font-extrabold text-xl">TECH HUB</span>
+</div>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="container mx-auto px-6 py-32">
+<div class="text-center mb-20">
+<h2 class="text-3xl font-bold font-headline mb-4">นวัตกรรมเพื่อการจัดการที่เหนือกว่า</h2>
+<p class="text-secondary font-body">ยกระดับธุรกิจของคุณด้วยฟีเจอร์ที่เราตั้งใจออกแบบมาเพื่อคนไทย</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Large Card -->
+<div class="md:col-span-2 bg-white rounded-2xl p-10 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between min-h-[400px]">
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-6">analytics</span>
+<h3 class="text-2xl font-bold font-headline mb-4">Dashboard อัจฉริยะ</h3>
+<p class="text-secondary font-body thai-line-height max-w-md">สรุปยอดขายและวิเคราะห์แนวโน้มธุรกิจแบบ Real-time ให้คุณตัดสินใจได้อย่างแม่นยำ ไม่พลาดทุกโอกาสสำคัญ</p>
+</div>
+<div class="mt-8 rounded-xl overflow-hidden border border-outline-variant/10">
+<img alt="Analytics charts" class="w-full h-48 object-cover" data-alt="Close up of a clean data visualization interface with golden progress bars and navy blue line graphs on a white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJWJkTX-18CsvAsWsRq_2wuGqNO7qR3cqmD-zeQiBEZi0Afp2QkfuWBwyulknKMiyaejRdGxjTMe8H47qPntqXKWHcvspiMMSYdLg8xErENl6BLWh8Buob5veMNYE53QmNNAjAmIlBSBy0vPFz7ju2S16lZ0cgvoCtIySfgscqUBIT-C-UmITLNPKSozOAg1YgvA5aYrk1A_7Xmh_fWoaYke8hhXvq-_pp_iLJ8jnVSV3iLA5a0Yyk9wEOX1kGnHRbQpY99tsCRd8"/>
+</div>
+</div>
+<!-- Small Card 1 -->
+<div class="bg-surface-container-low rounded-2xl p-10 flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-6">group</span>
+<h3 class="text-xl font-bold font-headline mb-4">CRM &amp; Members</h3>
+<p class="text-secondary font-body text-sm thai-line-height">เก็บข้อมูลลูกค้าอย่างเป็นระบบ พร้อมฟีเจอร์สะสมแต้มและโปรโมชั่นเฉพาะบุคคล</p>
+</div>
+<div class="pt-8">
+<div class="flex -space-x-4">
+<div class="w-10 h-10 rounded-full border-2 border-white bg-slate-200"></div>
+<div class="w-10 h-10 rounded-full border-2 border-white bg-slate-300"></div>
+<div class="w-10 h-10 rounded-full border-2 border-white bg-slate-400"></div>
+<div class="w-10 h-10 rounded-full border-2 border-white bg-primary-fixed flex items-center justify-center text-[10px] font-bold">+500</div>
+</div>
+</div>
+</div>
+<!-- Small Card 2 -->
+<div class="bg-surface-container-high rounded-2xl p-10 flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-6">inventory_2</span>
+<h3 class="text-xl font-bold font-headline mb-4">Inventory AI</h3>
+<p class="text-secondary font-body text-sm thai-line-height">ระบบจัดการสต็อกสินค้าอัตโนมัติ แจ้งเตือนทันทีเมื่อสินค้าใกล้หมด</p>
+</div>
+<div class="mt-4 py-2 px-4 bg-white/50 rounded-lg inline-flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+<span class="text-xs font-label uppercase font-bold text-on-surface">Low Stock Alert</span>
+</div>
+</div>
+<!-- Long Vertical Card -->
+<div class="md:col-span-2 bg-inverse-surface rounded-2xl p-10 text-white flex flex-col md:flex-row gap-10 items-center">
+<div class="flex-1">
+<span class="material-symbols-outlined text-primary-fixed-dim text-4xl mb-6">security</span>
+<h3 class="text-2xl font-bold font-headline mb-4">Sovereign Data Security</h3>
+<p class="text-slate-300 font-body thai-line-height">ความปลอดภัยระดับสากล ข้อมูลของคุณจะถูกเก็บรักษาอย่างดีที่สุดบน Sovereign Cloud ที่มีความเสถียรสูงสุด</p>
+<button class="mt-8 text-primary-fixed-dim font-label font-bold text-xs uppercase tracking-widest hover:underline">Learn more about security</button>
+</div>
+<div class="flex-1 w-full">
+<img alt="Server room security" class="rounded-xl opacity-80 hover:opacity-100 transition-opacity" data-alt="Cybersecurity concept with glowing digital locks and data streams in a dark sophisticated server room environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOp9G3UmCmUPfjS3qg5Dv7_Nw4yCM0TyaV1FXjxLKCJsPqz9Ac2X7GMFgSO9CGXL3VSfo9N5faIdfmUIvqrMZHGUc46kqVwly-y4J0P3upoz6ZOZW9Zh3oOJJBEDOsvaeQY9qiYBCcdBOjWmFsTz0pGd-bvz5VhnRVb9If-xgLeZsCyZUw3dO6G5UZPFj-txAjZiot6-XGZ_tJ-JgiWm47BtH5mhBuBWFxMRTNOSCT7w6Cpei7NSZasHz23krEw-B4brAUa4u5XmQ"/>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="container mx-auto px-6 py-20">
+<div class="gold-gradient rounded-[2rem] p-12 md:p-24 text-center text-white relative overflow-hidden">
+<div class="relative z-10 max-w-3xl mx-auto">
+<h2 class="text-4xl md:text-5xl font-bold font-headline mb-6">พร้อมยกระดับร้านค้าของคุณหรือยัง?</h2>
+<p class="text-white/80 font-body text-lg mb-10 thai-line-height">เข้าร่วมกับธุรกิจกว่า 2,000 แห่งที่ไว้วางใจให้ Zuri ดูแลระบบหลังบ้าน</p>
+<div class="flex flex-col sm:flex-row justify-center gap-4">
+<button class="bg-white text-primary px-10 py-4 rounded-md font-label font-bold text-sm uppercase shadow-xl hover:bg-surface-container-low transition-all">
+                            เริ่มใช้ฟรี 14 วัน
+                        </button>
+<button class="bg-black/10 border border-white/20 text-white px-10 py-4 rounded-md font-label font-bold text-sm uppercase hover:bg-black/20 transition-all">
+                            ติดต่อฝ่ายขาย
+                        </button>
+</div>
+</div>
+<!-- Abstract patterns -->
+<div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-48 -mt-48 blur-3xl"></div>
+<div class="absolute bottom-0 left-0 w-64 h-64 bg-black/5 rounded-full -ml-32 -mb-32 blur-2xl"></div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant/10 py-20">
+<div class="container mx-auto px-6">
+<div class="flex flex-col md:flex-row justify-between gap-12 mb-16">
+<div class="max-w-xs">
+<div class="flex items-center gap-2 mb-6">
+<div class="w-6 h-6 gold-gradient rounded-md flex items-center justify-center text-white font-bold text-xs">Z</div>
+<span class="text-xl font-bold tracking-tight text-on-surface font-headline">Zuri</span>
+</div>
+<p class="text-secondary font-body text-sm thai-line-height">
+                        ผู้นำด้านระบบจัดการร้านค้าอัจฉริยะที่ผสมผสานศิลปะแห่งการบริการเข้ากับเทคโนโลยีสมัยใหม่
+                    </p>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-12">
+<div class="space-y-4">
+<h4 class="font-label font-bold text-xs uppercase text-on-surface tracking-widest">Product</h4>
+<ul class="space-y-2 text-sm text-secondary font-body">
+<li><a class="hover:text-primary transition-colors" href="#">Features</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Integrations</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Pricing</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Changelog</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<h4 class="font-label font-bold text-xs uppercase text-on-surface tracking-widest">Company</h4>
+<ul class="space-y-2 text-sm text-secondary font-body">
+<li><a class="hover:text-primary transition-colors" href="#">About Us</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Careers</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Legal</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<h4 class="font-label font-bold text-xs uppercase text-on-surface tracking-widest">Support</h4>
+<ul class="space-y-2 text-sm text-secondary font-body">
+<li><a class="hover:text-primary transition-colors" href="#">Help Center</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Documentation</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Contact</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="pt-8 border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-xs text-secondary font-label">© 2024 Zuri Platform. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="text-secondary hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined text-lg">language</span></a>
+<a class="text-secondary hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined text-lg">mail</span></a>
+<a class="text-secondary hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined text-lg">share</span></a>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

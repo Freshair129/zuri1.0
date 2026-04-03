@@ -1,30 +1,39 @@
 /**
- * RBAC Permission Matrix (ADR-045)
- * 12 roles: DEV, TEC, MGR, MKT, HR, PUR, PD, ADM, ACC, SLS, AGT, STF
- * + OWNER (executive read-only)
+ * RBAC Permission Matrix (ADR-068 — Persona-Based RBAC)
+ * 6 roles: OWNER, MANAGER, SALES, KITCHEN, FINANCE, STAFF
+ * + DEV (internal only, hidden in UI)
  *
- * Permission levels: F=Full, A=Approve, R=Read, N=None
+ * Supersedes ADR-045 (12-role department RBAC)
+ * Updated: 2026-04-04
+ *
+ * Permission levels: F=Full CRUD, A=Approve, R=Read, N=None
+ *
+ * Domain map:
+ *   dashboard  — home + analytics + daily brief
+ *   customers  — CRM + customer profiles
+ *   inbox      — unified inbox (FB + LINE)
+ *   marketing  — ads analytics + campaigns
+ *   kitchen    — kitchen ops + stock + procurement + recipes
+ *   orders     — POS + invoices + payments
+ *   employees  — employee management
+ *   accounting — FlowAccount integration + billing export
+ *   system     — tenant admin + system config (DEV only)
  */
 
-const F = 'F'  // Full
+const F = 'F'  // Full CRUD
 const A = 'A'  // Approve
 const R = 'R'  // Read
 const N = 'N'  // None
 
 export const permissionMatrix = {
-  DEV: { dashboard: F, customers: F, inbox: F, marketing: F, kitchen: F, orders: F, employees: F, system: F },
-  TEC: { dashboard: F, customers: F, inbox: F, marketing: F, kitchen: F, orders: F, employees: F, system: F },
-  MGR: { dashboard: F, customers: F, inbox: F, marketing: F, kitchen: F, orders: F, employees: F, system: N },
-  MKT: { dashboard: R, customers: R, inbox: R, marketing: F, kitchen: N, orders: N, employees: N, system: N },
-  HR:  { dashboard: R, customers: N, inbox: N, marketing: N, kitchen: N, orders: N, employees: F, system: N },
-  PUR: { dashboard: R, customers: N, inbox: N, marketing: N, kitchen: A, orders: N, employees: N, system: N },
-  PD:  { dashboard: R, customers: N, inbox: N, marketing: N, kitchen: F, orders: N, employees: N, system: N },
-  ADM: { dashboard: F, customers: F, inbox: F, marketing: N, kitchen: F, orders: F, employees: R, system: N },
-  ACC: { dashboard: R, customers: R, inbox: N, marketing: N, kitchen: N, orders: R, employees: N, system: N },
-  SLS: { dashboard: R, customers: F, inbox: F, marketing: N, kitchen: N, orders: F, employees: N, system: N },
-  AGT: { dashboard: R, customers: R, inbox: R, marketing: N, kitchen: N, orders: F, employees: N, system: N },
-  STF: { dashboard: R, customers: R, inbox: R, marketing: N, kitchen: R, orders: R, employees: N, system: N },
-  OWNER: { dashboard: R, customers: R, inbox: R, marketing: R, kitchen: R, orders: R, employees: R, system: R },
+  //                dashboard  customers  inbox  marketing  kitchen  orders  employees  accounting  system
+  DEV:     { dashboard: F, customers: F, inbox: F, marketing: F, kitchen: F, orders: F, employees: F, accounting: F, system: F },
+  OWNER:   { dashboard: R, customers: R, inbox: R, marketing: R, kitchen: R, orders: R, employees: R, accounting: R, system: N },
+  MANAGER: { dashboard: F, customers: F, inbox: F, marketing: F, kitchen: F, orders: F, employees: F, accounting: R, system: N },
+  SALES:   { dashboard: R, customers: F, inbox: F, marketing: F, kitchen: N, orders: F, employees: N, accounting: N, system: N },
+  KITCHEN: { dashboard: R, customers: N, inbox: N, marketing: N, kitchen: F, orders: N, employees: N, accounting: N, system: N },
+  FINANCE: { dashboard: R, customers: R, inbox: N, marketing: N, kitchen: N, orders: R, employees: N, accounting: F, system: N },
+  STAFF:   { dashboard: R, customers: R, inbox: R, marketing: N, kitchen: R, orders: R, employees: N, accounting: N, system: N },
 }
 
 export const PERMISSIONS = permissionMatrix // Legacy alias
