@@ -58,6 +58,7 @@
 ### Overview
 - [[architecture/tech-spec|Tech Spec]] — Stack diagram, API design, RBAC, data flows, integrations
 - [[architecture/database-erd/full-schema|Database ERD]] — Full schema + ERD
+- [[architecture/WEBHOOK_EVENT_CATALOG|Webhook & Event Catalog]] — Inbound webhooks, Pusher events, QStash jobs
 
 ### Data Flows (11 modules)
 [[architecture/data-flows/crm|CRM]] · [[architecture/data-flows/inbox|Inbox]] · [[architecture/data-flows/pos|POS]] · [[architecture/data-flows/marketing|Marketing]] · [[architecture/data-flows/dsb|DSB]] · [[architecture/data-flows/enrollment|Enrollment]] · [[architecture/data-flows/kitchen|Kitchen]] · [[architecture/data-flows/tasks|Tasks]] · [[architecture/data-flows/auth|Auth]] · [[architecture/data-flows/ai|AI]] · [[architecture/data-flows/multi-tenant|Multi-Tenant]]
