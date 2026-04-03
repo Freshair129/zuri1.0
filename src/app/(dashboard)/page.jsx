@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import ClientInit from './_client-init'
 
 export default function DashboardHome() {
