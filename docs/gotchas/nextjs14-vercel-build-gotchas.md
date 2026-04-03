@@ -31,25 +31,29 @@ Error: ENOENT: no such file or directory,
 
 **สาเหตุ:** Route group เช่น `src/app/(dashboard)/page.jsx` ที่เป็น pure Server Component (ไม่มี client imports เลย) — Next.js 14 จะ**ไม่ generate** `page_client-reference-manifest.js` สำหรับ page นั้น แต่ Vercel's build tracer ไปหาไฟล์นี้และ fail
 
-**Fix:**
+**Fix ที่ถูกต้อง:** ให้ server component import client component อย่างน้อย 1 ตัว เพื่อสร้าง server→client boundary:
+
 ```jsx
-// src/app/(dashboard)/page.jsx
-'use client'  // ← เพิ่มบรรทัดนี้ เพื่อ force generate manifest
+// src/app/(dashboard)/_client-init.jsx  ← สร้างไฟล์นี้ใหม่
+'use client'
+export default function ClientInit() { return null }
+
+// src/app/(dashboard)/page.jsx  ← server component, import _client-init
+import ClientInit from './_client-init'
 
 export default function DashboardHome() {
-  return (...)
+  return (
+    <div>
+      <ClientInit />  {/* ← boundary นี้ทำให้ Next.js generate manifest */}
+      ...
+    </div>
+  )
 }
 ```
 
-**หมายเหตุ:** ถ้าไม่อยากทำเป็น Client Component จริงๆ ให้แก้ `next.config.js` แทน:
-```js
-experimental: {
-  outputFileTracingIncludes: {
-    '/(dashboard)/**': ['./src/**/*'],
-  },
-}
-```
-แต่วิธี `'use client'` ง่ายกว่าสำหรับ placeholder pages
+**❌ Fix ที่ไม่ work:** การเพิ่ม `'use client'` ที่ `page.jsx` โดยตรง — เพราะทำให้ page เป็น client component เอง → ไม่มี server→client boundary → manifest ยังไม่ถูก generate
+
+**กฎจำง่ายๆ:** manifest ถูก generate โดย server component ที่ *มอง* ไปหา client component ไม่ใช่ client component ที่จัดการตัวเอง
 
 ---
 
