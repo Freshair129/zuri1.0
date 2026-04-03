@@ -56,8 +56,7 @@
 ## Architecture
 
 ### Overview
-- [[architecture/system-overview|System Overview]] — Tech stack diagram
-- [[architecture/tech-spec|Tech Spec]] — Stack, API design, RBAC, integrations
+- [[architecture/tech-spec|Tech Spec]] — Stack diagram, API design, RBAC, data flows, integrations
 - [[architecture/database-erd/full-schema|Database ERD]] — Full schema + ERD
 
 ### Data Flows (11 modules)
