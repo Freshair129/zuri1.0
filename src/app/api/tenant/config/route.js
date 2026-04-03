@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getTenantSlug, resolveTenantBySlug } from '@/lib/tenant'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request) {
   try {
     const slug = getTenantSlug(request)

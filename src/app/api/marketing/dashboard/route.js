@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
 import { getCampaignMetrics } from '@/lib/repositories/campaignRepo'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/marketing/dashboard - Return ads metrics from DB (NOT live Graph API)
 export async function GET(request) {
   try {

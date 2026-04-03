@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/catalog - Return { courses, packages } for the tenant
 export async function GET(request) {
   try {

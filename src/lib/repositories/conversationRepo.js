@@ -83,6 +83,23 @@ export async function upsertConversation(tenantId, conversationId, data) {
 }
 
 /**
+ * Append an outbound message to a conversation
+ * Called by /api/conversations/[id]/reply
+ */
+export async function appendMessage({ tenantId, conversationId, message, direction = 'outbound', responderId = null }) {
+  const messageId = `MSG-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
+  return prisma.message.create({
+    data: {
+      messageId,
+      conversationId,
+      sender: direction === 'outbound' ? 'staff' : 'customer',
+      content: message ?? null,
+      responderId,
+    },
+  })
+}
+
+/**
  * Get the latest N messages for a customer across all their conversations
  */
 export async function getCustomerMessages(tenantId, customerId, limit = 30) {

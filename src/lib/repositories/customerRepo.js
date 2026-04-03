@@ -60,6 +60,35 @@ export async function updateCustomer(tenantId, id, data) {
   })
 }
 
+/**
+ * List customers — alias used by /api/customers GET
+ */
+export async function getCustomers({ tenantId, page = 1, limit = 20, search } = {}) {
+  const offset = (page - 1) * limit
+  return findMany(tenantId, { search, limit, offset })
+}
+
+/**
+ * Create a new customer — used by /api/customers POST
+ */
+export async function createCustomer({ tenantId, name, phone, email, lineId, tags, notes }) {
+  const { generateCustomerId } = await import('@/lib/idGenerator')
+  const channel = lineId ? 'LINE' : 'WEB'
+  const customerId = await generateCustomerId(channel)
+
+  return prisma.customer.create({
+    data: {
+      customerId,
+      tenantId,
+      facebookName: name ?? null,
+      phonePrimary: phone ?? null,
+      email: email ?? null,
+      lineId: lineId ?? null,
+      intelligence: notes ? { notes } : undefined,
+    },
+  })
+}
+
 export async function upsertByFacebookId(tenantId, facebookId, data) {
   return prisma.customer.upsert({
     where: { facebookId },

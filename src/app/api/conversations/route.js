@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
 import { getConversations } from '@/lib/repositories/conversationRepo'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/conversations - List conversations filtered by tenantId
 export async function GET(request) {
   try {

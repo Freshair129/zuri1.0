@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
 import * as inventoryRepo from '@/lib/repositories/inventoryRepo'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/inventory/stock - Get current stock levels by warehouse
 export async function GET(request) {
   try {

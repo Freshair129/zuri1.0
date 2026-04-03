@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
 import { getDailyBriefs } from '@/lib/repositories/dailyBriefRepo'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/daily-brief - List daily brief summaries (most recent first)
 export async function GET(request) {
   try {

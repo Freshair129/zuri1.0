@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
 import { getCustomers, createCustomer } from '@/lib/repositories/customerRepo'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/customers - List customers
 export async function GET(request) {
   try {

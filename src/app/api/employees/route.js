@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
 import { getEmployees, createEmployee } from '@/lib/repositories/employeeRepo'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/employees - List employees for the tenant
 export async function GET(request) {
   try {
