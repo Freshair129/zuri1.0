@@ -1,3 +1,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── Zuri Heritage Design System ── */
+
+@layer base {
+  body {
+    font-family: 'IBM Plex Sans Thai', 'Manrope', sans-serif;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+}
+
+@layer utilities {
+  /* Typography */
+  .thai-line-height { line-height: 1.8; }
+
+  /* Decorative left-border lead */
+  .ornate-lead {
+    border-left: 4px solid #795900;
+    padding-left: 1.5rem;
+  }
+
+  /* Gradient utilities */
+  .gold-gradient {
+    background: linear-gradient(135deg, #795900 0%, #d4a017 100%);
+  }
+  .royal-gradient {
+    background: linear-gradient(135deg, #795900 0%, #d4a017 100%);
+  }
+
+  /* Glassmorphism — light nav */
+  .glass-nav {
+    background: rgba(247, 250, 253, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* Glassmorphism — dark card (login) */
+  .glass-card {
+    background: rgba(11, 45, 94, 0.5);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  /* Thai star pattern overlay */
+  .thai-pattern-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l5 15h15l-12 9 5 15-13-10-13 10 5-15-12-9h15z' fill='%23d4a017' fill-opacity='0.08' fill-rule='evenodd'/%3E%3C/svg%3E");
+  }
+
+  /* Entrance animation */
+  .animate-entrance {
+    animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.2s; }
+  .delay-3 { animation-delay: 0.3s; }
+  .delay-4 { animation-delay: 0.4s; }
+  .delay-5 { animation-delay: 0.5s; }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
