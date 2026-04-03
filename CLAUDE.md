@@ -89,6 +89,11 @@ chore/<topic>          → tooling, config, cleanup
 - `src/app/api/webhooks/` — FB + LINE inbound
 - `src/middleware.js` — tenant resolution + auth guard
 
+## DevLog (MANDATORY)
+- เขียน `docs/devlog/YYYY-MM-DD.md` ท้าย session ทุกครั้งก่อนบอก Boss ว่าเสร็จ
+- Format: ทำไปแล้ว / ค้างอยู่ / context สำคัญ / session ถัดไปทำต่อ
+- อ่าน devlog ล่าสุดก่อนเริ่มงานทุก session เพื่อ pickup context
+
 ## Obsidian — Second Brain (SSOT for Docs)
 - Vault: `docs/` — accessible via Obsidian MCP (`mcp__obsidian__*`)
 - `docs/HOME.md` — vault index (start here)

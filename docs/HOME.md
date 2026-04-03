@@ -110,6 +110,7 @@
 
 - [[guide/DEV_SETUP|Dev Setup]] — Local dev environment
 - [[CHANGELOG_SYSTEM|Changelog System]] — How to write changelogs
+- [[devlog/README|DevLog]] — Session continuity log (agent เขียนท้าย session)
 
 ---
 
