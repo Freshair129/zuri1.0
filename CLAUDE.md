@@ -54,6 +54,22 @@ Zuri is an **AI Business Platform** for Thai service SMEs — starting with culi
 - `system_config.yaml` — roles, VAT, statuses, thresholds
 - Import via `src/lib/systemConfig.js` — never hardcode these values
 
+## Git Workflow
+
+### Branch Naming
+```
+feat/FEAT##-<slug>     → feature implementation   (e.g. feat/FEAT05-crm)
+fix/<domain>-<issue>   → bug fix                  (e.g. fix/inbox-nfr1)
+docs/<topic>           → docs only                (e.g. docs/adr-069)
+chore/<topic>          → tooling, config, cleanup
+```
+
+### Rules
+- **1 branch = 1 feature spec** — never mix FEAT## in one branch
+- Always branch off `main` — never branch off another feature branch
+- PR required before merge — no direct push to `main`
+- Commit message prefix: `feat:` `fix:` `docs:` `chore:`
+
 ## Code Style
 - Error handling: always `console.error('[ModuleName]', error)` — never catch silently
 - Workers: `throw error` to let QStash retry (min 5 retries)
