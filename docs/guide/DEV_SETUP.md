@@ -284,12 +284,13 @@ Defined in `vercel.json` — runs automatically on Vercel deployment:
 |---|---|
 | **No direct DB calls** | All DB access via `src/lib/repositories/` — never call `getPrisma()` from API routes |
 | **tenantId first** | Every repo function receives `tenantId` as first param |
+| **RBAC (ADR-068)** | 7 roles: DEV, OWNER, MANAGER, SALES, KITCHEN, FINANCE, STAFF — use `can(roles, domain, action)` |
 | **No TypeScript** | Use `.js` / `.jsx` everywhere — except `src/lib/db.ts` (Prisma) |
 | **Error logging** | Always `console.error('[ModuleName]', error)` — never silent catch |
 | **Workers throw** | Always `throw error` in workers to let QStash retry (min 5 times) |
 | **Config from SSOT** | Import roles/statuses/VAT from `src/lib/systemConfig.js` — never hardcode |
-| **DOC TO CODE** | Read approved spec in `docs/product/specs/FEAT-*.md` before implementing |
-| **500 LOC limit** | No file should exceed 500 lines (ADR-067) — split if needed |
+| **DOC TO CODE** | Read approved spec in `docs/product/specs/FEAT01-FEAT19` before implementing |
+| **500 LOC limit** | No file should exceed 500 lines (ADR-066) — split if needed |
 
 ---
 
