@@ -1,7 +1,7 @@
 # Postmortem: zuri1.0 Build Failure — Production Deployment Blocked
 
 **Date:** 2026-04-03 | **Duration:** Ongoing (5 consecutive failed deployments) | **Severity:** SEV2
-**Authors:** Boss (Product Owner) | **Status:** Draft — Awaiting Fix
+**Authors:** Boss (Product Owner) | **Status:** RESOLVED — 2026-04-03
 **Incident ID:** INC-2026-04-03-001
 
 ---
@@ -32,6 +32,9 @@
 | ~18:32 | Deployment `dpl_HRVZ9pJnX14s54kj6sGXPsV9wrkg` — commit `fix(audit): finalize build restoration and export naming` → **ERROR** |
 | ~18:51 | Deployment `dpl_HVvNyRiygNQqic96RrsLoxzhBB6J` — commit `fix(audit): enforce dynamic routing for build stability` → **ERROR** |
 | 2026-04-03 | ตรวจพบและวิเคราะห์ build logs — พบ root cause ทั้ง 2 ข้อ |
+| 2026-04-03 | Deploy `dpl_5CbU7szjWKBgQF6MsF4WrWmoQcCv` — commit `fix: force-dynamic API routes and missing repo exports` → **ERROR** (build ผ่านแต่ trace fail) |
+| 2026-04-03 | ค้นพบ root cause ที่ 3: ENOENT `(dashboard)/page_client-reference-manifest.js` ระหว่าง Collecting build traces |
+| 2026-04-03 | Deploy `dpl_ff037da` — commit `fix: add use client to dashboard page` → **RESOLVED** |
 
 ---
 
@@ -136,8 +139,32 @@ grep -n "export" src/lib/repositories/employeeRepo.js
 
 ---
 
+## Root Cause (เพิ่มเติม)
+
+### ปัญหาที่ 3 — ENOENT: page_client-reference-manifest.js (Build Trace Failure)
+
+หลังจากแก้ปัญหาที่ 1 และ 2 แล้ว deployment ยังล้มเหลวระหว่างขั้นตอน **"Collecting build traces"** ด้วย error:
+
+```
+Error: ENOENT: no such file or directory,
+  lstat '/vercel/path0/.next/server/app/(dashboard)/page_client-reference-manifest.js'
+```
+
+**สาเหตุ:** `src/app/(dashboard)/page.jsx` เป็น pure Server Component ที่ไม่มี client imports เลย → Next.js 14 จะไม่ generate `page_client-reference-manifest.js` สำหรับ page นั้น → Vercel's build tracer ไปหาไฟล์นี้และ fail
+
+**Fix:** เพิ่ม `'use client'` directive บรรทัดแรกของ `(dashboard)/page.jsx` เพื่อ force Next.js ให้ generate manifest
+
+```jsx
+'use client'  // ← บรรทัดนี้ทำให้ Next.js สร้าง page_client-reference-manifest.js
+
+export default function DashboardHome() { ... }
+```
+
+---
+
 ## Lessons Learned
 
 1. **Next.js 14 App Router** — ทุก API route ที่ใช้ `request.headers`, cookies, หรือ dynamic data **ต้องมี** `export const dynamic = 'force-dynamic'` เสมอ
 2. **Repository refactor** — เมื่อเปลี่ยนชื่อหรือ restructure exports ต้องรัน global search หา all callers ก่อน
 3. **Build locally first** — `npm run build` ต้องผ่านก่อน push ทุกครั้ง โดยเฉพาะ refactor ขนาดใหญ่
+4. **Next.js 14 + Route Groups + Vercel** — Route group `(xxx)` ที่มี pure Server Component page โดยไม่มี client imports จะไม่ generate `page_client-reference-manifest.js` → Vercel build trace fail แก้โดยเพิ่ม `'use client'` ใน page นั้น
