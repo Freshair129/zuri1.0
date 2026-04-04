@@ -8,8 +8,10 @@ const navLinks = [
   { label: 'Inbox', href: '/inbox' },
   { label: 'CRM', href: '/crm' },
   { label: 'POS', href: '/pos' },
+  { label: 'Courses', href: '/courses' },
+  { label: 'Schedule', href: '/schedule' },
   { label: 'Kitchen', href: '/kitchen' },
-  { label: 'Enrollment', href: '/enrollment' },
+  { label: 'Growth', href: '/marketing' },
 ];
 
 export default function Topbar({ user = null }) {

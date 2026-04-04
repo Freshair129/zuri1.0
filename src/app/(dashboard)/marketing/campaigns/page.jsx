@@ -13,42 +13,47 @@ export default function CampaignsPage() {
   const [status, setStatus] = useState('All');
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-8 bg-surface min-h-[calc(100vh-64px)]">
 
       {/* Page header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Campaigns</h1>
-          <p className="text-sm text-gray-500 mt-0.5">All marketing campaigns across channels</p>
+        <div className="ornate-lead">
+          <span className="font-label uppercase tracking-[0.2em] text-xs text-primary font-bold">Growth Intelligence</span>
+          <h1 className="text-3xl font-extrabold text-on-surface font-headline mt-1">Campaigns</h1>
+          <p className="text-sm text-secondary font-body mt-0.5">All marketing campaigns across channels</p>
         </div>
-        <div className="flex gap-2">
-          {/* TODO: New campaign wizard button */}
-          <div className="h-9 w-36 bg-orange-500 rounded-lg" />
+        <div className="flex gap-3">
+          {/* New campaign wizard button */}
+          <button className="h-10 px-6 gold-gradient rounded-xl font-label text-xs uppercase font-bold tracking-widest text-[#0B2D5E] shadow-sm hover:shadow-floating transition-all">
+            New Campaign
+          </button>
         </div>
       </div>
 
       {/* Filters toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        {/* TODO: search by campaign name */}
-        <div className="flex-1 h-10 bg-white border border-gray-200 rounded-lg flex items-center px-3 gap-2">
-          <div className="h-4 w-4 bg-gray-300 rounded-sm flex-shrink-0" />
-          <div className="h-4 w-40 bg-gray-100 rounded" />
+      <div className="flex flex-col sm:flex-row gap-4">
+        {/* search by campaign name */}
+        <div className="flex-1 h-12 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center px-4 gap-3 focus-within:border-primary transition-colors hover:shadow-floating">
+          <span className="material-symbols-outlined text-outline">search</span>
+          <div className="h-4 w-40 bg-outline-variant/20 rounded" />
         </div>
 
         {/* Channel filter */}
         <select
           value={channel}
           onChange={(e) => setChannel(e.target.value)}
-          className="h-10 px-3 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-orange-400"
+          className="h-12 px-4 bg-surface-container-lowest border border-outline-variant/30 rounded-xl text-[10px] font-label font-bold uppercase tracking-widest text-secondary focus:outline-none focus:border-primary cursor-pointer hover:bg-surface-container-low transition-colors"
         >
           {CHANNEL_FILTERS.map((c) => <option key={c}>{c}</option>)}
         </select>
 
         {/* Date range picker placeholder */}
-        <div className="h-10 w-48 bg-white border border-gray-200 rounded-lg" />
+        <div className="h-12 w-48 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center px-4" />
 
-        {/* TODO: Export CSV button */}
-        <div className="h-10 w-24 bg-white border border-gray-200 rounded-lg" />
+        {/* Export CSV button */}
+        <button className="h-12 px-6 bg-surface-container-lowest border border-outline-variant/30 rounded-xl text-[10px] font-label font-bold uppercase tracking-widest text-secondary hover:bg-surface-container-low hover:text-primary transition-colors hover:shadow-sm">
+          Export CSV
+        </button>
       </div>
 
       {/* Status pills */}
@@ -57,8 +62,8 @@ export default function CampaignsPage() {
           <button
             key={s}
             onClick={() => setStatus(s)}
-            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-              status === s ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            className={`px-4 py-2 rounded-full text-[10px] font-label font-bold uppercase tracking-widest border transition-colors ${
+              status === s ? 'gold-gradient text-[#0B2D5E] border-primary shadow-sm' : 'bg-surface-container-lowest text-secondary border-outline-variant/30 hover:bg-surface-container-low'
             }`}
           >
             {s}
@@ -67,9 +72,9 @@ export default function CampaignsPage() {
       </div>
 
       {/* Campaigns table */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-sm overflow-hidden">
         {/* Table header */}
-        <div className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-gray-100 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+        <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-outline-variant/15 bg-surface-container-low/50 text-[10px] font-label uppercase font-bold text-secondary tracking-widest">
           <div className="col-span-3">Campaign Name</div>
           <div className="col-span-1">Channel</div>
           <div className="col-span-2">Dates</div>
@@ -81,49 +86,58 @@ export default function CampaignsPage() {
           <div className="col-span-1" />
         </div>
 
-        {/* TODO: map over fetched campaigns, render CampaignTableRow */}
-        {Array.from({ length: 10 }).map((_, i) => (
-          <div
-            key={i}
-            className="grid grid-cols-12 gap-3 px-4 py-3.5 border-b border-gray-50 hover:bg-orange-50/30 transition-colors items-center"
-          >
-            <div className="col-span-3 space-y-1">
-              <div className="h-4 w-40 bg-gray-200 rounded" />
-              <div className="h-3 w-28 bg-gray-100 rounded" />
+        {/* map over fetched campaigns, render CampaignTableRow */}
+        <div className="space-y-0">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div
+              key={i}
+              className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-surface hover:bg-surface-container-low transition-colors items-center group cursor-pointer"
+            >
+              <div className="col-span-3 space-y-1.5 flex items-center gap-3">
+                 <div className="h-10 w-10 flex-shrink-0 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-1">
+                   <span className="material-symbols-outlined text-[1.2rem]">campaign</span>
+                 </div>
+                 <div>
+                  <div className="h-4 w-40 bg-on-surface/10 rounded mb-1.5" />
+                  <div className="h-3 w-28 bg-secondary/20 rounded" />
+                 </div>
+              </div>
+              <div className="col-span-1">
+                <div className="h-6 w-16 bg-[#0B2D5E]/5 rounded-full flex items-center justify-center text-[9px] font-label font-bold uppercase tracking-widest text-[#0B2D5E]">Meta</div>
+              </div>
+              <div className="col-span-2 space-y-1">
+                <div className="h-4 w-20 bg-on-surface/5 rounded" />
+                <div className="h-3.5 w-20 bg-secondary/10 rounded" />
+              </div>
+              <div className="col-span-1"><div className="h-4 w-16 bg-on-surface/5 rounded" /></div>
+              <div className="col-span-1"><div className="h-4 w-14 bg-on-surface/5 rounded" /></div>
+              <div className="col-span-1">
+                {/* color-code ROAS — green if >2, red if <1 */}
+                <div className={`h-5 w-12 flex items-center justify-center text-[10px] font-label font-bold rounded ${i % 3 === 0 ? 'bg-green-500/10 text-green-700' : 'bg-surface-container-high text-secondary'}`}>2.4</div>
+              </div>
+              <div className="col-span-1"><div className="h-4 w-12 bg-on-surface/5 rounded" /></div>
+              <div className="col-span-1">
+                <div className={`h-6 w-20 rounded-full flex items-center justify-center text-[9px] font-label uppercase tracking-widest font-bold ${
+                  i % 4 === 0 ? 'bg-[#0B2D5E]/10 text-[#0B2D5E]' : i % 4 === 1 ? 'bg-green-500/10 text-green-700' : i % 4 === 2 ? 'bg-surface-container-highest text-secondary' : 'bg-error/10 text-error'
+                }`}>Active</div>
+              </div>
+              <div className="col-span-1 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                {/* 3-dot menu — edit, pause/resume, duplicate, delete */}
+                <div className="h-8 w-8 bg-surface-container-highest rounded-lg flex items-center justify-center text-secondary hover:bg-primary/20 hover:text-primary transition-colors">
+                  <span className="material-symbols-outlined text-[1.2rem]">more_vert</span>
+                </div>
+              </div>
             </div>
-            <div className="col-span-1">
-              <div className="h-5 w-14 bg-blue-50 rounded-full" />
-            </div>
-            <div className="col-span-2 space-y-0.5">
-              <div className="h-3.5 w-20 bg-gray-100 rounded" />
-              <div className="h-3.5 w-20 bg-gray-100 rounded" />
-            </div>
-            <div className="col-span-1"><div className="h-4 w-16 bg-gray-100 rounded" /></div>
-            <div className="col-span-1"><div className="h-4 w-14 bg-gray-100 rounded" /></div>
-            <div className="col-span-1">
-              {/* TODO: color-code ROAS — green if >2, red if <1 */}
-              <div className={`h-4 w-10 ${i % 3 === 0 ? 'bg-green-100' : 'bg-gray-100'} rounded`} />
-            </div>
-            <div className="col-span-1"><div className="h-4 w-12 bg-gray-100 rounded" /></div>
-            <div className="col-span-1">
-              <div className={`h-5 w-16 rounded-full ${
-                i % 4 === 0 ? 'bg-yellow-100' : i % 4 === 1 ? 'bg-green-100' : i % 4 === 2 ? 'bg-gray-100' : 'bg-red-50'
-              }`} />
-            </div>
-            <div className="col-span-1 flex justify-end">
-              {/* TODO: 3-dot menu — edit, pause/resume, duplicate, delete */}
-              <div className="h-6 w-6 bg-gray-100 rounded" />
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="h-4 w-40 bg-gray-100 rounded" />
+      <div className="flex items-center justify-between pt-4">
+        <div className="h-4 w-40 bg-secondary/20 rounded" />
         <div className="flex gap-2">
-          <div className="h-8 w-20 bg-gray-100 rounded-lg" />
-          <div className="h-8 w-20 bg-gray-100 rounded-lg" />
+          <div className="h-10 w-24 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-center text-[10px] font-label font-bold uppercase tracking-widest text-secondary hover:bg-surface-container-low transition-colors cursor-pointer shadow-sm">Prev</div>
+          <div className="h-10 w-24 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-center text-[10px] font-label font-bold uppercase tracking-widest text-secondary hover:bg-surface-container-low transition-colors cursor-pointer shadow-sm">Next</div>
         </div>
       </div>
     </div>

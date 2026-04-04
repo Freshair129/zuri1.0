@@ -11,9 +11,9 @@ import { useState } from 'react';
 const COLUMNS = ['To Do', 'In Progress', 'Review', 'Done'];
 
 const TASK_TYPE_COLORS = {
-  SINGLE: 'bg-blue-100 text-blue-700',
-  RANGE: 'bg-purple-100 text-purple-700',
-  PROJECT: 'bg-orange-100 text-orange-700',
+  SINGLE: 'bg-primary/10 text-primary border border-primary/20',
+  RANGE: 'bg-[#0B2D5E]/10 text-[#0B2D5E] border border-[#0B2D5E]/20',
+  PROJECT: 'gold-gradient text-[#0B2D5E] border border-primary',
 };
 
 const MOCK_TYPES = ['SINGLE', 'RANGE', 'PROJECT'];
@@ -23,40 +23,46 @@ export default function TasksPage() {
   const [typeFilter, setTypeFilter] = useState('All');
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-8 bg-surface min-h-[calc(100vh-64px)] overflow-x-hidden">
 
       {/* Page header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tasks</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Manage one-off tasks, date ranges, and projects</p>
+        <div className="ornate-lead">
+          <span className="font-label uppercase tracking-[0.2em] text-xs text-primary font-bold">Operational Control</span>
+          <h1 className="text-3xl font-extrabold text-on-surface font-headline mt-1">Tasks</h1>
+          <p className="text-sm text-secondary font-body mt-0.5">Manage one-off tasks, date ranges, and projects</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           {/* View toggle */}
-          <div className="flex border border-gray-200 rounded-lg overflow-hidden bg-white">
+          <div className="flex border border-outline-variant/30 rounded-xl overflow-hidden bg-surface-container-lowest shadow-sm h-10">
             {['Board', 'List', 'Timeline'].map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                  view === v ? 'bg-orange-500 text-white' : 'text-gray-500 hover:bg-gray-50'
+                className={`px-4 py-2 font-label text-[10px] uppercase font-bold tracking-widest transition-colors flex items-center gap-2 ${
+                  view === v ? 'bg-primary/10 text-primary' : 'text-secondary hover:bg-surface-container-low'
                 }`}
               >
+                <span className="material-symbols-outlined text-[1rem]">
+                  {v === 'Board' ? 'view_kanban' : v === 'List' ? 'format_list_bulleted' : 'view_timeline'}
+                </span>
                 {v}
               </button>
             ))}
           </div>
-          {/* TODO: New task button → type selector modal */}
-          <div className="h-9 w-28 bg-orange-500 rounded-lg" />
+          {/* New task button */}
+          <button className="h-10 px-6 gold-gradient rounded-xl font-label text-xs uppercase font-bold tracking-widest text-[#0B2D5E] shadow-sm hover:shadow-primary/30 transition-all">
+            New Task
+          </button>
         </div>
       </div>
 
       {/* Filters bar */}
-      <div className="flex flex-wrap gap-3 items-center">
+      <div className="flex flex-wrap gap-4 items-center">
         {/* Search */}
-        <div className="flex-1 min-w-48 h-9 bg-white border border-gray-200 rounded-lg flex items-center px-3 gap-2">
-          <div className="h-4 w-4 bg-gray-300 rounded-sm flex-shrink-0" />
-          <div className="h-4 w-28 bg-gray-100 rounded" />
+        <div className="flex-1 min-w-48 h-12 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center px-4 gap-3 focus-within:border-primary transition-colors hover:shadow-floating">
+          <span className="material-symbols-outlined text-outline">search</span>
+          <div className="h-4 w-36 bg-outline-variant/20 rounded" />
         </div>
         {/* Type filter pills */}
         <div className="flex gap-2">
@@ -64,103 +70,117 @@ export default function TasksPage() {
             <button
               key={t}
               onClick={() => setTypeFilter(t)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+              className={`px-4 py-2 rounded-full text-[10px] uppercase font-label font-bold tracking-widest transition-colors border ${
                 typeFilter === t
-                  ? 'bg-orange-500 text-white'
-                  : t in TASK_TYPE_COLORS
+                  ? 'gold-gradient text-[#0B2D5E] border-primary shadow-sm'
+                  : t !== 'All'
                   ? `${TASK_TYPE_COLORS[t]} hover:opacity-80`
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-surface-container-lowest text-secondary border-outline-variant/30 hover:bg-surface-container-low'
               }`}
             >
               {t}
             </button>
           ))}
         </div>
-        {/* TODO: Assignee filter */}
-        <div className="h-9 w-32 bg-white border border-gray-200 rounded-lg" />
-        {/* TODO: Due date filter */}
-        <div className="h-9 w-36 bg-white border border-gray-200 rounded-lg" />
+        {/* Assignee filter */}
+        <div className="h-12 w-32 px-4 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-center text-secondary font-label text-xs uppercase tracking-widest font-bold cursor-pointer hover:bg-surface-container-low transition-colors">
+          Assignee
+        </div>
+        {/* Due date filter */}
+        <div className="h-12 w-36 px-4 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-center text-secondary font-label text-xs uppercase tracking-widest font-bold cursor-pointer hover:bg-surface-container-low transition-colors">
+          Due Date
+        </div>
       </div>
 
       {/* Board view */}
       {view === 'Board' && (
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="flex gap-6 overflow-x-auto pb-6 custom-scrollbar">
           {COLUMNS.map((col) => (
-            <div key={col} className="flex-shrink-0 w-72">
+            <div key={col} className="flex-shrink-0 w-80">
               {/* Column header */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-gray-700">{col}</h3>
-                  {/* TODO: task count badge */}
-                  <div className="h-5 w-5 bg-gray-100 rounded-full" />
+              <div className="flex items-center justify-between mb-4 bg-surface-container-low/50 py-3 px-4 rounded-xl border border-outline-variant/15">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-sm font-label uppercase tracking-widest font-bold text-on-surface">{col}</h3>
+                  <div className="h-6 w-6 bg-surface-container-highest rounded-full flex items-center justify-center text-[10px] font-bold text-secondary">
+                    {col === 'To Do' ? 4 : col === 'In Progress' ? 3 : col === 'Review' ? 2 : 1}
+                  </div>
                 </div>
-                {/* TODO: add task to column button */}
-                <div className="h-6 w-6 bg-gray-100 rounded hover:bg-gray-200 cursor-pointer" />
+                <div className="h-7 w-7 rounded-lg flex items-center justify-center text-secondary hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer">
+                  <span className="material-symbols-outlined text-[1.2rem]">add</span>
+                </div>
               </div>
 
               {/* Task cards */}
-              {/* TODO: map over tasks for this column, render TaskCard, support dnd-kit drag */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {Array.from({ length: col === 'To Do' ? 4 : col === 'In Progress' ? 3 : col === 'Review' ? 2 : 1 }).map((_, i) => {
                   const taskType = MOCK_TYPES[(i + col.length) % 3];
                   return (
                     <div
                       key={i}
-                      className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 space-y-3 hover:shadow-md hover:border-orange-200 transition-all cursor-pointer"
+                      className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-sm p-5 space-y-4 hover:shadow-floating hover:border-primary/50 transition-all cursor-pointer group"
                     >
                       {/* Type badge + priority */}
                       <div className="flex items-center justify-between">
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${TASK_TYPE_COLORS[taskType]}`}>
+                        <span className={`text-[9px] uppercase font-label font-bold tracking-widest px-2.5 py-1 rounded-full ${TASK_TYPE_COLORS[taskType]}`}>
                           {taskType}
                         </span>
-                        {/* TODO: priority indicator (Low / Medium / High / Urgent) */}
-                        <div className="h-4 w-4 bg-gray-200 rounded" />
+                        <div className="h-5 w-5 bg-error/10 text-error rounded flex items-center justify-center">
+                          <span className="material-symbols-outlined text-[12px]">keyboard_double_arrow_up</span>
+                        </div>
                       </div>
 
                       {/* Task title */}
-                      <div className="h-4 w-full bg-gray-200 rounded" />
-                      {taskType !== 'SINGLE' && (
-                        <div className="h-3.5 w-4/5 bg-gray-100 rounded" />
-                      )}
+                      <div className="space-y-1.5">
+                        <div className="h-5 w-full bg-on-surface/10 rounded" />
+                        {taskType !== 'SINGLE' && (
+                          <div className="h-4 w-4/5 bg-secondary/10 rounded" />
+                        )}
+                      </div>
 
                       {/* RANGE: date range display */}
                       {taskType === 'RANGE' && (
-                        <div className="flex items-center gap-2">
-                          <div className="h-3 w-3 bg-purple-200 rounded-sm" />
-                          <div className="h-3 w-28 bg-gray-100 rounded" />
+                        <div className="flex items-center gap-2 bg-[#0B2D5E]/5 py-1 px-2 rounded-md border border-[#0B2D5E]/10 w-fit">
+                          <span className="material-symbols-outlined text-[12px] text-[#0B2D5E]">calendar_month</span>
+                          <div className="h-3 w-28 bg-[#0B2D5E]/10 rounded" />
                         </div>
                       )}
 
                       {/* PROJECT: sub-task progress */}
                       {taskType === 'PROJECT' && (
-                        <div className="space-y-1">
-                          <div className="flex justify-between">
-                            <div className="h-3 w-16 bg-gray-100 rounded" />
-                            <div className="h-3 w-8 bg-gray-100 rounded" />
+                        <div className="space-y-2 bg-primary/5 p-3 rounded-lg border border-primary/10">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] uppercase font-label font-bold text-primary">Progress</span>
+                            <span className="text-[10px] font-bold text-primary opacity-60">3 / 8</span>
                           </div>
-                          <div className="h-1.5 bg-gray-100 rounded-full">
-                            <div className="h-1.5 bg-orange-400 rounded-full" style={{ width: `${30 + i * 20}%` }} />
+                          <div className="h-2 bg-primary/10 rounded-full overflow-hidden">
+                            <div className="h-full bg-primary" style={{ width: `${30 + i * 20}%` }} />
                           </div>
                         </div>
                       )}
 
                       {/* Footer: assignee(s) + due date */}
-                      <div className="flex items-center justify-between pt-1 border-t border-gray-50">
+                      <div className="flex items-center justify-between pt-3 border-t border-outline-variant/15">
                         {/* Assignee avatars */}
-                        <div className="flex -space-x-1">
+                        <div className="flex -space-x-2">
                           {Array.from({ length: 2 }).map((_, a) => (
-                            <div key={a} className="h-6 w-6 rounded-full bg-gray-200 border-2 border-white" />
+                            <div key={a} className="h-7 w-7 rounded-full bg-surface-container-high border-2 border-surface flex items-center justify-center text-secondary">
+                              <span className="material-symbols-outlined text-[14px]">person</span>
+                            </div>
                           ))}
                         </div>
                         {/* Due date */}
-                        <div className="h-4 w-16 bg-gray-100 rounded" />
+                        <div className="flex items-center gap-1.5 text-secondary">
+                           <span className="material-symbols-outlined text-[14px]">schedule</span>
+                           <div className="h-4 w-12 bg-secondary/10 rounded" />
+                        </div>
                       </div>
                     </div>
                   );
                 })}
                 {/* Add task placeholder */}
-                <button className="w-full h-10 border border-dashed border-gray-200 rounded-xl text-sm text-gray-400 hover:border-orange-300 hover:text-orange-500 transition-colors">
-                  + Add task
+                <button className="w-full h-12 border border-dashed border-outline-variant/30 rounded-2xl font-label text-xs uppercase font-bold tracking-widest text-secondary hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-2">
+                  <span className="material-symbols-outlined text-[1rem]">add</span>
+                  Add Task
                 </button>
               </div>
             </div>
@@ -170,8 +190,8 @@ export default function TasksPage() {
 
       {/* List view */}
       {view === 'List' && (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-gray-100 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+        <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-sm overflow-hidden">
+          <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-outline-variant/15 bg-surface-container-low/50 text-[10px] font-label font-bold text-secondary uppercase tracking-widest">
             <div className="col-span-4">Task</div>
             <div className="col-span-1">Type</div>
             <div className="col-span-2">Assignee</div>
@@ -179,27 +199,34 @@ export default function TasksPage() {
             <div className="col-span-1">Priority</div>
             <div className="col-span-2">Status</div>
           </div>
-          {/* TODO: map over all tasks sorted by due date */}
           {Array.from({ length: 10 }).map((_, i) => {
             const taskType = MOCK_TYPES[i % 3];
             return (
-              <div key={i} className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-gray-50 hover:bg-orange-50/20 items-center">
-                <div className="col-span-4 space-y-0.5">
-                  <div className="h-4 w-48 bg-gray-200 rounded" />
-                  {taskType === 'PROJECT' && <div className="h-3 w-32 bg-gray-100 rounded" />}
+              <div key={i} className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-surface hover:bg-surface-container-low transition-colors items-center group cursor-pointer">
+                <div className="col-span-4 space-y-1.5">
+                  <div className="h-4 w-48 bg-on-surface/10 rounded" />
+                  {taskType === 'PROJECT' && <div className="h-3 w-32 bg-secondary/20 rounded" />}
                 </div>
                 <div className="col-span-1">
-                  <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full ${TASK_TYPE_COLORS[taskType]}`}>
+                  <span className={`text-[9px] uppercase font-label font-bold tracking-widest px-2 py-1 rounded-full ${TASK_TYPE_COLORS[taskType]}`}>
                     {taskType}
                   </span>
                 </div>
-                <div className="col-span-2 flex -space-x-1">
-                  <div className="h-6 w-6 rounded-full bg-gray-200 border-2 border-white" />
-                  <div className="h-6 w-6 rounded-full bg-gray-100 border-2 border-white" />
+                <div className="col-span-2 flex -space-x-1.5">
+                  <div className="h-7 w-7 rounded-full bg-surface-container-high border-2 border-surface flex items-center justify-center text-secondary">
+                    <span className="material-symbols-outlined text-[12px]">person</span>
+                  </div>
+                  <div className="h-7 w-7 rounded-full bg-surface-container border-2 border-surface flex items-center justify-center text-secondary">
+                    <span className="material-symbols-outlined text-[12px]">person</span>
+                  </div>
                 </div>
-                <div className="col-span-2"><div className="h-4 w-24 bg-gray-100 rounded" /></div>
-                <div className="col-span-1"><div className="h-4 w-12 bg-yellow-100 rounded-full" /></div>
-                <div className="col-span-2"><div className="h-5 w-20 bg-blue-50 rounded-full" /></div>
+                <div className="col-span-2"><div className="h-4 w-24 bg-on-surface/5 rounded" /></div>
+                <div className="col-span-1"><div className="h-5 w-12 bg-error/10 text-error rounded-full flex items-center justify-center"><span className="material-symbols-outlined text-[14px]">keyboard_double_arrow_up</span></div></div>
+                <div className="col-span-2">
+                  <div className="h-6 w-24 bg-[#0B2D5E]/10 text-[#0B2D5E] font-label font-bold uppercase tracking-widest text-[9px] flex items-center justify-center rounded-full">
+                    In Progress
+                  </div>
+                </div>
               </div>
             );
           })}
@@ -208,12 +235,15 @@ export default function TasksPage() {
 
       {/* Timeline view */}
       {view === 'Timeline' && (
-        // TODO: Gantt-style timeline using a library (e.g. react-gantt-timeline or custom Canvas render)
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 flex items-center justify-center">
-          <div className="text-center space-y-2">
-            <div className="h-12 w-12 bg-orange-50 rounded-full mx-auto" />
-            <p className="text-sm font-medium text-gray-600">Timeline view</p>
-            <p className="text-xs text-gray-400">TODO: Implement Gantt / timeline chart for RANGE and PROJECT tasks</p>
+        <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-sm p-12 flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-4 max-w-sm">
+            <div className="h-16 w-16 bg-primary/10 rounded-full mx-auto flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined text-3xl">view_timeline</span>
+            </div>
+            <p className="text-sm font-label uppercase tracking-[0.2em] font-bold text-on-surface">Timeline View</p>
+            <p className="text-sm text-secondary font-body thai-line-height">
+              Gantt-style timeline chart is currently under development. Stay tuned for advanced operational planning features.
+            </p>
           </div>
         </div>
       )}

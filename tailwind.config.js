@@ -60,6 +60,10 @@ module.exports = {
         'inverse-surface': '#2d3133',
         'inverse-on-surface': '#eef1f4',
       },
+      boxShadow: {
+        'floating': '0 12px 40px rgba(16, 24, 40, 0.06)',
+        'glass': '0 32px 64px rgba(0,0,0,0.5)'
+      },
       fontFamily: {
         headline: ['IBM Plex Sans Thai', 'Manrope', 'sans-serif'],
         body: ['IBM Plex Sans Thai', 'Manrope', 'sans-serif'],

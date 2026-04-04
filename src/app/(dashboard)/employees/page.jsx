@@ -15,51 +15,58 @@ export default function EmployeesPage() {
   const [view, setView] = useState('Grid');
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-8 bg-surface min-h-[calc(100vh-64px)]">
 
       {/* Page header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Employees</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Manage staff across all departments</p>
+        <div className="ornate-lead">
+          <span className="font-label uppercase tracking-[0.2em] text-xs text-primary font-bold">Workforce Management</span>
+          <h1 className="text-3xl font-extrabold text-on-surface font-headline mt-1">Employees</h1>
+          <p className="text-sm text-secondary font-body mt-0.5">Manage staff across all departments</p>
         </div>
-        <div className="flex gap-2">
-          {/* TODO: Invite employee button */}
-          <div className="h-9 w-28 bg-white border border-gray-200 rounded-lg" />
-          {/* TODO: Add employee button */}
-          <div className="h-9 w-32 bg-orange-500 rounded-lg" />
+        <div className="flex gap-3">
+          {/* Invite employee button */}
+          <button className="h-10 px-4 bg-surface-container-lowest text-secondary rounded-xl font-label text-xs uppercase font-bold tracking-widest border border-outline-variant/30 hover:bg-surface-container-low transition-all shadow-sm">
+            Invite Employee
+          </button>
+          {/* Add employee button */}
+          <button className="h-10 px-6 gold-gradient rounded-xl font-label text-xs uppercase font-bold tracking-widest text-[#0B2D5E] shadow-sm hover:shadow-primary/30 transition-all">
+            Add Employee
+          </button>
         </div>
       </div>
 
-      {/* TODO: Headcount KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {/* Headcount KPIs */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
         {['Total Staff', 'Instructors', 'On Leave', 'New This Month'].map((label) => (
-          <div key={label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-            <p className="text-xs text-gray-500 font-medium">{label}</p>
-            <div className="h-7 w-12 bg-gray-100 rounded mt-2 animate-pulse" />
+          <div key={label} className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 p-6 shadow-sm hover:shadow-floating transition-shadow">
+            <p className="text-[10px] text-secondary font-label uppercase tracking-widest font-bold mb-3">{label}</p>
+            <div className="h-8 w-16 bg-surface-container-low rounded animate-pulse" />
           </div>
         ))}
       </div>
 
       {/* Search + filter toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center">
-        <div className="flex-1 w-full h-10 bg-white border border-gray-200 rounded-lg flex items-center px-3 gap-2">
-          <div className="h-4 w-4 bg-gray-300 rounded-sm flex-shrink-0" />
-          <div className="h-4 w-36 bg-gray-100 rounded" />
+      <div className="flex flex-col sm:flex-row gap-4 items-center">
+        <div className="flex-1 w-full h-12 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center px-4 gap-3 focus-within:border-primary transition-colors">
+          <span className="material-symbols-outlined text-outline">search</span>
+          <div className="h-4 w-40 bg-outline-variant/20 rounded" />
         </div>
-        {/* TODO: role filter */}
-        <div className="h-10 w-32 bg-white border border-gray-200 rounded-lg" />
+        {/* role filter */}
+        <div className="h-12 w-32 px-4 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-center text-secondary font-label text-xs uppercase tracking-widest font-bold cursor-pointer hover:bg-surface-container-low transition-colors">
+          Role
+        </div>
         {/* View toggle */}
-        <div className="flex border border-gray-200 rounded-lg overflow-hidden bg-white">
+        <div className="flex border border-outline-variant/30 rounded-xl overflow-hidden bg-surface-container-lowest shadow-sm h-12">
           {['Grid', 'List'].map((m) => (
             <button
               key={m}
               onClick={() => setView(m)}
-              className={`px-3 py-2 text-sm font-medium transition-colors ${
-                view === m ? 'bg-orange-500 text-white' : 'text-gray-500 hover:bg-gray-50'
+              className={`px-4 py-2 font-label text-[10px] uppercase font-bold tracking-widest transition-colors ${
+                view === m ? 'bg-primary/10 text-primary' : 'text-secondary hover:bg-surface-container-low'
               }`}
             >
-              {m}
+              <span className="material-symbols-outlined text-[1.2rem]">{m === 'Grid' ? 'grid_view' : 'list'}</span>
             </button>
           ))}
         </div>
@@ -71,8 +78,8 @@ export default function EmployeesPage() {
           <button
             key={d}
             onClick={() => setDepartment(d)}
-            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-              department === d ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            className={`px-4 py-2 rounded-full text-[10px] font-label uppercase font-bold tracking-widest transition-colors border ${
+              department === d ? 'gold-gradient text-[#0B2D5E] border-primary shadow-sm' : 'bg-surface-container-lowest text-secondary border-outline-variant/30 hover:bg-surface-container-low'
             }`}
           >
             {d}
@@ -81,15 +88,15 @@ export default function EmployeesPage() {
       </div>
 
       {/* Status sub-filter */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 pb-2">
         {STATUS_FILTERS.map((s) => (
           <button
             key={s}
             onClick={() => setStatus(s)}
-            className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-[10px] font-label font-bold uppercase tracking-widest border transition-colors ${
               status === s
-                ? 'border-orange-400 bg-orange-50 text-orange-700'
-                : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                ? 'border-primary/30 bg-primary/10 text-primary'
+                : 'border-outline-variant/30 text-secondary bg-surface-container-lowest hover:bg-surface-container-low'
             }`}
           >
             {s}
@@ -98,33 +105,34 @@ export default function EmployeesPage() {
       </div>
 
       {/* Employee grid */}
-      {/* TODO: map over employees fetched from /api/employees */}
       {view === 'Grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 12 }).map((_, i) => (
             <a
               key={i}
               href={`/employees/${i + 1}`}
-              className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col items-center text-center hover:shadow-md hover:border-orange-200 transition-all"
+              className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-sm p-6 flex flex-col items-center text-center hover:shadow-floating hover:border-primary/50 transition-all cursor-pointer group"
             >
               {/* Avatar */}
-              <div className="h-16 w-16 rounded-full bg-orange-100 mb-3" />
+              <div className="h-20 w-20 rounded-full bg-surface-container-low flex items-center justify-center text-secondary mb-4 group-hover:bg-primary/5 transition-colors">
+                <span className="material-symbols-outlined text-3xl">person</span>
+              </div>
               {/* Name */}
-              <div className="h-4 w-28 bg-gray-200 rounded mb-1" />
+              <div className="h-5 w-32 bg-on-surface/10 rounded mb-1.5" />
               {/* Role */}
-              <div className="h-3.5 w-20 bg-gray-100 rounded mb-3" />
+              <div className="h-4 w-24 bg-secondary/10 rounded mb-4" />
               {/* Department badge */}
-              <div className="h-5 w-24 bg-orange-50 rounded-full mb-3" />
+              <div className="h-6 w-28 bg-[#0B2D5E]/5 rounded-full mb-4" />
               {/* Status + actions */}
               <div className="flex items-center gap-2">
-                <div className="h-5 w-14 bg-green-100 rounded-full" />
+                <div className="h-5 w-16 bg-green-500/10 rounded-full" />
               </div>
             </a>
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-gray-100 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+        <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-sm overflow-hidden">
+          <div className="grid grid-cols-12 gap-3 px-6 py-4 border-b border-outline-variant/15 bg-surface-container-low/50 font-label text-[10px] font-bold text-secondary uppercase tracking-widest">
             <div className="col-span-4">Employee</div>
             <div className="col-span-2">Department</div>
             <div className="col-span-2">Role</div>
@@ -133,20 +141,22 @@ export default function EmployeesPage() {
             <div className="col-span-1" />
           </div>
           {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="grid grid-cols-12 gap-3 px-4 py-3.5 border-b border-gray-50 hover:bg-orange-50/20 items-center">
-              <div className="col-span-4 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-orange-100 flex-shrink-0" />
-                <div className="space-y-0.5">
-                  <div className="h-4 w-32 bg-gray-200 rounded" />
-                  <div className="h-3 w-24 bg-gray-100 rounded" />
+            <div key={i} className="grid grid-cols-12 gap-3 px-6 py-4 border-b border-surface hover:bg-surface-container-low transition-colors items-center group cursor-pointer">
+              <div className="col-span-4 flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full bg-surface-container-high flex items-center justify-center text-secondary group-hover:bg-primary/10 transition-colors flex-shrink-0">
+                  <span className="material-symbols-outlined text-[1.2rem]">person</span>
+                </div>
+                <div className="space-y-1.5">
+                  <div className="h-4 w-36 bg-on-surface/10 rounded" />
+                  <div className="h-3 w-28 bg-secondary/20 rounded" />
                 </div>
               </div>
-              <div className="col-span-2"><div className="h-5 w-20 bg-orange-50 rounded-full" /></div>
-              <div className="col-span-2"><div className="h-4 w-24 bg-gray-100 rounded" /></div>
-              <div className="col-span-2"><div className="h-4 w-20 bg-gray-100 rounded" /></div>
-              <div className="col-span-1"><div className="h-5 w-14 bg-green-100 rounded-full" /></div>
-              <div className="col-span-1 flex justify-end">
-                <div className="h-6 w-6 bg-gray-100 rounded" />
+              <div className="col-span-2"><div className="h-6 w-24 bg-[#0B2D5E]/5 rounded-full" /></div>
+              <div className="col-span-2"><div className="h-4 w-24 bg-on-surface/5 rounded" /></div>
+              <div className="col-span-2"><div className="h-4 w-20 bg-on-surface/5 rounded" /></div>
+              <div className="col-span-1"><div className="h-6 w-16 bg-green-500/10 text-green-700 rounded-full flex items-center justify-center font-label font-bold text-[9px] uppercase tracking-widest">Active</div></div>
+              <div className="col-span-1 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="h-8 w-8 bg-surface-container-highest rounded-lg flex items-center justify-center text-secondary hover:bg-primary/20 hover:text-primary transition-colors"><span className="material-symbols-outlined text-[1rem]">chevron_right</span></div>
               </div>
             </div>
           ))}

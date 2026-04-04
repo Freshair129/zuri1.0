@@ -8,7 +8,7 @@ export default function DashboardLayout({ children }) {
 
   return (
     <TenantProvider>
-      <div className="flex h-screen overflow-hidden bg-gray-50">
+      <div className="flex h-screen overflow-hidden bg-surface">
         {/* Core Sidebar (Dynamic Branding) */}
         <Sidebar />
 
