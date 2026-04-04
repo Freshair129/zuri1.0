@@ -25,3 +25,4 @@ outputs/*
 # IDE
 .vscode/
 .idea/
+tmp/

@@ -11,12 +11,14 @@ agents:
     role: "CTO / Lead Architect"
     goal: "ตัดสินใจ architecture, เขียน ADR, review สุดท้าย, guard gotchas"
     llm_task: architecture
-    model_override: claude-opus    # บังคับ Opus เสมอ ไม่ว่า cost_mode
+    model_override: gemini-pro     # ฟรีผ่าน GOOGLE_AI_API_KEY (AI Studio) — ไม่เสียเงินเพิ่ม
     allow_delegation: true
     human_gate: true
+    tool_use: true                 # Phase C: Enable dynamic discovery (ต้องการ GOOGLE_AI_API_KEY)
 
     # ── Domain Ownership ──
-    domains: ALL                   # cross-cutting — ดูแลทุก domain
+    domain: ALL                   # cross-cutting — ดูแลทุก domain
+    domains: ALL                   
     modules:
       - core/*                     # ทุก core module
       - shared/*                   # ทุก shared module
@@ -36,12 +38,7 @@ agents:
 
     context_files:
       - CLAUDE.md
-      - docs/gotchas/README.md
-      - docs/gotchas/multi-tenant.md
-      - docs/gotchas/dev-process.md
-      - prisma/schema.prisma
       - system_config.yaml
-      - docs/PROJECT_MAP.md
     skills:
       - verify-adr
       - domain-infra
@@ -52,8 +49,10 @@ agents:
     llm_task: review
     allow_delegation: false
     human_gate: false
+    tool_use: true                 # Phase C: Enable dynamic discovery
 
     # ── Domain Ownership ──
+    domain: ALL
     domains: ALL                   # review ทุก domain
     modules:
       - core/*
@@ -75,7 +74,7 @@ agents:
 
     context_files:
       - CLAUDE.md
-      - docs/gotchas/
+      - system_config.yaml
     skills:
       - verify-adr
       - code-reviewer
@@ -92,6 +91,7 @@ agents:
     human_gate: false
 
     # ── Domain Ownership ──
+    domain: ALL                    # Backend needs broad visibility or runtime resolution
     domains:
       - api-routes
       - repositories
@@ -130,7 +130,7 @@ agents:
 
     context_files:
       - CLAUDE.md
-      - prisma/schema.prisma
+      - docs/schema-slices/{domain}
       - system_config.yaml
       - id_standards.yaml
       - docs/gotchas/webhook-serverless.md
@@ -156,6 +156,7 @@ agents:
     human_gate: false
 
     # ── Domain Ownership ──
+    domain: [inbox, crm, pos, marketing, enrollment]
     domains:
       - pages
       - components
@@ -195,6 +196,7 @@ agents:
     context_files:
       - CLAUDE.md
       - system_config.yaml
+      - docs/schema-slices/{domain}
       - src/lib/permissionMatrix.js
       - docs/gotchas/database-identity.md  # dbId vs id
     skills:
@@ -217,10 +219,12 @@ agents:
     role: "Product Manager"
     goal: "แปลง feature request → user stories, acceptance criteria, data flow"
     llm_task: spec_writing
+    model_override: gemini-flash    # ฟรี ผ่าน GOOGLE_API_KEY — Boss review ตามอยู่แล้ว
     allow_delegation: false
     human_gate: false
 
     # ── Domain Ownership ──
+    domain: [inbox, crm, pos, marketing]
     domains:
       - feature-specs
       - user-stories
@@ -247,6 +251,7 @@ agents:
       - docs/product/PRD.md
       - system_requirements.yaml
       - system_config.yaml
+      - docs/schema-slices/{domain}
       - .dev/orchestrator/templates/feature-spec.md
     skills:
       - doc-writer
@@ -260,6 +265,7 @@ agents:
     human_gate: false
 
     # ── Domain Ownership ──
+    domain: ALL
     domains:
       - unit-tests
       - integration-tests
@@ -289,7 +295,7 @@ agents:
 
     context_files:
       - CLAUDE.md
-      - prisma/schema.prisma
+      - docs/schema-slices/{domain}
       - docs/gotchas/database-identity.md
       - docs/gotchas/webhook-serverless.md
     skills:
@@ -304,10 +310,12 @@ agents:
     role: "Documentation Writer"
     goal: "เขียน feature specs, ADRs, changelogs, gotchas ตาม templates"
     llm_task: documentation
+    model_override: gemini-flash    # ฟรี ผ่าน GOOGLE_API_KEY — Boss review ตามอยู่แล้ว
     allow_delegation: false
     human_gate: false
 
     # ── Domain Ownership ──
+    domain: ALL
     domains:
       - documentation
       - changelogs
@@ -324,7 +332,7 @@ agents:
       - "เขียน ADR drafts (CTO approve)"
       - "เขียน changelog entries (sliding window)"
       - "เขียน gotchas เมื่อเจอ issue ใหม่"
-      - "อัปเดต CONTEXT_INDEX.yaml"
+      - "อัปเดต docs/HOME.md"
       - "Sync docs หลัง implement"
 
     # ── Dependencies ──
@@ -336,7 +344,8 @@ agents:
     context_files:
       - .dev/orchestrator/templates/
       - docs/gotchas/README.md
-      - .dev/shared-context/CONTEXT_INDEX.yaml
+      - docs/HOME.md
+      - docs/schema-slices/{domain}
     skills:
       - doc-writer
       - sync-docs
@@ -393,6 +402,7 @@ agents:
     human_gate: false
 
     # ── Domain Ownership ──
+    domain: ALL
     domains:
       - migration
       - refactoring
@@ -421,7 +431,7 @@ agents:
     context_files:
       - CLAUDE.md
       - docs/PROJECT_MAP.md
-      - prisma/schema.prisma
+      - docs/schema-slices/{domain}
       - id_standards.yaml
     skills:
       - migration-planner
@@ -475,7 +485,7 @@ agents:
 #   shared/audit              │ ●       │         │ ●   │
 #   industry/culinary/courses │ ○       │ ●       │ ●   │ ●
 #   industry/culinary/recipes │ ○       │ ●       │ ●   │ ●
-#   industry/culinary/kitchen │ ○       │ ●       │ ●   │ ●
+#   industry/culinary/kitchen │ ○       │ ●       │ ●      │ ●
 #   industry/culinary/certs   │ ○       │ ●       │ ●   │ ●
 #   industry/culinary/pkgs    │ ○       │ ●       │ ●   │ ●
 #   components/ui             │         │ ●       │     │

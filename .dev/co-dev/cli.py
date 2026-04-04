@@ -22,6 +22,25 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 BASE_DIR = Path(__file__).parent
 
+# ── Load .env from .dev/co-dev/.env ──────────────────────────────────
+def _load_dotenv():
+    """Load KEY=VALUE from .env without requiring python-dotenv package."""
+    env_file = BASE_DIR / ".env"
+    if not env_file.exists():
+        return
+    import os
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        key = key.strip()
+        val = val.strip().strip('"').strip("'")
+        if key and val and key not in os.environ:  # don't override system env
+            os.environ[key] = val
+
+_load_dotenv()
+
 
 # ═══════════════════════════════════════════════════════
 # PUBLIC API — Called by Claude Code via subprocess
@@ -42,6 +61,7 @@ def main():
         "review": cmd_review,    # Show last output for Claude Code to review
         "run": cmd_run,          # Raw pipeline run (advanced)
         "status": cmd_status,
+        "index": cmd_index,      # Rebuild RAG index (Phase B)
         "history": cmd_history,
         "version": lambda _: print("co-dev v3.1.0"),
     }
@@ -205,6 +225,26 @@ def cmd_test(args):
     return output_path
 
 
+def cmd_index(args):
+    """Rebuild the RAG vector index (Phase B).
+    Usage: python cli.py index
+    """
+    from core.indexer import Indexer
+    
+    # BASE_DIR is Path(__file__).parent (.dev/co-dev)
+    # Project root is two levels up
+    project_root = BASE_DIR.parent.parent
+    indexer = Indexer(str(project_root))
+    
+    print(f"\n{'='*60}")
+    print(f"  co-dev index -- Rebuilding RAG vector index")
+    print(f"  Root: {project_root}")
+    print(f"{'='*60}\n")
+    
+    indexer.index_all()
+    print("\n  RE-INDEX COMPLETE")
+
+
 def cmd_review(args):
     """Show most recent output for Claude Code to review."""
     outputs_dir = BASE_DIR / "outputs"
@@ -226,20 +266,62 @@ def cmd_review(args):
 # ── Advanced / Legacy Commands ────────────────────────
 
 def cmd_run(args):
-    """Raw pipeline run (all phases). Advanced use."""
+    """Raw pipeline run (all phases). Advanced use.
+
+    Flags:
+      --phase doc|code|migrate|full  (default: doc)
+      --agent <name>                 Run single agent only
+      --inject-agent <name>          Skip this agent, use --from-file content instead
+      --from-file <path>             File to inject as pre-computed agent output
+    """
     if not args:
-        print("Usage: python cli.py run \"task\" --phase doc|code|migrate|full")
+        print('Usage: python cli.py run "task" [--phase doc] [--inject-agent cto --from-file out.md]')
         return
 
     task = args[0]
     phase = "doc"
-    for i, arg in enumerate(args):
-        if arg == "--phase" and i + 1 < len(args):
-            phase = args[i + 1]
+    agent_only = None
+    inject_agent = None
+    inject_file = None
+
+    i = 1
+    while i < len(args):
+        if args[i] == "--phase" and i + 1 < len(args):
+            phase = args[i + 1]; i += 2
+        elif args[i] == "--agent" and i + 1 < len(args):
+            agent_only = args[i + 1]; i += 2
+        elif args[i] == "--inject-agent" and i + 1 < len(args):
+            inject_agent = args[i + 1]; i += 2
+        elif args[i] == "--from-file" and i + 1 < len(args):
+            inject_file = args[i + 1]; i += 2
+        else:
+            i += 1
+
+    # Build inject_outputs dict
+    inject_outputs = {}
+    if inject_agent and inject_file:
+        fp = Path(inject_file)
+        if not fp.is_absolute():
+            fp = BASE_DIR / inject_file
+        if not fp.exists():
+            print(f"[ERROR] inject file not found: {fp}")
+            return
+        inject_outputs[inject_agent] = fp.read_text(encoding="utf-8")
+        print(f"  Injecting agent '{inject_agent}' from: {fp.name}")
 
     from core.pipeline import Pipeline
     pipeline = Pipeline()
-    results = pipeline.run(task, phase=phase)
+
+    # Single-agent shortcut
+    if agent_only:
+        from core.state import StateManager
+        from datetime import datetime
+        state = pipeline.state_mgr.create_task(
+            f"TASK-{datetime.now().strftime('%Y%m%d%H%M')}", task, phase)
+        result = pipeline._run_agent(agent_only, task, state)
+        results = {agent_only: result}
+    else:
+        results = pipeline.run(task, phase=phase, inject_outputs=inject_outputs)
 
     output_path = _save_output(task, phase, results)
     print(f"\n  Output saved: {output_path}")
