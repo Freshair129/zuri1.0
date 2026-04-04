@@ -101,6 +101,7 @@ chore/<topic>          → tooling, config, cleanup
 3. Verify: `getPrisma()` → `await`? (G-AI-01)
 4. Verify: `tenantId` ใน query? (G-MT-01)
 5. Verify: `console.error` มี `[ModuleName]`?
+6. **[G-TRUNC-01]** ถ้าเขียน `.dev/co-dev/core/pipeline.py` หรือ `llm.py` → อ่าน `tail 20 บรรทัด` เสมอ — Antigravity truncate ซ้ำ 4 ครั้งที่ช่วง LLM call (ดู `docs/gotchas/codev-truncation.md`)
 
 ### ก่อนลบไฟล์ใดๆ:
 1. อ่านไฟล์จริงก่อน — ห้าม assume ว่า content เหมือนกัน

@@ -16,6 +16,7 @@
 8. [Next.js 14 / Vercel Build](./nextjs14-vercel-build-gotchas.md)
 9. [Dev Workflow Rules (G-DEV-05)](./G-DEV-05.md)
 10. [Webhook Rules (G-WH-02)](./G-WH-02.md)
+11. [Co-Dev Antigravity Truncation (G-TRUNC-01)](./codev-truncation.md)
 
 ## Incidents
 
