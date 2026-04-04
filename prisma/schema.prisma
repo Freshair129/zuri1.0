@@ -20,6 +20,8 @@ model Tenant {
   fbPageId   String?  @map("fb_page_id")
   plan       String   @default("STARTER")
   isActive   Boolean  @default(true) @map("is_active")
+  // Per-tenant branding & config (FEAT01 MT-P4): vatRate, currency, timezone, brandColor, logoUrl
+  config     Json     @default("{}") @map("config")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 

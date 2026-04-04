@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Badge from '../ui/Badge';
-import { Phone, Mail, Megaphone, Target, Briefcase, Plus, Send, Clock, Sparkles } from 'lucide-react';
+import { Phone, Mail, Megaphone, Target, Briefcase, Plus, Send, Clock } from 'lucide-react';
 
 const STATUS_FLOW = ['NEW', 'CONTACTED', 'INTERESTED', 'ENROLLED', 'PAID'];
 
@@ -16,7 +16,6 @@ const lifecycleColorMap = {
 
 export default function ProfileTab({ customer, onUpdate = null }) {
   const [loading, setLoading] = useState(false);
-  const displayName = customer.facebookName ?? customer.lineName ?? customer.name ?? 'ลูกค้า';
 
   const handleStatusChange = async (newStatus) => {
     if (newStatus === customer.lifecycleStage) return;
@@ -42,7 +41,7 @@ export default function ProfileTab({ customer, onUpdate = null }) {
       <div className="p-5 flex flex-col items-center text-center gap-3">
         <div className="relative">
           <div className="h-16 w-16 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl shadow-inner uppercase">
-            {displayName[0] || '?'}
+            {customer.name?.[0] || '?'}
           </div>
           {customer.intentScore >= 70 && (
             <div className="absolute -top-1 -right-1 h-6 w-6 bg-red-500 rounded-full flex items-center justify-center text-white border-2 border-white animate-bounce shadow-lg">
@@ -51,8 +50,8 @@ export default function ProfileTab({ customer, onUpdate = null }) {
           )}
         </div>
         <div className="space-y-1">
-          <h3 className="font-bold text-gray-900">{displayName}</h3>
-          <p className="text-[11px] text-gray-400 font-mono">ID: {customer.customerId ?? customer.id?.split('-')[0]}</p>
+          <h3 className="font-bold text-gray-900">{customer.name}</h3>
+          <p className="text-[11px] text-gray-400 font-mono">ID: {customer.id.split('-')[0]}</p>
         </div>
         
         {/* Status Dropdown */}
