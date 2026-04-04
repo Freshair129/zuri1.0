@@ -140,6 +140,12 @@ chore/<topic>          → tooling, config, cleanup
 - Dependency version bump (patch)
 - Test additions
 
+## Handoff (Cross-Platform Workflow)
+- สร้างเมื่อ: Boss สั่ง Claude วางแผน feature → ส่งต่อ Antigravity execute
+- Format: `docs/handoff/TEMPLATE.md` (อ่านก่อนสร้างทุกครั้ง)
+- บันทึกที่: `docs/handoff/IMP-{YYYYMMDD}-{slug}.md`
+- status flow: `DRAFT` → `PENDING_APPROVAL` → `IN_PROGRESS` → `DONE`
+
 ## File Reference
 - `prisma/schema.prisma` — DB schema (single source of truth)
 - `src/lib/repositories/` — all DB access
