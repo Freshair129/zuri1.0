@@ -41,6 +41,29 @@
 | `sync-check.py` | `python scripts/sync-check.py` | ตรวจ docs integrity (ADR frontmatter, spec status, changelog LATEST) |
 | `verify-flow.py` | `python scripts/verify-flow.py docs/product/specs/FEAT-*.md` | ตรวจ spec ครบก่อน implement |
 
+## External CLI Tools
+
+| Tool | Command | Purpose |
+|------|---------|---------|
+| **NotebookLM CLI** | `nlm` | Research, audio overview, quiz, mind map, slides |
+
+```bash
+# Login (ครั้งแรก — เปิด Chrome profile)
+nlm login
+
+# สร้าง notebook สำหรับ Zuri
+nlm notebook create "Zuri Architecture"
+
+# Deep Research ก่อนเขียน ADR
+nlm research start "serverless multi-tenant SaaS" --notebook-id <id> --mode deep
+
+# สร้าง Audio Overview ให้ Boss ฟัง
+nlm audio create <id> --format deep_dive --confirm
+
+# สร้าง Mind Map สำหรับ module dependencies
+nlm mindmap create <id> --confirm
+```
+
 ## กฎ
 
 1. **ห้าม import** ไฟล์ใน .dev/ จาก src/ → build จะพัง
