@@ -1,6 +1,42 @@
 'use client'
 
+import { useState } from 'react'
+import { signIn } from 'next-auth/react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+
 export default function LoginPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl') || '/'
+
+  const [identity, setIdentity] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    const result = await signIn('credentials', {
+      email: identity,
+      password,
+      redirect: false,
+    })
+
+    setLoading(false)
+
+    if (result?.error) {
+      setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง / Invalid email or password')
+    } else {
+      router.push(callbackUrl)
+      router.refresh()
+    }
+  }
+
   return (
     <div className="font-body text-white selection:bg-primary-fixed selection:text-on-primary-fixed min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
       {/* Background image */}
@@ -29,8 +65,15 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* Error banner */}
+          {error && (
+            <div className="mb-6 px-4 py-3 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-sm font-body text-center animate-entrance">
+              {error}
+            </div>
+          )}
+
           {/* Form */}
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Email / Phone */}
             <div className="space-y-2 animate-entrance delay-2">
               <div className="flex justify-between items-end ml-1">
@@ -44,6 +87,11 @@ export default function LoginPage() {
                   id="identity"
                   placeholder="example@zuri.com"
                   type="text"
+                  value={identity}
+                  onChange={(e) => setIdentity(e.target.value)}
+                  required
+                  autoComplete="email"
+                  disabled={loading}
                 />
                 <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#d4a017] transition-colors">person</span>
               </div>
@@ -55,63 +103,59 @@ export default function LoginPage() {
                 <label className="block font-label text-[0.65rem] uppercase tracking-widest text-white/70" htmlFor="password">
                   รหัสผ่าน / Password
                 </label>
-                <a className="font-label text-[0.65rem] uppercase tracking-widest text-[#d4a017] hover:text-white transition-colors" href="#">ลืมรหัสผ่าน?</a>
+                <Link className="font-label text-[0.65rem] uppercase tracking-widest text-[#d4a017] hover:text-white transition-colors" href="/forgot-password">
+                  ลืมรหัสผ่าน?
+                </Link>
               </div>
               <div className="relative group">
                 <input
-                  className="w-full px-5 py-4 bg-white/10 border border-white/10 text-white focus:border-[#d4a017] focus:bg-white/15 focus:ring-0 transition-all duration-300 rounded-xl placeholder:text-white/30 font-body"
+                  className="w-full px-5 py-4 bg-white/10 border border-white/10 text-white focus:border-[#d4a017] focus:bg-white/15 focus:ring-0 transition-all duration-300 rounded-xl placeholder:text-white/30 font-body pr-12"
                   id="password"
                   placeholder="••••••••"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  disabled={loading}
                 />
-                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#d4a017] transition-colors">lock</span>
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-[#d4a017] transition-colors"
+                >
+                  <span className="material-symbols-outlined">{showPassword ? 'visibility_off' : 'visibility'}</span>
+                </button>
               </div>
             </div>
 
             {/* Submit */}
             <div className="pt-4 animate-entrance delay-4">
               <button
-                className="w-full gold-gradient text-[#0B2D5E] font-label font-bold text-sm uppercase tracking-widest py-5 rounded-xl shadow-xl hover:shadow-[#d4a017]/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500"
+                className="w-full gold-gradient text-[#0B2D5E] font-label font-bold text-sm uppercase tracking-widest py-5 rounded-xl shadow-xl hover:shadow-[#d4a017]/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100"
                 type="submit"
+                disabled={loading}
               >
-                เข้าสู่ระบบ / Login
+                {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ / Login'}
               </button>
             </div>
           </form>
-
-          {/* Social login */}
-          <div className="mt-10 flex flex-col items-center space-y-6 animate-entrance delay-5">
-            <div className="flex items-center w-full space-x-4">
-              <div className="h-[1px] flex-1 bg-white/10" />
-              <span className="font-label text-[0.6rem] uppercase tracking-widest text-white/30">หรือเชื่อมต่อผ่าน / or connect via</span>
-              <div className="h-[1px] flex-1 bg-white/10" />
-            </div>
-            <div className="flex space-x-6">
-              <button className="w-14 h-14 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#d4a017]/50 transition-all group">
-                <img
-                  alt="Google"
-                  className="w-6 h-6 grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFQQjsEX4l_kpVP1KNDqwwSdrJsqDKpkkluwuHDDtAQQEuhQojOV2dx15YbLLH636qpsFKsbky-3hTpSHF-RD1CWZSdz9ugBVc5HUJhPpyfeMgYcMeCvra-mhkICwz9BkhZB8QIOM-ZRn6vPXri44Emwg9Ze0JuEpygiFGVZD5Fv34fOzGSvQ62XkkqCdC9wC-EEo9LFr6KGij9vlqVouLxZE68ccC8OHLc1p2t7tClCvQj7hpOi9048Ga1K2Dp8tw6I4ub0sUMeA"
-                />
-              </button>
-              <button className="w-14 h-14 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#d4a017]/50 transition-all group">
-                <span className="material-symbols-outlined text-white/50 group-hover:text-white transition-colors text-2xl">apple</span>
-              </button>
-            </div>
-          </div>
 
           {/* Footer links */}
           <div className="mt-10 pt-8 border-t border-white/10 text-center animate-entrance delay-5">
             <p className="font-label text-xs text-white/60 tracking-wide">
               ยังไม่มีบัญชี? / Don&apos;t have an account?{' '}
-              <a className="text-[#d4a017] font-bold ml-2 hover:underline decoration-[#d4a017]" href="#">สมัครสมาชิก</a>
+              <Link className="text-[#d4a017] font-bold ml-2 hover:underline decoration-[#d4a017]" href="/register">
+                สมัครสมาชิก
+              </Link>
             </p>
           </div>
         </div>
 
         {/* Bottom branding */}
         <p className="mt-10 text-center font-label text-[0.65rem] uppercase tracking-[0.4em] text-white/40 animate-entrance delay-5">
-          © 2024 Zuri Heritage. All rights reserved.
+          © 2026 Zuri Platform. All rights reserved.
         </p>
       </main>
 
