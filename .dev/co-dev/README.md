@@ -66,6 +66,13 @@ Override ด้วย env var: `CODEV_COST_MODE=quality python cli.py spec ...`
 
 `core/llm.py` อ่าน `context_files` จาก `agents.yaml` → ต่อเป็น `<context>` block → ส่งเป็น system prompt ให้ sub-agent ทุกครั้ง
 
+## Origin
+
+ชื่อ "co-dev" มาจาก:
+- **CO** = ชื่อ project เดิม (CO = Zuri รุ่นแรก) + co-development
+- **dev** = development tool
+- เป็น extension ที่ทำงานร่วมกับ Claude ไม่ใช่ standalone system
+
 ## Output vs Handoff
 
 - `outputs/` — raw Gemini output (ชั่วคราว, gitignored)

@@ -10,6 +10,41 @@ updated: 2026-04-04
 
 ---
 
+## Architecture
+
+```mermaid
+flowchart LR
+    Boss --> Claude["Claude\n(Cowork/Code)"]
+    Claude -->|สร้าง IMP file| WS["E:\\zuri\nshared workspace"]
+    WS -->|อ่านไฟล์| AG["Antigravity\n(Workflow 1)"]
+    WS -->|Desktop Commander| GEM["Gemini CLI\n(Workflow 2)"]
+    AG -->|spawn parallel| SUB["sub-agents\n(backend/frontend/qa)"]
+    GEM -->|sequential| SUB
+    SUB -->|tick checkboxes + Results| WS
+    WS -->|catchup| Claude
+    Claude -->|review + docs| Boss
+```
+
+```mermaid
+sequenceDiagram
+    participant B as Boss
+    participant C as Claude
+    participant W as E:\zuri
+    participant A as Antigravity / Gemini
+
+    B->>C: สร้างแผน feature X
+    C->>W: เขียน IMP-{date}-{slug}.md (PENDING_APPROVAL)
+    B->>B: approve ✅
+    B->>A: อ่าน IMP แล้วทำตามแผน
+    A->>W: อ่าน IMP → spawn agents
+    A->>W: tick ✅ + เขียน Results (DONE)
+    B->>C: catchup IMP file
+    C->>W: อ่าน IMP → Review Notes → changelog
+    C->>B: done
+```
+
+---
+
 ## เครื่องมือที่มี
 
 | Tool | Platform | ใช้ทำอะไร |

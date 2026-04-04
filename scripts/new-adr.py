@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 ADR_DIR = ROOT / "docs" / "decisions" / "adrs"
-TEMPLATE = ROOT / ".dev" / "orchestrator" / "templates" / "adr.md"
+TEMPLATE = ROOT / ".dev" / "templates" / "adr.md"
 
 
 def slugify(text: str) -> str:

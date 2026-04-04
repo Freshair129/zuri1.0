@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 SPECS_DIR = ROOT / "docs" / "product" / "specs"
 FLOWS_DIR = ROOT / "docs" / "product" / "flows"
-TEMPLATE = ROOT / ".dev" / "orchestrator" / "templates" / "feature-spec.md"
+TEMPLATE = ROOT / ".dev" / "templates" / "feature-spec.md"
 
 MODULES = [
     "core/crm",
