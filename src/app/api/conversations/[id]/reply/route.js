@@ -1,8 +1,20 @@
 import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
 import { getConversationById, appendMessage } from '@/lib/repositories/conversationRepo'
+import { triggerEvent } from '@/lib/pusher'
+import { getRedis } from '@/lib/redis'
+import { getQStash } from '@/lib/qstash'
 
-// POST /api/conversations/[id]/reply - Send reply via FB Messenger or LINE
+export const dynamic = 'force-dynamic'
+
+/**
+ * POST /api/conversations/[id]/reply
+ * 1. Persist message to DB immediately
+ * 2. Trigger Pusher real-time event
+ * 3. Enqueue QStash job to send via FB/LINE (module CLAUDE.md: ส่งผ่าน worker)
+ *
+ * Body: { message: string }
+ */
 export async function POST(request, { params }) {
   try {
     const tenantId = await getTenantId(request)
@@ -12,26 +24,55 @@ export async function POST(request, { params }) {
 
     const { id } = await params
     const body = await request.json()
-    const { message, attachments } = body
+    const { message } = body
 
-    if (!message && !attachments?.length) {
-      return NextResponse.json({ error: 'message or attachments required' }, { status: 400 })
+    if (!message?.trim()) {
+      return NextResponse.json({ error: 'message is required' }, { status: 400 })
     }
 
-    // TODO: Fetch conversation to determine channel (facebook | line)
+    // Fetch conversation (tenantId-scoped)
     const conversation = await getConversationById({ tenantId, id })
     if (!conversation) {
       return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
     }
 
-    // TODO: Route to correct platform client based on conversation.channel
-    // if (conversation.channel === 'facebook') { await fbClient.sendMessage(...) }
-    // if (conversation.channel === 'line') { await lineClient.replyMessage(...) }
+    // 1. Persist outbound message to DB immediately
+    const saved = await appendMessage({
+      conversationId: id,
+      message:        message.trim(),
+      direction:      'outbound',
+    })
 
-    // TODO: Append outbound message to DB via conversationRepo.appendMessage(...)
-    await appendMessage({ tenantId, conversationId: id, message, direction: 'outbound' })
+    // 2. Pusher real-time (fire and forget)
+    triggerEvent(`tenant-${tenantId}`, 'new-message', {
+      conversationId: id,
+      message: {
+        id:        saved.id,
+        sender:    'staff',
+        content:   saved.content,
+        createdAt: saved.createdAt,
+      },
+    }).catch((err) => console.error('[Reply.pusher]', err))
 
-    return NextResponse.json({ success: true })
+    // 3. Enqueue QStash worker to actually send via FB/LINE platform
+    const workerUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/workers/send-message`
+    getQStash().publishJSON({
+      url: workerUrl,
+      body: {
+        tenantId,
+        channel:       conversation.channel,
+        participantId: conversation.participantId,
+        message:       message.trim(),
+      },
+      retries: 5,  // NFR3
+    }).catch((err) => console.error('[Reply.qstash]', err))
+
+    // 4. Bust inbox list cache
+    getRedis()
+      .incr(`inbox:${tenantId}:version`)
+      .catch((err) => console.error('[Reply.cache]', err))
+
+    return NextResponse.json({ success: true, messageId: saved.id })
   } catch (error) {
     console.error('[Conversations/Reply]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

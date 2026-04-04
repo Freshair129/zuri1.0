@@ -32,6 +32,7 @@ function MessageBubble({ message }) {
 export default function ChatView({
   conversation = null,
   messages = [],
+  loading = false,
 }) {
   const bottomRef = useRef(null);
 
@@ -62,9 +63,19 @@ export default function ChatView({
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
-        {messages.map((msg, idx) => (
-          <MessageBubble key={msg.id ?? idx} message={msg} />
-        ))}
+        {loading ? (
+          <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+            Loading messages...
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+            No messages yet.
+          </div>
+        ) : (
+          messages.map((msg, idx) => (
+            <MessageBubble key={msg.id ?? idx} message={msg} />
+          ))
+        )}
         <div ref={bottomRef} />
       </div>
     </div>

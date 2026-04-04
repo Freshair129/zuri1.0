@@ -50,6 +50,7 @@ export default function ConversationList({
   conversations = [],
   activeId,
   onSelect,
+  loading = false,
 }) {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('All');
@@ -97,7 +98,11 @@ export default function ConversationList({
 
       {/* List */}
       <div className="flex-1 overflow-y-auto">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-full text-gray-400 text-sm py-10">
+            <p>Loading...</p>
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 text-sm py-10">
             <p>No conversations found.</p>
           </div>
