@@ -16,6 +16,7 @@
 | DB schema | `prisma/schema.prisma` |
 | Incident / gotcha rules | [[gotchas/*]] |
 | Milestone / roadmap | [[product/ROADMAP]] |
+| วิธีทำงานข้ามแพลตฟอร์ม | [[guide/co-dev-workflow]] |
 
 ---
 
