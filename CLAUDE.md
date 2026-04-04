@@ -102,6 +102,11 @@ chore/<topic>          → tooling, config, cleanup
 4. Verify: `tenantId` ใน query? (G-MT-01)
 5. Verify: `console.error` มี `[ModuleName]`?
 
+### ก่อนลบไฟล์ใดๆ:
+1. อ่านไฟล์จริงก่อน — ห้าม assume ว่า content เหมือนกัน
+2. Diff กับ file ที่จะ supersede: `git show HEAD:<path>` หรืออ่านทั้งสองไฟล์
+3. Merge unique content ก่อน แล้วค่อยลบ
+
 ## Incident Prevention Checklist
 
 ก่อน commit code ที่เกี่ยวกับ:
@@ -158,11 +163,25 @@ chore/<topic>          → tooling, config, cleanup
 - `python scripts/new-adr.py "ADR Title"` — สร้าง ADR ใหม่ใน docs/decisions/adrs/
 - `python scripts/new-feature.py "Feature Name"` — สร้าง feature spec + flow skeleton
 - `python scripts/pre-commit.py` — ตรวจสอบ staged files ก่อน commit
+- `python scripts/sync-check.py` — ตรวจ docs integrity (ADR frontmatter, spec status, changelog LATEST pointer)
+- `python scripts/verify-flow.py docs/product/specs/FEAT-*.md` — ตรวจ spec ครบก่อน implement (ต้อง APPROVED)
 
 ## DevLog (MANDATORY)
 - เขียน `docs/devlog/YYYY-MM-DD.md` ท้าย session ทุกครั้งก่อนบอก Boss ว่าเสร็จ
 - Format: ทำไปแล้ว / ค้างอยู่ / context สำคัญ / session ถัดไปทำต่อ
 - อ่าน devlog ล่าสุดก่อนเริ่มงานทุก session เพื่อ pickup context
+
+### Lesson Learned Priority
+เมื่อพบ lesson ใหม่ ให้ classify และเพิ่มในที่ที่ถูกต้องทันที:
+
+| Level | ชื่อ | Action | เก็บที่ไหน |
+|-------|------|--------|-----------|
+| **L0** | Critical | เพิ่มเป็น rule ทันที | `CLAUDE.md` |
+| **L1** | Gotcha | สร้าง named entry | `docs/gotchas/` → `G-XX-NN` |
+| **L2** | Domain | เพิ่มใน domain doc | domain `CLAUDE.md` หรือ spec |
+| **L3** | Log | บันทึกเท่านั้น | `docs/devlog/` |
+
+**เกณฑ์:** L0 = ถ้า violate ซ้ำ → damage/rework ใหญ่ · L1 = technical trap ในโค้ด · L2 = เฉพาะ domain · L3 = ephemeral
 
 ## Obsidian — Second Brain (SSOT for Docs)
 - Vault: `docs/` — accessible via Obsidian MCP (`mcp__obsidian__*`)

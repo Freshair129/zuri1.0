@@ -1,6 +1,6 @@
 # CHANGELOG
 
-**LATEST:** CL-20260404-003 | v3.0.1 | 2026-04-04
+**LATEST:** CL-20260404-004 | v0.9.0 | 2026-04-04
 
 ---
 
@@ -13,6 +13,33 @@
 ---
 
 ## 📝 Recent (last 5 — full content)
+
+### [CL-20260404-004] v0.9.0 — Migrate JS orchestrator tools to Python, complete .dev tooling cleanup
+
+# [CL-20260404-004] — Migrate JS orchestrator tools to Python, complete .dev tooling cleanup
+
+**Version:** v0.9.0
+**Date:** 2026-04-04
+**Severity:** PATCH
+**Tags:** tooling,python,cleanup
+**Commits:** (pending)
+**Author:** Claude
+
+---
+
+## Summary
+Migrate JS orchestrator tools to Python, complete .dev tooling cleanup
+
+## Changes
+Migrate sync-check.js and verify-flow.py to Python scripts; move .dev/orchestrator/templates/ to .dev/templates/; delete .dev/orchestrator/ entirely; add migrator.md prompt; fix Python 3.10 f-string bug in changelog.py; update CLAUDE.md Scripts section with all 6 Python commands
+
+
+## Files Modified
+- scripts/sync-check.py scripts/verify-flow.py scripts/changelog.py scripts/new-adr.py scripts/new-feature.py CLAUDE.md .dev/co-dev/config/prompts/migrator.md
+
+## Verification
+1. Verify CI/CD pipeline
+2. Ensure no regression in existing tests
 
 ### [CL-20260404-003] v3.0.1 — Consolidate agent tooling to Python + merge AGENT_PROTOCOL into CLAUDE.md
 
