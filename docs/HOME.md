@@ -85,7 +85,7 @@
 | [[decisions/adrs/ADR-066-component-size-limit\|ADR-066]] | Component Size Limit | ✅ Done |
 | [[decisions/adrs/ADR-067-changelog-system-v2\|ADR-067]] | Changelog System v2 | ✅ Done |
 | [[decisions/adrs/ADR-068-persona-based-rbac\|ADR-068]] | Persona-Based RBAC (6 roles) | ✅ Done |
-| ADR-069 | NLM Notebook Architecture | 🔲 Pending |
+| [[decisions/adrs/ADR-069-ai-context-layer-notebooklm\|ADR-069]] | AI Context Layer (NotebookLM) | ✅ Done |
 
 ---
 
@@ -111,8 +111,4 @@
 
 - [[guide/DEV_SETUP|Dev Setup]] — Local dev environment
 - [[CHANGELOG_SYSTEM|Changelog System]] — How to write changelogs
-- [[devlog/README|DevLog]] — Session continuity log (agent เขียนท้าย session)
-
----
-
-#zuri #home
+- [

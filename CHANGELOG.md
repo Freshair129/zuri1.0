@@ -1,6 +1,6 @@
 # CHANGELOG
 
-**LATEST:** CL-20260404-004 | v0.9.0 | 2026-04-04
+**LATEST:** CL-20260405-001 | v2.2.2 | 2026-04-05
 
 ---
 
@@ -8,11 +8,38 @@
 
 | ID | Name | Version | Date | Severity | Tags |
 |---|---|---|---|---|---|
-
+| CL-20260404-001 | Automated changelog system | v2.7.0 | 2026-04-04 | MINOR | #devtool #automation |
 
 ---
 
 ## 📝 Recent (last 5 — full content)
+
+### [CL-20260405-001] v2.2.2 — ADR-069: AI Context Layer (NotebookLM) - notebook architecture approved
+
+# [CL-20260405-001] — ADR-069: AI Context Layer (NotebookLM) - notebook architecture approved
+
+**Version:** v2.2.2
+**Date:** 2026-04-05
+**Severity:** MINOR
+**Tags:** adr,ai,notebooklm,architecture
+**Commits:** (pending)
+**Author:** Claude
+
+---
+
+## Summary
+ADR-069: AI Context Layer (NotebookLM) - notebook architecture approved
+
+## Changes
+Create ADR-069: NotebookLM as AI context layer for Zuri agents|Define 6 per-tenant notebooks: chat-intelligence, pdad-framework, product-catalog, sales-kpi, ads-intelligence, brand-content|Define zuri-platform notebook for co-dev agents|Document data sources, update cadence, and query pattern per notebook|Define fallback to direct Gemini injection if NLM unavailable|Update HOME.md ADR index: ADR-069 status to Done
+
+
+## Files Modified
+- docs/decisions/adrs/ADR-069-ai-context-layer-notebooklm.md|docs/HOME.md
+
+## Verification
+1. Verify CI/CD pipeline
+2. Ensure no regression in existing tests
 
 ### [CL-20260405-002] v0.13.0 — Complete Phase 6 UI Migration for Zuri Platform
 
@@ -42,6 +69,7 @@ Refactored the remaining React/Next.js subpages in Marketing, Employees, Tasks, 
 
 ## Verification
 - Verified Next.js component files as commanded.
+
 ### [CL-20260404-004] v0.9.0 — Migrate JS orchestrator tools to Python, complete .dev tooling cleanup
 
 # [CL-20260404-004] — Migrate JS orchestrator tools to Python, complete .dev tooling cleanup
@@ -117,33 +145,6 @@ Corrected Index row parsing and extra separators.
 
 ## Files Modified
 - scripts/changelog.py
-
-## Verification
-1. Verify CI/CD pipeline
-2. Ensure no regression in existing tests
-
-### [CL-20260404-001] v2.7.0 — Automated changelog system
-
-# [CL-20260404-001] — Automated changelog system
-
-**Version:** v2.7.0
-**Date:** 2026-04-04
-**Severity:** MINOR
-**Tags:** #devtool #automation
-**Commits:** (pending)
-**Author:** Claude
-
----
-
-## Summary
-Automated changelog system
-
-## Changes
-Implemented scripts/changelog.py and refactored CHANGELOG.md to Sliding Window v2.
-
-## Files Modified
-- scripts/changelog.py
-- CHANGELOG.md
 
 ## Verification
 1. Verify CI/CD pipeline
