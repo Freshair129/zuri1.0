@@ -1,67 +1,98 @@
+/**
+ * GET    /api/customers/[id]  — customer detail
+ * PATCH  /api/customers/[id]  — update customer fields
+ * DELETE /api/customers/[id]  — soft delete
+ */
 import { NextResponse } from 'next/server'
-import { getTenantId } from '@/lib/tenant'
-import { getCustomerById, updateCustomer } from '@/lib/repositories/customerRepo'
+import { withAuth } from '@/lib/auth'
+import {
+  getCustomerById,
+  updateCustomer,
+  softDeleteCustomer,
+} from '@/lib/repositories/customerRepo'
 import * as auditRepo from '@/lib/repositories/auditRepo'
-import { getSession } from '@/lib/auth'
+import triggerPusher from '@/lib/pusher'
 
-// GET /api/customers/[id] — Get customer detail
-export async function GET(request, { params }) {
-  try {
-    const tenantId = await getTenantId(request)
-    const { id } = await params
+export const dynamic = 'force-dynamic'
 
-    const customer = await getCustomerById(tenantId, id)
-    if (!customer) {
-      return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
+// GET /api/customers/[id]
+export const GET = withAuth(
+  async (request, { params, session }) => {
+    try {
+      const tenantId = session.user.tenantId
+      const { id } = await params
+
+      const customer = await getCustomerById(tenantId, id)
+      if (!customer) {
+        return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
+      }
+
+      return NextResponse.json({ data: customer })
+    } catch (error) {
+      console.error('[Customers/Detail.GET]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
+  },
+  { domain: 'customers', action: 'R' }
+)
 
-    return NextResponse.json({ data: customer })
-  } catch (error) {
-    console.error('[Customers/Detail]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
+// PATCH /api/customers/[id]
+// Body: { name?, phone?, email?, facebookName?, status?, assigneeId?, profile? }
+// NOTE: lifecycleStage should go through PATCH /api/customers/[id]/stage
+export const PATCH = withAuth(
+  async (request, { params, session }) => {
+    try {
+      const tenantId = session.user.tenantId
+      const { id } = await params
+      const body = await request.json()
 
-// PATCH /api/customers/[id] — Update customer fields
-export async function PATCH(request, { params }) {
-  try {
-    const tenantId = await getTenantId(request)
-    const session = await getSession()
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      const customer = await updateCustomer(tenantId, id, body)
+
+      await auditRepo.create(
+        tenantId,
+        session.user.employeeId ?? session.user.email,
+        'CUSTOMER_UPDATE',
+        id,
+        { changes: body }
+      )
+
+      await triggerPusher(`tenant-${tenantId}`, 'customer-updated', {
+        id,
+        displayName: customer.displayName,
+        lifecycleStage: customer.lifecycleStage,
+      })
+
+      return NextResponse.json({ data: customer })
+    } catch (error) {
+      console.error('[Customers/Detail.PATCH]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
+  },
+  { domain: 'customers', action: 'W' }
+)
 
-    const { id } = await params
-    const body = await request.json()
+// DELETE /api/customers/[id] — soft delete
+export const DELETE = withAuth(
+  async (request, { params, session }) => {
+    try {
+      const tenantId = session.user.tenantId
+      const { id } = await params
 
-    // 1. Whitelist fields for Customer model
-    const customerUpdates = {}
-    if (body.facebookName) customerUpdates.facebookName = body.facebookName
-    if (body.phonePrimary) customerUpdates.phonePrimary = body.phonePrimary
-    if (body.email) customerUpdates.email = body.email
-    if (body.status) customerUpdates.status = body.status
-    if (body.lifecycleStage) customerUpdates.lifecycleStage = body.lifecycleStage
+      await softDeleteCustomer(tenantId, id)
 
-    // 2. Profile updates (CustomerProfile)
-    if (body.profile) {
-      customerUpdates.profile = body.profile
+      await auditRepo.create(
+        tenantId,
+        session.user.employeeId ?? session.user.email,
+        'CUSTOMER_DELETE',
+        id,
+        {}
+      )
+
+      return NextResponse.json({ ok: true })
+    } catch (error) {
+      console.error('[Customers/Detail.DELETE]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
-
-    // 3. Update DB
-    const customer = await updateCustomer(tenantId, id, customerUpdates)
-
-    // 4. Create Audit Log
-    await auditRepo.create(
-      tenantId,
-      session.user.name || session.user.email,
-      'CUSTOMER_UPDATE',
-      id,
-      { changes: body }
-    )
-
-    return NextResponse.json({ data: customer })
-  } catch (error) {
-    console.error('[Customers/Patch]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
+  },
+  { domain: 'customers', action: 'W' }
+)

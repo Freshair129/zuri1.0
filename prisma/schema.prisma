@@ -70,34 +70,80 @@ model Customer {
   id              String    @id @default(uuid())
   customerId      String    @unique @map("customer_id")
   tenantId        String    @map("tenant_id")
+  name            String?                              // display name (manual create / override)
   status          String    @default("Active")
   membershipTier  String    @default("MEMBER") @map("membership_tier")
-  lifecycleStage  String    @default("LEAD") @map("lifecycle_stage")
+  lifecycleStage  String    @default("NEW") @map("lifecycle_stage")
+  tags            String[]  @default([])
   email           String?
   phonePrimary    String?   @map("phone_primary")
   phoneSecondary  String?   @map("phone_secondary")
   lineId          String?   @map("line_id")
   facebookId      String?   @unique @map("facebook_id")
   facebookName    String?   @map("facebook_name")
+  assigneeId      String?   @map("assignee_id")       // Employee.id responsible for this customer
   originId        String?   @map("origin_id")
+  mergedInto      String?   @map("merged_into")       // primary customer id when this is a secondary
   walletBalance   Float     @default(0) @map("wallet_balance")
   walletPoints    Int       @default(0) @map("wallet_points")
   intentScore     Int       @default(0) @map("intent_score")
   churnScore      Int       @default(0) @map("churn_score")
   intelligence    Json?
+  deletedAt       DateTime? @map("deleted_at")        // soft delete
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  tenant        Tenant               @relation(fields: [tenantId], references: [id])
   conversations Conversation[]
   orders        Order[]
   enrollments   Enrollment[]
   profile       CustomerProfile?
   insight       CustomerInsight?
+  stageHistory  CustomerStageHistory[]
+  activities    CustomerActivity[]
 
   @@index([tenantId])
   @@index([phonePrimary])
+  @@index([lifecycleStage])
+  @@index([deletedAt])
   @@map("customers")
+}
+
+// Tracks every lifecycle stage transition with timestamp + actor
+model CustomerStageHistory {
+  id         String   @id @default(uuid())
+  tenantId   String   @map("tenant_id")
+  customerId String   @map("customer_id")
+  fromStage  String?  @map("from_stage")
+  toStage    String   @map("to_stage")
+  changedBy  String?  @map("changed_by")  // Employee.id
+  note       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@map("customer_stage_history")
+}
+
+// Unified activity timeline for a customer (conversations, orders, stage changes, notes)
+model CustomerActivity {
+  id         String   @id @default(uuid())
+  tenantId   String   @map("tenant_id")
+  customerId String   @map("customer_id")
+  type       String                         // CONVERSATION | ORDER | STAGE_CHANGE | TAG_CHANGE | NOTE | ENROLLMENT
+  refId      String?  @map("ref_id")       // id of the referenced entity
+  payload    Json     @default("{}")        // activity-specific data
+  actorId    String?  @map("actor_id")     // Employee.id who caused the event
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([type])
+  @@map("customer_activities")
 }
 
 model CustomerProfile {
