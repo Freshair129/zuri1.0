@@ -1,6 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createMockPrisma } from '@/tests/mocks/prismaMock'
 
+// Mock Redis (ADR-056)
+vi.mock('@/lib/redis', () => ({
+  redis: {
+    get: vi.fn(),
+    set: vi.fn(),
+    del: vi.fn(),
+    keys: vi.fn().mockResolvedValue([]),
+  },
+  getOrSet: vi.fn((key, fn) => fn()),
+}))
+
 describe('customerRepo', () => {
   let mockPrisma
 
@@ -21,7 +32,7 @@ describe('customerRepo', () => {
       const result = await getCustomerById(tenantId, customerId)
 
       expect(mockPrisma.customer.findFirst).toHaveBeenCalledWith({
-        where: { id: customerId, tenantId },
+        where: { id: customerId, tenantId, deletedAt: null },
         include: {
           profile: true,
           insight: true,
@@ -31,11 +42,11 @@ describe('customerRepo', () => {
             include: { product: true }
           },
           _count: {
-            select: { orders: true, enrollments: true }
+            select: { orders: true, enrollments: true, conversations: true }
           }
         }
       })
-      expect(result).toEqual(mockCustomer)
+      expect(result).toEqual({ ...mockCustomer, displayName: 'John Doe' })
     })
 
     it('should return null if customer does not exist for the tenant', async () => {
@@ -66,7 +77,7 @@ describe('customerRepo', () => {
           facebookName: 'John Updated',
           profile: {
             upsert: {
-              create: { address: '123 New St', tenantId }, // Fixed: expects tenantId here
+              create: { address: '123 New St' },
               update: { address: '123 New St' }
             }
           }

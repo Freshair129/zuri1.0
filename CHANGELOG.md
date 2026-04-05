@@ -38,6 +38,11 @@
 - `src/app/api/payments/verify-slip/` — NEW: Real-time QR slip verification endpoint (Verified).
 - `src/lib/repositories/orderRepo.js` — Process payment now triggers automated ingredient inventory deduction (FEFO).
 - `src/app/(dashboard)/pos/` — UI: Quick Sale (custom items), QR Slip upload with AI verify, and Receipt preview/print system.
+- `src/lib/repositories/ingredientRepo.test.js` — NEW: Unit tests for FEFO inventory logic (Passed).
+- `src/lib/repositories/orderRepo.test.js` — NEW: Unit tests for payment & inventory sync (Passed in Transaction).
+- `src/lib/redis.js` — FIXED: Exported `redis` singleton to prevent undefined import errors in tests/repos.
+- `src/tests/mocks/redisMock.js` — NEW: Global Redis mock for Vitest stability.
+- `src/lib/repositories/customerRepo.test.js` — REFINED: Updated expectations to match multi-tenant & soft-delete implementation.
 
 ---
 

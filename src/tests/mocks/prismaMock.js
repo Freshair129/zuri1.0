@@ -55,6 +55,17 @@ export function createMockPrisma() {
     task: createModelMock(),
     // Notifications
     webPushSubscription: createModelMock(),
+    // Ingredients & Kitchen
+    ingredient: createModelMock(),
+    ingredientLot: createModelMock(),
+    recipe: createModelMock(),
+    recipeIngredient: createModelMock(),
+    productRecipe: createModelMock(),
+    // Products
+    product: createModelMock(),
+    // Orders
+    orderItem: createModelMock(),
+    posTable: createModelMock(),
     // $transaction helper
     $transaction: vi.fn(async (fn) => {
       // Execute the callback with the same mock prisma as the transaction client

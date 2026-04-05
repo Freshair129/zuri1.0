@@ -1,5 +1,16 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createMockPrisma } from '@/tests/mocks/prismaMock'
+
+// Mock Redis (ADR-056)
+vi.mock('@/lib/redis', () => ({
+  redis: {
+    get: vi.fn(),
+    set: vi.fn(),
+    del: vi.fn(),
+    keys: vi.fn().mockResolvedValue([]),
+  },
+  getOrSet: vi.fn((key, fn) => fn()),
+}))
 
 const TENANT_A = '10000000-0000-0000-0000-000000000001'
 const TENANT_B = '20000000-0000-0000-0000-000000000002'
