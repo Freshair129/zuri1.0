@@ -510,7 +510,7 @@ model Certificate {
 model CourseSchedule {
   id                String   @id @default(uuid())
   scheduleId        String   @unique @map("schedule_id")
-  tenantId          String   @map("tenant_id")
+  tenantId          String   @default("10000000-0000-0000-0000-000000000001") @map("tenant_id")
   productId         String   @map("product_id")
   instructorId      String?  @map("instructor_id")
   scheduledDate     DateTime @map("scheduled_date")
