@@ -1,3 +1,6 @@
 [
-  "obsidian-local-rest-api"
+  "obsidian-local-rest-api",
+  "dataview",
+  "obsidian-advanced-tables",
+  "obsidian-kanban"
 ]

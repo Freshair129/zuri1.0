@@ -16,8 +16,10 @@ model Tenant {
   id         String   @id @default(uuid())
   tenantSlug String   @unique @map("tenant_slug")
   tenantName String   @map("tenant_name")
-  lineOaId   String?  @map("line_oa_id")
-  fbPageId   String?  @map("fb_page_id")
+  lineOaId          String?  @map("line_oa_id")
+  fbPageId          String?  @map("fb_page_id")
+  fbPageToken       String?  @map("fb_page_token")
+  lineChannelToken  String?  @map("line_channel_token")
   plan       String   @default("STARTER")
   isActive   Boolean  @default(true) @map("is_active")
   // Per-tenant branding & config (FEAT01 MT-P4): vatRate, currency, timezone, brandColor, logoUrl
@@ -412,26 +414,103 @@ model Product {
 // ============================================
 
 model Enrollment {
-  id           String   @id @default(uuid())
-  enrollmentId String   @unique @map("enrollment_id")
-  customerId   String   @map("customer_id")
-  productId    String   @map("product_id")
-  soldById     String?  @map("sold_by_id")
-  totalPrice   Float    @default(0) @map("total_price")
-  status       String   @default("ACTIVE")
-  enrolledAt   DateTime @default(now()) @map("enrolled_at")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id             String   @id @default(uuid())
+  enrollmentId   String   @unique @map("enrollment_id")
+  tenantId       String   @map("tenant_id")
+  customerId     String   @map("customer_id")
+  productId      String   @map("product_id")
+  packageId      String?  @map("package_id")
+  orderId        String?  @map("order_id")
+  soldById       String?  @map("sold_by_id")
+  totalPrice     Float    @default(0) @map("total_price")
+  // Lifecycle: PENDING → CONFIRMED → IN_PROGRESS → COMPLETED | CANCELLED
+  status         String   @default("PENDING")
+  hoursCompleted Float    @default(0) @map("hours_completed")
+  enrolledAt     DateTime @default(now()) @map("enrolled_at")
+  completedAt    DateTime? @map("completed_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  customer Customer @relation(fields: [customerId], references: [id])
-  product  Product  @relation(fields: [productId], references: [id])
+  customer    Customer        @relation(fields: [customerId], references: [id])
+  product     Product         @relation(fields: [productId], references: [id])
+  items       EnrollmentItem[]
+  attendance  ClassAttendance[]
+  certificate Certificate?
 
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([status])
   @@map("enrollments")
+}
+
+// Tracks per-course progress within an Enrollment
+model EnrollmentItem {
+  id             String   @id @default(uuid())
+  tenantId       String   @map("tenant_id")
+  enrollmentId   String   @map("enrollment_id")
+  productId      String   @map("product_id")
+  hoursCompleted Float    @default(0) @map("hours_completed")
+  // PENDING | IN_PROGRESS | COMPLETED
+  status         String   @default("PENDING")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId])
+  @@index([tenantId])
+  @@map("enrollment_items")
+}
+
+// Per-class attendance record (QR check-in or staff manual mark)
+model ClassAttendance {
+  id           String    @id @default(uuid())
+  tenantId     String    @map("tenant_id")
+  enrollmentId String    @map("enrollment_id")
+  scheduleId   String    @map("schedule_id")
+  // PRESENT | ABSENT | LATE | EXCUSED
+  status       String    @default("ABSENT")
+  checkedAt    DateTime? @map("checked_at")
+  note         String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  enrollment Enrollment    @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  schedule   CourseSchedule @relation(fields: [scheduleId], references: [id])
+
+  // prevent duplicate check-in for same student+class
+  @@unique([enrollmentId, scheduleId])
+  @@index([tenantId])
+  @@index([scheduleId])
+  @@map("class_attendances")
+}
+
+// Issued when student reaches hoursCompleted >= threshold
+// format: CERT-{YYYYMMDD}-{seq} — see id_standards.yaml
+model Certificate {
+  id                String   @id @default(uuid())
+  certificateId     String   @unique @map("certificate_id")
+  tenantId          String   @map("tenant_id")
+  enrollmentId      String   @unique @map("enrollment_id")
+  customerId        String   @map("customer_id")
+  // BASIC_30H | PRO_111H | MASTER_201H
+  level             String
+  issuedDate        DateTime @default(now()) @map("issued_date")
+  pdfUrl            String?  @map("pdf_url")
+  notifiedAt        DateTime? @map("notified_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id])
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@map("certificates")
 }
 
 model CourseSchedule {
   id                String   @id @default(uuid())
   scheduleId        String   @unique @map("schedule_id")
+  tenantId          String   @map("tenant_id")
   productId         String   @map("product_id")
   instructorId      String?  @map("instructor_id")
   scheduledDate     DateTime @map("scheduled_date")
@@ -443,8 +522,11 @@ model CourseSchedule {
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
-  product Product @relation(fields: [productId], references: [id])
+  product     Product          @relation(fields: [productId], references: [id])
+  attendances ClassAttendance[]
 
+  @@index([tenantId])
+  @@index([scheduledDate])
   @@map("course_schedules")
 }
 

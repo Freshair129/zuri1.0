@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { verifyQStashSignature } from '@/lib/qstash'
-import { getPrisma } from '@/lib/db'
+import { getTenantTokens } from '@/lib/repositories/tenantRepo'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
@@ -22,13 +22,8 @@ export async function POST(req) {
 
   const { tenantId, channel, participantId, message } = JSON.parse(body)
 
-  // Load tenant tokens from DB (multi-tenant path)
-  // TODO: once tenant.fbPageToken / tenant.lineChannelToken columns are added (M5)
-  // const tenant = await getPrisma().tenant.findUnique({ where: { id: tenantId } })
-  // const fbToken   = tenant?.fbPageToken  ?? process.env.FACEBOOK_PAGE_ACCESS_TOKEN
-  // const lineToken = tenant?.lineChannelToken ?? process.env.LINE_CHANNEL_ACCESS_TOKEN
-  const fbToken   = process.env.FACEBOOK_PAGE_ACCESS_TOKEN
-  const lineToken = process.env.LINE_CHANNEL_ACCESS_TOKEN
+  // Load tenant tokens from DB — falls back to env vars if not set per-tenant
+  const { fbPageToken: fbToken, lineChannelToken: lineToken } = await getTenantTokens(tenantId)
 
   try {
     if (channel === 'facebook') {

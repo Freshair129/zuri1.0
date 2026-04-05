@@ -1,7 +1,65 @@
 # Changelog — Zuri Platform v2
 
 > Format: [version] date — summary
-> LATEST → v2.2.5
+> LATEST → v2.2.8
+
+---
+
+## [2.2.8] 2026-04-06
+
+### Added — culinary/certificates: Phase 6.4 (M2) — Certificate lifecycle
+
+**Schema (ต้อง `prisma db push`)**
+- `Enrollment` — เพิ่ม `tenantId`, `packageId`, `orderId`, `hoursCompleted`, `completedAt`; status default → `PENDING`; relations: `items[]`, `attendance[]`, `certificate?`; เพิ่ม indexes
+- `EnrollmentItem` (NEW) — per-course progress tracking (hoursCompleted, status PENDING/IN_PROGRESS/COMPLETED)
+- `ClassAttendance` (NEW) — QR/manual check-in per student per class; `@@unique([enrollmentId, scheduleId])` ป้องกัน double check-in (G1)
+- `Certificate` (NEW) — `certificateId` (CERT-YYYYMMDD-NNN), `level` (BASIC_30H/PRO_111H/MASTER_201H), `pdfUrl`, `notifiedAt`; `@@unique(enrollmentId)` guard G7
+- `CourseSchedule` — เพิ่ม `tenantId`, `attendances[]`, indexes
+
+**Repositories**
+- `src/lib/repositories/certificateRepo.js` (NEW) — `findMany`, `findById`, `createForEnrollment` (idempotent), `generateCertId`, `getCertLevel`, `findCompletableEnrollments`, `completeEnrollment`, `markNotified`, `updatePdfUrl`
+
+**API Routes**
+- `GET /api/culinary/certificates` — list certs, pagination + customerId filter; `withAuth(enrollment:R)`
+- `GET /api/culinary/certificates/[id]` — by UUID or certificateId string; `withAuth(enrollment:R)`
+- `POST /api/workers/check-completion` (NEW) — QStash cron hourly: หา IN_PROGRESS enrollments ที่ hoursCompleted >= threshold → mark COMPLETED → issue Certificate; throws for QStash retry (NFR3)
+
+---
+
+## [2.2.8] 2026-04-06
+
+### Roadmap Cleanup — Phase 1 Docs & Phase 2 ADR-069 ✅
+- `docs/architecture/data-flows/` — Added data flow diagrams for Audit, Inventory, Procurement, and Notifications modules.
+- `docs/.obsidian/` — Updated community plugins for better dev experience.
+- `docs/decisions/adrs/ADR-069.md` — NEW: AI Context Layer (NotebookLM) architecture decision.
+
+### 4.5 core/pos — POS Full Upgrade ✅
+- `src/lib/ai/slipVerifier.js` — NEW: Gemini Vision integration for Thai bank slip OCR (Verified).
+- `src/app/api/payments/verify-slip/` — NEW: Real-time QR slip verification endpoint (Verified).
+- `src/lib/repositories/orderRepo.js` — Process payment now triggers automated ingredient inventory deduction (FEFO).
+- `src/app/(dashboard)/pos/` — UI: Quick Sale (custom items), QR Slip upload with AI verify, and Receipt preview/print system.
+
+---
+
+## [2.2.7] 2026-04-05
+
+### Multi-tenant Token Migration — FB/LINE tokens out of env, into DB
+
+- `prisma/schema.prisma` — Tenant: เพิ่ม `fbPageToken`, `lineChannelToken` columns ⚠️ ต้อง `prisma db push`
+- `tenantRepo` — เพิ่ม `getTenantTokens(tenantId)`: raw token fetch (no cache) + env fallback; อัปเดต `updateTenantIntegrations` รับ token fields + bust 3 Redis keys; `hasFbPage`/`hasLineOa` เช็ค token ด้วย
+- `workers/send-message` — เปลี่ยนจาก `process.env` hardcode → `getTenantTokens(tenantId)` (tenant DB first, env fallback)
+- `PATCH /api/tenant/integrations` (NEW) — OWNER only, อัปเดต fbPageId/fbPageToken/lineOaId/lineChannelToken
+- `settings/page.jsx` — Integrations section: FB + LINE token form พร้อม show/hide toggle, connected badge
+
+---
+
+## [2.2.6] 2026-04-05
+
+### Dev Tooling — Doppler as env SSOT + prisma db push confirmed
+- อัปเดต `CLAUDE.md` เพิ่ม section **Environment Variables** — Doppler เป็น SSOT ของ secrets ทุกตัว
+- Pattern บังคับ: `doppler run -- npx prisma db push` (ไม่ใช่ `npx prisma` โดยตรง)
+- ยืนยัน `doppler run -- npx prisma db push` → "already in sync" — schema ตรงกับ Supabase
+- Prisma Client v5.22.0 regenerated เรียบร้อย
 
 ---
 
@@ -47,8 +105,4 @@
 
 ### Added — FEAT04-inbox: Unified Inbox (conversations API, webhooks, QStash reply, Pusher real-time)
 - `GET /api/conversations` — Redis-cached list (NFR2 < 500ms), version-busted on new message
-- `GET /api/conversations/[id]` — detail view with full message history + customer profile
-- `POST /api/conversations/[id]/reply` — save to DB + enqueue QStash send-message + Pusher event
-- `POST /api/workers/send-message` — QStash worker sends outbound via FB Messenger or LINE push API (NFR3: 5 retries)
-- `POST /api/webhooks/facebook` — inbound: upsert customer+conversation+message + Pusher (NFR1: async < 200ms)
-- `GET /api/webhooks/facebook` —
+- `GET /api/conversations/[id]` —

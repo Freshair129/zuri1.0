@@ -2,9 +2,14 @@ import { getPrisma } from '@/lib/db'
 
 const prisma = getPrisma()
 
+import { isMockMode, MOCK_ADMIN } from '@/lib/mockMode'
+
+
 export async function findByEmail(email) {
+  if (isMockMode && email === MOCK_ADMIN.email) return MOCK_ADMIN
   return prisma.employee.findUnique({ where: { email } })
 }
+
 
 export async function findMany(tenantId, { status = 'ACTIVE' } = {}) {
   return prisma.employee.findMany({

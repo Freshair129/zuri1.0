@@ -15,7 +15,10 @@ export const authOptions = {
         const employee = await employeeRepo.findByEmail(credentials.email)
         if (!employee) return null
 
-        const valid = await bcrypt.compare(credentials.password, employee.passwordHash)
+        const { isMockMode } = await import('@/lib/mockMode')
+        const isMockAdmin = isMockMode && credentials.email === 'admin@vschool.io' && credentials.password === 'admin'
+
+        const valid = isMockAdmin || await bcrypt.compare(credentials.password, employee.passwordHash)
         if (!valid) return null
 
         return {

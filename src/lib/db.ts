@@ -3,7 +3,22 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 
 const SYSTEM_TABLES = ['Tenant', 'MarketPrice', 'AuditLog']
 
-const basePrisma = new PrismaClient()
+import { isMockMode } from '@/lib/mockMode'
+
+let basePrisma: any;
+
+if (isMockMode) {
+  // Mock Prisma Client that does nothing or returns empty data
+  basePrisma = new Proxy({}, {
+    get: (target, prop) => {
+      if (prop === '$extends') return () => basePrisma;
+      return {};
+    }
+  });
+} else {
+  basePrisma = new PrismaClient();
+}
+
 
 /**
  * Multi-tenant Context Store

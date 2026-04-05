@@ -95,9 +95,41 @@ function CartItem({ item, onQty, onRemove }) {
 function PaymentModal({ total, onConfirm, onClose, loading }) {
   const [method, setMethod]       = useState('CASH')
   const [cashInput, setCashInput] = useState('')
+  const [isVerifying, setIsVerifying] = useState(false)
+  const [verifiedData, setVerifiedData] = useState(null)
+  const fileInputRef = useRef(null)
 
-  const cashReceived = parseFloat(cashInput) || 0
+  const cashReceived = parseFloat(cashInput) || (verifiedData?.amount ? verifiedData.amount : 0)
   const change = method === 'CASH' ? Math.max(0, cashReceived - total) : 0
+
+  async function handleFileUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsVerifying(true)
+    setVerifiedData(null)
+    try {
+      const reader = new FileReader()
+      reader.onloadend = async () => {
+        const base64 = reader.result
+        const res = await fetch('/api/payments/verify-slip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64Image: base64, mimeType: file.type }),
+        })
+        const json = await res.json()
+        if (json.data?.isVerified) {
+          setVerifiedData(json.data)
+          if (json.data.amount) setCashInput(json.data.amount.toString())
+        } else {
+          alert('ไม่สามารถตรวจสอบสลิปได้ หรือข้อมูลไม่ถูกต้อง')
+        }
+      }
+      reader.readAsDataURL(file)
+    } finally {
+      setIsVerifying(false)
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -121,7 +153,7 @@ function PaymentModal({ total, onConfirm, onClose, loading }) {
               {PAYMENT_METHODS.map(({ key, label, icon: Icon }) => (
                 <button
                   key={key}
-                  onClick={() => setMethod(key)}
+                  onClick={() => { setMethod(key); setVerifiedData(null); setCashInput(''); }}
                   className={`flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 text-sm font-medium transition-colors ${
                     method === key
                       ? 'border-orange-400 bg-orange-50 text-orange-600'
@@ -134,6 +166,50 @@ function PaymentModal({ total, onConfirm, onClose, loading }) {
               ))}
             </div>
           </div>
+
+          {/* QR Slip Verification */}
+          {method === 'QR' && (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-gray-700">ตรวจสอบสลิป (AI)</p>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept="image/*"
+                className="hidden"
+              />
+              {!verifiedData ? (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isVerifying}
+                  className="w-full py-4 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center gap-2 text-gray-400 hover:border-orange-300 hover:text-orange-500 transition-all"
+                >
+                  {isVerifying ? (
+                    <>
+                      <Loader2 size={24} className="animate-spin text-orange-500" />
+                      <span className="text-xs">กำลังตรวจสอบด้วย AI...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={24} />
+                      <span className="text-xs">อัปโหลดรูปสลิป</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className="bg-green-50 border border-green-100 rounded-xl p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle size={16} className="text-green-500" />
+                    <div>
+                      <p className="text-xs font-bold text-green-700">ยืนยันแล้ว: ฿{formatTHB(verifiedData.amount)}</p>
+                      <p className="text-[10px] text-green-600">{verifiedData.receiverName || 'ไม่ระบุชื่อผู้รับ'}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setVerifiedData(null)} className="text-xs text-green-600 underline">เปลี่ยน</button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Cash change calculator */}
           {method === 'CASH' && (
@@ -156,8 +232,8 @@ function PaymentModal({ total, onConfirm, onClose, loading }) {
           )}
 
           <button
-            onClick={() => onConfirm({ method, cashReceived: cashReceived || undefined })}
-            disabled={loading || (method === 'CASH' && cashInput && cashReceived < total)}
+            onClick={() => onConfirm({ method, cashReceived: cashReceived || undefined, slipData: verifiedData })}
+            disabled={loading || isVerifying || (method === 'CASH' && (!cashInput || cashReceived < total)) || (method === 'QR' && !verifiedData)}
             className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-60 text-white rounded-xl font-semibold text-base flex items-center justify-center gap-2 transition-colors"
           >
             {loading && <Loader2 size={16} className="animate-spin" />}
@@ -171,18 +247,96 @@ function PaymentModal({ total, onConfirm, onClose, loading }) {
 
 // ─── Order Success Toast ──────────────────────────────────────────────────────
 
-function SuccessToast({ orderId, onClose }) {
+function SuccessToast({ orderId, onReceipt, onClose }) {
   useEffect(() => {
-    const t = setTimeout(onClose, 4000)
+    const t = setTimeout(onClose, 5000)
     return () => clearTimeout(t)
   }, [onClose])
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 bg-white border border-green-200 rounded-2xl shadow-xl px-5 py-4 flex items-center gap-3 animate-slide-up">
-      <CheckCircle size={24} className="text-green-500 flex-shrink-0" />
-      <div>
-        <p className="text-sm font-semibold text-gray-900">ชำระเงินสำเร็จ!</p>
-        <p className="text-xs text-gray-500">{orderId}</p>
+    <div className="fixed bottom-6 right-6 z-50 bg-white border border-green-200 rounded-2xl shadow-xl px-5 py-4 flex items-center justify-between gap-6 animate-slide-up">
+      <div className="flex items-center gap-3">
+        <CheckCircle size={24} className="text-green-500 flex-shrink-0" />
+        <div>
+          <p className="text-sm font-semibold text-gray-900">ชำระเงินสำเร็จ!</p>
+          <p className="text-xs text-gray-500">{orderId}</p>
+        </div>
+      </div>
+      <button 
+        onClick={onReceipt}
+        className="text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors"
+      >
+        ดูใบเสร็จ
+      </button>
+    </div>
+  )
+}
+
+function ReceiptModal({ order, onClose }) {
+  if (!order) return null
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm flex flex-col overflow-hidden max-h-[90vh]">
+        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400">ใบเสร็จรับเงิน</h3>
+          <button onClick={onClose}><X size={18} className="text-gray-400" /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-8 text-center font-mono text-sm text-gray-800">
+          <h2 className="text-xl font-bold mb-1">Zuri Platform</h2>
+          <p className="text-xs text-gray-500 mb-6">Tax ID: 0-1234-56789-01-2</p>
+          
+          <div className="flex justify-between text-xs mb-1">
+            <span>เลขที่:</span>
+            <span>{order.orderId}</span>
+          </div>
+          <div className="flex justify-between text-xs mb-4">
+            <span>วันที่:</span>
+            <span>{new Date().toLocaleString('th-TH')}</span>
+          </div>
+          
+          <div className="border-t border-dashed border-gray-300 my-4" />
+          
+          <div className="space-y-2">
+            {order.items?.map((item, i) => (
+              <div key={i} className="flex justify-between text-xs">
+                <span className="text-left flex-1">{item.name} x{item.qty}</span>
+                <span className="ml-2">฿{formatTHB(item.totalPrice)}</span>
+              </div>
+            ))}
+          </div>
+          
+          <div className="border-t border-dashed border-gray-300 my-4" />
+          
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs">
+              <span>รวมเงิน</span>
+              <span>฿{formatTHB(order.subtotalAmount)}</span>
+            </div>
+            {order.discountAmount > 0 && (
+              <div className="flex justify-between text-xs">
+                <span>ส่วนลด</span>
+                <span>-฿{formatTHB(order.discountAmount)}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-bold text-base mt-2">
+              <span>ยอดรวมทั้งสิ้น</span>
+              <span>฿{formatTHB(order.totalAmount)}</span>
+            </div>
+          </div>
+          
+          <div className="mt-8 text-[10px] text-gray-400">
+            <p>ขอบคุณที่ใช้บริการ</p>
+            <p>ZURI — THE AI BUSINESS PLATFORM</p>
+          </div>
+        </div>
+        <div className="p-4 bg-gray-50 border-t border-gray-100">
+          <button 
+            onClick={() => window.print()}
+            className="w-full py-3 bg-gray-800 text-white rounded-xl font-bold flex items-center justify-center gap-2"
+          >
+            พิมพ์ใบเสร็จ
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -206,6 +360,7 @@ export default function POSPage() {
   const [showPayment,  setShowPayment]  = useState(false)
   const [paying,       setPaying]       = useState(false)
   const [successOrder, setSuccessOrder] = useState(null)
+  const [receiptData,  setReceiptData]  = useState(null)
 
   // Search debounce
   const searchTimer = useRef(null)
@@ -269,6 +424,26 @@ export default function POSPage() {
         discount:  0,
       }]
     })
+  }
+
+  function addQuickSale() {
+    const name = window.prompt('ระบุชื่อรายการขายด่วน', 'รายการพิเศษ')
+    if (!name) return
+    const priceStr = window.prompt('ระบุราคาสินค้า', '0')
+    const price = parseFloat(priceStr)
+    if (isNaN(price)) return
+
+    setCart(prev => [
+      ...prev,
+      {
+        id:        crypto.randomUUID(),
+        productId: null,
+        name:      name,
+        unitPrice: price,
+        qty:       1,
+        discount:  0,
+      }
+    ])
   }
 
   function updateQty(itemId, newQty) {
@@ -336,6 +511,7 @@ export default function POSPage() {
 
       setShowPayment(false)
       setSuccessOrder(payJson.data.orderId)
+      setReceiptData(payJson.data)
       clearCart()
     } catch (err) {
       alert(err.message)
@@ -362,9 +538,16 @@ export default function POSPage() {
               className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
           </div>
+          <button 
+            onClick={addQuickSale}
+            className="flex items-center gap-1.5 px-3 py-2 bg-orange-100 text-orange-600 rounded-lg text-sm hover:bg-orange-200 transition-colors font-medium"
+          >
+            <Plus size={14} />
+            ขายด่วน
+          </button>
           <button className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200">
             <BarChart2 size={14} />
-            ยอดวันนี้
+            สรุปยอด
           </button>
         </div>
 
@@ -518,7 +701,19 @@ export default function POSPage() {
 
       {/* Success toast */}
       {successOrder && (
-        <SuccessToast orderId={successOrder} onClose={() => setSuccessOrder(null)} />
+        <SuccessToast 
+          orderId={successOrder} 
+          onReceipt={() => {}} // ReceiptData already set, can just trigger modal
+          onClose={() => setSuccessOrder(null)} 
+        />
+      )}
+
+      {/* Receipt modal */}
+      {receiptData && (
+        <ReceiptModal 
+          order={receiptData} 
+          onClose={() => setReceiptData(null)} 
+        />
       )}
     </div>
   )

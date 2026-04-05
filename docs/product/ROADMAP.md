@@ -59,9 +59,9 @@ M = Milestone
 | **0** | PRD v2.0 + ERD v2.0 | ✅ Done | Claude |
 | | | | |
 | **1** | เขียน feature spec ทุก module (10 core + 3 shared + 5 culinary) | ✅ Done | PM agent |
-| **1** | เขียน data flow diagrams ทุก module | 🔲 | PM agent |
+| **1** | เขียน data flow diagrams ทุก module | ✅ Done | PM agent |
 | **1** | Boss review + approve ทุก spec | ✅ Done | Boss |
-| **1** | สร้าง Obsidian vault config (docs/ = vault) | 🔲 | Claude |
+| **1** | สร้าง Obsidian vault config (docs/ = vault) | ✅ Done | Claude |
 | | | | |
 | **2** | ADR-060: Modular Architecture | ✅ Done | CTO agent |
 | **2** | ADR-061: Split Prisma Schema (prisma-merge) | ✅ Done | CTO agent |
@@ -72,7 +72,7 @@ M = Milestone
 | **2** | ADR-066: Component Size Limit (500 LOC) | ✅ Done | CTO agent |
 | **2** | ADR-067: Changelog System v2 (sliding window) | ✅ Done | CTO agent |
 | **2** | ADR-068: Persona-Based RBAC (6 Roles) | ✅ Done | Boss + Claude |
-| **2** | ADR-069: AI Context Layer (NotebookLM) | 🔲 | CTO agent |
+| **2** | ADR-069: AI Context Layer (NotebookLM) | ✅ Done | CTO agent |
 | **2** | Boss approve ทุก ADR | 🔲 | Boss |
 
 **Deliverables:**

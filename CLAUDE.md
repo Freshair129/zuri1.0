@@ -60,6 +60,12 @@ Zuri is an **AI Business Platform** for Thai service SMEs — starting with culi
 - IDs: follow `id_standards.yaml` (e.g., `CUST-[ULID]`, `EMP-[TYPE]-[DEPT]-[NNN]`)
 - No `readFileSync/writeFileSync` — use `fs.promises`
 
+## Environment Variables
+- **Secret Manager:** [Doppler](https://doppler.com) — SSOT สำหรับ env vars ทุกตัว (dev/staging/prod)
+- **วิธีรัน Prisma:** `doppler run -- npx prisma db push` (ห้ามรัน `npx prisma` โดยตรง — จะไม่เห็น env)
+- **วิธีรัน dev:** `doppler run -- npm run dev`
+- Key vars: `DATABASE_URL`, `DIRECT_URL`, `NEXTAUTH_SECRET`, `GEMINI_API_KEY`, `META_SYSTEM_USER_TOKEN`, `LINE_CHANNEL_ACCESS_TOKEN`, `PUSHER_*`, `UPSTASH_REDIS_*`, `QSTASH_*`
+
 ## NFRs
 - NFR1: Webhook response < 200ms (respond immediately, process async)
 - NFR2: Dashboard API < 500ms (Redis cache)

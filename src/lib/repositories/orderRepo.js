@@ -241,19 +241,22 @@ export async function updateOrderItems(tenantId, id, {
 // ─────────────────────────────────────────────────────────────────────────────
 export async function processPayment(tenantId, id, {
   method,       // CASH | QR | CARD | CREDIT
-  amount,       // amount received (for cash change calc)
   cashReceived,
 }) {
   const order = await prisma.order.findFirst({
     where: { id, tenantId, status: 'PENDING' },
+    include: { items: true },
   })
   if (!order) throw new Error('Order not found or already paid')
 
   const txId = await generateTransactionId()
   const paidAmount = order.totalAmount
 
-  await prisma.$transaction([
-    prisma.transaction.create({
+  const result = await prisma.$transaction(async (tx) => {
+    // 1. Double check inventory (optional) or just proceed to deduct
+    
+    // 2. Create payment transaction
+    await tx.transaction.create({
       data: {
         transactionId: txId,
         tenantId,
@@ -262,8 +265,10 @@ export async function processPayment(tenantId, id, {
         type: 'PAYMENT',
         method,
       },
-    }),
-    prisma.order.update({
+    })
+    
+    // 3. Close Order
+    const updatedOrder = await tx.order.update({
       where: { id },
       data: {
         status: 'PAID',
@@ -271,18 +276,103 @@ export async function processPayment(tenantId, id, {
         paidAmount,
         cashReceived: cashReceived ?? null,
       },
-    }),
-    // Free up table if onsite
-    ...(order.tableId ? [
-      prisma.posTable.update({
+      include: { items: true },
+    })
+
+    // 4. Free up table if onsite
+    if (order.tableId) {
+      await tx.posTable.update({
         where: { id: order.tableId },
         data: { status: 'CLEANING' },
-      }),
-    ] : []),
-  ])
+      })
+    }
+
+    // 5. Automated Inventory Deduction (M2 Task 4.5)
+    // Runs sync within transaction for POS to ensure stock consistency
+    await deductOrderInventory(tenantId, order, tx)
+
+    return updatedOrder
+  })
 
   await bustOrderCache(tenantId)
-  return getOrderById(tenantId, id)
+  return result
+}
+
+/**
+ * Resolves all order items to ingredients (via Recipes) and deducts stock.
+ */
+export async function deductOrderInventory(tenantId, order, tx) {
+  const prismaTx = tx || prisma
+  
+  for (const item of order.items) {
+    if (!item.productId) continue // skip custom items without recipe link
+
+    // Resolve Product -> ProductRecipe -> Recipe -> RecipeIngredients
+    const product = await prismaTx.product.findFirst({
+      where: { id: item.productId, tenantId },
+      include: {
+        recipes: {
+          include: {
+            recipe: {
+              include: { ingredients: true }
+            }
+          }
+        }
+      }
+    })
+
+    if (!product || !product.recipes.length) continue
+
+    for (const prodRecipe of product.recipes) {
+      for (const recipeIngredient of prodRecipe.recipe.ingredients) {
+        const totalToDeduct = recipeIngredient.qty * item.qty
+        
+        // Call FEFO deduction logic
+        // NOTE: Since ingredientRepo.deductFEFO has its own transaction,
+        // we might want to inline it or ensure compatibility.
+        // For now, we perform atomic updates per ingredient.
+        await deductIngredientFEFO(tenantId, recipeIngredient.ingredientId, totalToDeduct, prismaTx)
+      }
+    }
+  }
+}
+
+/**
+ * Inlined version of FEFO deduction that can participate in a parent transaction.
+ */
+async function deductIngredientFEFO(tenantId, ingredientId, totalNeeded, tx) {
+  const ingredient = await tx.ingredient.findFirst({
+    where: { id: ingredientId },
+    include: {
+      lots: {
+        where: { remainingQty: { gt: 0 } },
+        orderBy: { expiresAt: 'asc' },
+      },
+    },
+  })
+
+  if (!ingredient) return
+
+  let remainingToDeduct = totalNeeded
+  for (const lot of ingredient.lots) {
+    if (remainingToDeduct === 0) break
+    const deductFromThisLot = Math.min(lot.remainingQty, remainingToDeduct)
+
+    await tx.ingredientLot.update({
+      where: { id: lot.id },
+      data: {
+        remainingQty: { decrement: deductFromThisLot },
+        status: (lot.remainingQty - deductFromThisLot <= 0) ? 'EXHAUSTED' : 'ACTIVE',
+      },
+    })
+    remainingToDeduct -= deductFromThisLot
+  }
+
+  const actuallyDeducted = totalNeeded - remainingToDeduct
+  await tx.ingredient.update({
+    where: { id: ingredient.id },
+    data: { currentStock: { decrement: actuallyDeducted } },
+  })
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

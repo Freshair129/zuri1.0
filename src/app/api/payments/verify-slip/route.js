@@ -1,44 +1,35 @@
 import { NextResponse } from 'next/server'
-import { getTenantId } from '@/lib/tenant'
+import { withAuth } from '@/lib/auth'
+import { verifyThaiSlip } from '@/lib/ai/slipVerifier'
 
-// POST /api/payments/verify-slip - OCR payment slip image and verify amount
-export async function POST(request) {
-  try {
-    const tenantId = await getTenantId(request)
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const dynamic = 'force-dynamic'
+
+/**
+ * POST /api/payments/verify-slip
+ * Body: { base64Image, mimeType }
+ * 
+ * Verifies a Thai bank transfer slip using Gemini Vision.
+ */
+export const POST = withAuth(
+  async (request, { session }) => {
+    try {
+      const { base64Image, mimeType } = await request.json()
+
+      if (!base64Image) {
+        return NextResponse.json({ error: 'base64Image is required' }, { status: 400 })
+      }
+
+      const result = await verifyThaiSlip(base64Image, mimeType || 'image/jpeg')
+
+      if (!result) {
+        return NextResponse.json({ error: 'AI processing failed' }, { status: 500 })
+      }
+
+      return NextResponse.json({ data: result })
+    } catch (error) {
+      console.error('[Payments/VerifySlip.POST]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
-
-    const formData = await request.formData()
-    const imageFile = formData.get('slip')
-    const expectedAmount = formData.get('amount') // optional: expected amount to validate against
-    const orderId = formData.get('orderId')
-
-    if (!imageFile) {
-      return NextResponse.json({ error: 'slip image is required' }, { status: 400 })
-    }
-
-    // TODO: Upload slip image to temporary storage or convert to base64
-    // TODO: Call OCR service (e.g. Google Vision API or Gemini Vision) to extract:
-    //   - transferAmount
-    //   - transferDate
-    //   - senderBank / senderAccount
-    //   - recipientBank / recipientAccount
-    //   - referenceNumber
-    // TODO: Validate extracted amount matches expectedAmount (with tolerance)
-    // TODO: Check for duplicate slip submission (same referenceNumber)
-    // TODO: If valid, update order payment status via orderRepo.markAsPaid(...)
-
-    const result = {
-      verified: false, // TODO: set from OCR validation logic
-      extractedAmount: null,
-      referenceNumber: null,
-      // TODO: populate remaining fields
-    }
-
-    return NextResponse.json({ data: result })
-  } catch (error) {
-    console.error('[Payments/VerifySlip]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
+  },
+  { domain: 'orders', action: 'W' }
+)

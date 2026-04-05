@@ -26,7 +26,15 @@ export default function SettingsPage() {
   const [wsSuccess, setWsSuccess] = useState(false);
   const [wsError,   setWsError]   = useState(null);
 
-  // Sync form when tenant data loads
+  // Integrations form state
+  const [intForm,    setIntForm]    = useState({ fbPageId: '', fbPageToken: '', lineOaId: '', lineChannelToken: '' });
+  const [intSaving,  setIntSaving]  = useState(false);
+  const [intSuccess, setIntSuccess] = useState(false);
+  const [intError,   setIntError]   = useState(null);
+  const [showFbToken,   setShowFbToken]   = useState(false);
+  const [showLineToken, setShowLineToken] = useState(false);
+
+  // Sync workspace form when tenant data loads
   useEffect(() => {
     if (tenant) {
       setWsForm({
@@ -37,6 +45,28 @@ export default function SettingsPage() {
       });
     }
   }, [tenant]);
+
+  const handleIntSave = async (e) => {
+    e.preventDefault();
+    setIntSaving(true);
+    setIntSuccess(false);
+    setIntError(null);
+    try {
+      const res = await fetch('/api/tenant/integrations', {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(intForm),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Save failed');
+      setIntSuccess(true);
+      setTimeout(() => setIntSuccess(false), 3000);
+    } catch (err) {
+      setIntError(err.message);
+    } finally {
+      setIntSaving(false);
+    }
+  };
 
   const handleWsSave = async (e) => {
     e.preventDefault();
@@ -314,33 +344,100 @@ export default function SettingsPage() {
 
           {/* INTEGRATIONS */}
           {activeSection === 'integrations' && (
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
-              <h2 className="text-base font-semibold text-gray-800">Integrations</h2>
-              {/* TODO: Connect Meta Ads, Google Ads, LINE OA, Stripe, Zapier, etc. */}
-              {[
-                { name: 'Meta Ads', desc: 'Sync campaigns and ad spend', connected: true },
-                { name: 'Google Ads', desc: 'Import conversion data', connected: false },
-                { name: 'LINE Official Account', desc: 'Send messages to students', connected: true },
-                { name: 'Stripe', desc: 'Process online payments', connected: false },
-                { name: 'Zapier', desc: 'Automate workflows', connected: false },
-                { name: 'Google Workspace', desc: 'SSO and Drive integration', connected: false },
-              ].map(({ name, desc, connected }) => (
-                <div key={name} className="flex items-center gap-4 py-3 border-b border-gray-50">
-                  <div className="h-10 w-10 bg-gray-100 rounded-xl flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-800">{name}</p>
-                    <p className="text-xs text-gray-400">{desc}</p>
-                  </div>
-                  <button className={`h-8 px-4 rounded-lg text-xs font-semibold ${
-                    connected
-                      ? 'bg-red-50 text-red-500 hover:bg-red-100'
-                      : 'bg-orange-500 text-white hover:bg-orange-600'
-                  } transition-colors`}>
-                    {connected ? 'Disconnect' : 'Connect'}
-                  </button>
+            <form onSubmit={handleIntSave} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6">
+              <div>
+                <h2 className="text-base font-semibold text-gray-800">Integrations</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Token จะถูกเก็บไว้ใน database และใช้ส่งข้อความออก — ไม่แสดงซ้ำเมื่อบันทึกแล้ว</p>
+              </div>
+
+              {/* Facebook Messenger */}
+              <div className="space-y-3 pb-5 border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-lg bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">f</div>
+                  <p className="text-sm font-semibold text-gray-800">Facebook Messenger</p>
+                  {tenant?.hasFbPage && (
+                    <span className="ml-auto text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Connected</span>
+                  )}
                 </div>
-              ))}
-            </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Facebook Page ID</label>
+                  <input
+                    type="text"
+                    placeholder="เช่น 123456789012345"
+                    value={intForm.fbPageId}
+                    onChange={(e) => setIntForm((p) => ({ ...p, fbPageId: e.target.value }))}
+                    className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Page Access Token</label>
+                  <div className="flex gap-2">
+                    <input
+                      type={showFbToken ? 'text' : 'password'}
+                      placeholder={tenant?.hasFbPage ? '••••••••••••••••••••• (set)' : 'EAAxxxxxxxxxxxxxxx'}
+                      value={intForm.fbPageToken}
+                      onChange={(e) => setIntForm((p) => ({ ...p, fbPageToken: e.target.value }))}
+                      className="flex-1 h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                    <button type="button" onClick={() => setShowFbToken((v) => !v)}
+                      className="h-10 px-3 text-xs text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                      {showFbToken ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* LINE Official Account */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-lg bg-green-100 flex items-center justify-center text-xs font-bold text-green-600">L</div>
+                  <p className="text-sm font-semibold text-gray-800">LINE Official Account</p>
+                  {tenant?.hasLineOa && (
+                    <span className="ml-auto text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Connected</span>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">LINE OA ID</label>
+                  <input
+                    type="text"
+                    placeholder="เช่น @yourlineid"
+                    value={intForm.lineOaId}
+                    onChange={(e) => setIntForm((p) => ({ ...p, lineOaId: e.target.value }))}
+                    className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Channel Access Token</label>
+                  <div className="flex gap-2">
+                    <input
+                      type={showLineToken ? 'text' : 'password'}
+                      placeholder={tenant?.hasLineOa ? '••••••••••••••••••••• (set)' : 'Channel access token จาก LINE Developers'}
+                      value={intForm.lineChannelToken}
+                      onChange={(e) => setIntForm((p) => ({ ...p, lineChannelToken: e.target.value }))}
+                      className="flex-1 h-10 px-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-400"
+                    />
+                    <button type="button" onClick={() => setShowLineToken((v) => !v)}
+                      className="h-10 px-3 text-xs text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                      {showLineToken ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Feedback */}
+              {intError   && <p className="text-sm text-red-500">{intError}</p>}
+              {intSuccess && <p className="text-sm text-green-600">บันทึกสำเร็จ ✓</p>}
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  disabled={intSaving}
+                  className="h-9 px-5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors"
+                >
+                  {intSaving ? 'Saving…' : 'Save Integrations'}
+                </button>
+              </div>
+            </form>
           )}
 
           {/* NOTIFICATIONS */}
@@ -401,4 +498,16 @@ export default function SettingsPage() {
                   <p className="text-xs text-red-400 mt-0.5">
                     Permanently delete this workspace and all data. This cannot be undone.
                   </p>
-       
+                  </div>
+                  <button className="h-9 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition-colors">
+                    Delete Workspace
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+      </div>
+    );
+}
