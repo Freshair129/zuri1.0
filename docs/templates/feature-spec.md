@@ -42,11 +42,9 @@
 
 | Role | Permission |
 |---|---|
-| OWNER, MANAGER | Full Access |
-| SALES | |
-| FINANCE | |
-| KITCHEN | |
-| STAFF | Read only |
+| SLS, AGT | |
+| MGR, ADM | |
+| STF | Read only |
 
 ---
 

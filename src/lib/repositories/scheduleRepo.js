@@ -1,58 +1,81 @@
 import { getPrisma } from '@/lib/db'
-import { updateStock } from '@/lib/repositories/ingredientRepo'
+import { generateScheduleId } from '@/lib/idGenerator'
 
 const prisma = getPrisma()
 
 /**
- * Find schedules within a date range (inclusive).
- * @param {Date|string} from
- * @param {Date|string} to
+ * List schedules for a tenant with optional filtering
  */
-export async function findByDateRange(from, to) {
-  return prisma.schedule.findMany({
-    where: {
-      scheduledAt: {
-        gte: new Date(from),
-        lte: new Date(to),
-      },
-    },
-    orderBy: { scheduledAt: 'asc' },
-  })
-}
+export async function findSchedules(tenantId, { productId, from, to, status } = {}) {
+  const where = {
+    product: { tenantId }
+  }
+  
+  if (productId) where.productId = productId
+  if (status) where.status = status
+  if (from || to) {
+    where.scheduledDate = {}
+    if (from) where.scheduledDate.gte = new Date(from)
+    if (to) where.scheduledDate.lte = new Date(to)
+  }
 
-export async function findById(id) {
-  return prisma.schedule.findUnique({
-    where: { id },
-    include: { items: true },
+  return prisma.courseSchedule.findMany({
+    where,
+    include: {
+      product: { select: { name: true, category: true } }
+    },
+    orderBy: { scheduledDate: 'asc' }
   })
 }
 
 /**
- * Mark a schedule as complete and deduct ingredient stock for each item.
- * Runs inside a transaction to ensure atomicity.
- * @param {string} id - Schedule ID
+ * Get schedule by ID
  */
-export async function complete(id) {
-  return prisma.$transaction(async (tx) => {
-    const schedule = await tx.schedule.findUnique({
-      where: { id },
-      include: { items: true },
-    })
-
-    if (!schedule) throw new Error(`Schedule ${id} not found`)
-    if (schedule.status === 'completed') throw new Error(`Schedule ${id} already completed`)
-
-    // Deduct ingredient stock for each schedule item
-    for (const item of schedule.items) {
-      await updateStock(item.ingredientId, -item.quantity)
+export async function findById(tenantId, id) {
+  return prisma.courseSchedule.findFirst({
+    where: { 
+      id,
+      product: { tenantId }
+    },
+    include: {
+      product: true
     }
+  })
+}
 
-    return tx.schedule.update({
-      where: { id },
-      data: {
-        status: 'completed',
-        completedAt: new Date(),
-      },
-    })
+/**
+ * Create a new class schedule
+ */
+export async function createSchedule(tenantId, data) {
+  const scheduleId = await generateScheduleId()
+  
+  // Verify product belongs to tenant
+  const product = await prisma.product.findFirst({
+    where: { id: data.productId, tenantId }
+  })
+  if (!product) throw new Error('Product not found or access denied')
+
+  return prisma.courseSchedule.create({
+    data: {
+      ...data,
+      scheduleId,
+      scheduledDate: new Date(data.scheduledDate)
+    }
+  })
+}
+
+/**
+ * Update schedule status (e.g. CLOSED, CANCELLED)
+ */
+export async function updateSchedule(tenantId, id, data) {
+  const schedule = await findById(tenantId, id)
+  if (!schedule) throw new Error('Schedule not found or access denied')
+
+  return prisma.courseSchedule.update({
+    where: { id },
+    data: {
+      ...data,
+      updatedAt: new Date()
+    }
   })
 }

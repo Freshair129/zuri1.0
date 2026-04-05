@@ -13,29 +13,29 @@ cost_mode: balanced
 models:
   claude-opus:
     provider: anthropic
-    model: claude-opus-4-6
-    via: claude-code        # ใช้ผ่าน Claude Code CLI (subscription — ไม่มีค่าเพิ่ม)
+    model: claude-opus-4-0520
+    via: claude-code        # ใช้ผ่าน Claude Code CLI (subscription)
     cost_per_1k: high
     strengths: [architecture, review, gotcha-detection, complex-reasoning]
 
   claude-sonnet:
     provider: anthropic
-    model: claude-sonnet-4-6
-    via: claude-code        # ใช้ผ่าน Claude Code CLI (subscription — ไม่มีค่าเพิ่ม)
+    model: claude-sonnet-4-20250514
+    via: claude-code        # ใช้ผ่าน Claude Code CLI (subscription)
     cost_per_1k: medium
     strengths: [code-generation, refactoring, migration, fast-implementation]
 
   gemini-pro:
     provider: google
-    model: gemini-2.0-flash-exp   # alias "pro" → flash-exp (gemini-2.0-pro ยังไม่ available ใน AI Studio)
+    model: gemini-2.0-pro
     via: gemini-cli         # ฟรี
     cost_per_1k: free
     strengths: [spec-writing, analysis, planning, documentation]
 
   gemini-flash:
     provider: google
-    model: gemini-2.0-flash-exp   # confirmed working ใน AI Studio free tier
-    via: google-ai-sdk      # ฟรี ผ่าน GOOGLE_API_KEY
+    model: gemini-2.0-flash
+    via: gemini-cli         # ฟรี
     cost_per_1k: free
     strengths: [boilerplate, tests, comments, simple-tasks]
 
@@ -93,6 +93,6 @@ free:
 # ถ้า model หลักไม่ตอบ → ลองตัวถัดไป
 fallback:
   claude-opus:   claude-sonnet
-  claude-sonnet: gemini-flash   # last resort only
-  gemini-pro:    claude-sonnet  # gemini timeout → claude (ไม่วน loop)
-  gemini-flash:  claude-sonnet  # gemini timeout → claude (ไม่วน loop)
+  claude-sonnet: gemini-pro
+  gemini-pro:    gemini-flash
+  gemini-flash:  gemini-pro

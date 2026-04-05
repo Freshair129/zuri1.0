@@ -240,9 +240,10 @@ lastCampaignAt    DateTime? @map("last_campaign_at")
 
 | Role | สร้าง Campaign | ส่ง Campaign | ดู Report | Opt-out Management |
 |---|---|---|---|---|
-| OWNER, MANAGER | ✅ | ✅ | ✅ | ✅ |
-| SALES | ✅ | ✅ | ✅ | ✅ |
-| STAFF | ✗ | ✗ | ✅ (ของตัวเอง) | ✗ |
+| OWNER | ✅ | ✅ | ✅ | ✅ |
+| MGR | ✅ | ✅ | ✅ | ✅ |
+| MKT | ✅ | ✅ | ✅ | ✅ |
+| SLS | ✗ | ✗ | ✅ (ของตัวเอง) | ✗ |
 | อื่นๆ | ✗ | ✗ | ✗ | ✗ |
 
 ---

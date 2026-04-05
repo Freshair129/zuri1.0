@@ -361,7 +361,7 @@ purpose: "ข้อมูลประกอบ PRD v2.0 — ตลาด, คู
 
 | มิติ | ERP | Zuri |
 |---|---|---|
-| **เป้าหมาย** | Back-office (บัญชี, MANAGER, คลัง) | **Front-office** (ขาย, chat, ลูกค้า, AI) |
+| **เป้าหมาย** | Back-office (บัญชี, HR, คลัง) | **Front-office** (ขาย, chat, ลูกค้า, AI) |
 | **ราคา** | ฿5K-100K/เดือน + implementation ฿50K-3M | **฿1,490-7,990/เดือน, ฿0 implementation** |
 | **เวลา deploy** | 1-12 เดือน | **วันเดียว** |
 | **LINE/FB Inbox** | ไม่มีเลย (0/10 ERP มี) | **First-class** |

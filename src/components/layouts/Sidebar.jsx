@@ -2,175 +2,88 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTenant } from '@/context/TenantContext';
+import {
+  LayoutDashboard,
+  MessageSquare,
+  Users,
+  Megaphone,
+  ShoppingCart,
+  ChefHat,
+  CalendarDays,
+  Settings,
+} from 'lucide-react';
 
-const moduleNavs = {
-  '/inbox': {
-    title: 'Omni-Channel',
-    subtitle: 'Unified Inbox',
-    icon: 'forum',
-    items: [
-      { label: 'Conversations', href: '/inbox', icon: 'chat' },
-    ],
-  },
-  '/crm': {
-    title: 'Customer 360',
-    subtitle: 'Relationship Suite',
-    icon: 'person',
-    items: [
-      { label: 'Directory', href: '/crm', icon: 'groups' },
-    ],
-  },
-  '/pos': {
-    title: 'Point of Sale',
-    subtitle: 'Storefront Ops',
-    icon: 'point_of_sale',
-    items: [
-      { label: 'Terminal', href: '/pos', icon: 'shopping_cart' },
-    ],
-  },
-  '/courses': {
-    title: 'Academy',
-    subtitle: 'Course Catalog',
-    icon: 'school',
-    items: [
-      { label: 'All Courses', href: '/courses', icon: 'auto_stories' },
-    ],
-  },
-  '/schedule': {
-    title: 'Calendar',
-    subtitle: 'Class Schedule',
-    icon: 'calendar_month',
-    items: [
-      { label: 'Calendar View', href: '/schedule', icon: 'event' },
-    ],
-  },
-  '/kitchen': {
-    title: 'Kitchen Ops',
-    subtitle: 'Operational Suite',
-    icon: 'restaurant_menu',
-    items: [
-      { label: 'Overview', href: '/kitchen', icon: 'kitchen' },
-      { label: 'Inventory', href: '/kitchen/stock', icon: 'inventory_2' },
-      { label: 'Recipe Book', href: '/kitchen/recipes', icon: 'menu_book' },
-      { label: 'Procurement', href: '/kitchen/procurement', icon: 'local_shipping' },
-    ],
-  },
-  '/marketing': {
-    title: 'Growth',
-    subtitle: 'Marketing & Ads',
-    icon: 'campaign',
-    items: [
-      { label: 'Dashboard', href: '/marketing', icon: 'analytics' },
-      { label: 'Campaigns', href: '/marketing/campaigns', icon: 'ads_click' },
-      { label: 'Daily Brief', href: '/marketing/daily-brief', icon: 'news' },
-    ],
-  },
-  '/tasks': {
-    title: 'Operations',
-    subtitle: 'Task Board',
-    icon: 'check_circle',
-    items: [
-      { label: 'All Tasks', href: '/tasks', icon: 'checklist' },
-    ],
-  },
-  '/employees': {
-    title: 'HR',
-    subtitle: 'Team Directory',
-    icon: 'badge',
-    items: [
-      { label: 'Staff List', href: '/employees', icon: 'groups' },
-    ],
-  },
-  '/settings': {
-    title: 'Administration',
-    subtitle: 'System Settings',
-    icon: 'settings',
-    items: [
-      { label: 'General', href: '/settings', icon: 'tune' },
-      { label: 'Integrations', href: '/settings/integrations', icon: 'extension' },
-      { label: 'Accounting', href: '/settings/accounting', icon: 'account_balance' },
-      { label: 'AI Assistant', href: '/settings/ai-assistant', icon: 'smart_toy' },
-      { label: 'Billing', href: '/settings/billing', icon: 'credit_card' },
-      { label: 'Roles', href: '/settings/roles', icon: 'admin_panel_settings' },
-    ],
-  },
-  // Defaults to Dashboard
-  '/dashboard': {
-    title: 'Zuri Central',
-    subtitle: 'Business Overview',
-    icon: 'dashboard',
-    items: [
-      { label: 'Overview', href: '/dashboard', icon: 'grid_view' },
-      { label: 'Reports', href: '/dashboard/reports', icon: 'description' },
-    ],
-  },
-};
+const navItems = [
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Inbox', href: '/inbox', icon: MessageSquare },
+  { label: 'CRM', href: '/crm', icon: Users },
+  { label: 'Marketing', href: '/marketing', icon: Megaphone },
+  { label: 'POS', href: '/pos', icon: ShoppingCart },
+  { label: 'Kitchen', href: '/kitchen', icon: ChefHat },
+  { label: 'Schedule', href: '/schedule', icon: CalendarDays },
+];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { tenant, loading } = useTenant();
 
-  // Find the active module config
-  const moduleKey = Object.keys(moduleNavs).find((key) => pathname?.startsWith(key)) || '/dashboard';
-  const config = moduleNavs[moduleKey];
+  const brandColor = tenant?.config?.brandColor || '#4f46e5'; // Default indigo-600
+  const logoUrl = tenant?.config?.logoUrl;
 
   return (
-    <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex flex-col py-6 bg-white/80 dark:bg-[#181c1e]/80 backdrop-blur-xl shadow-[12px_0_40px_rgba(16,24,40,0.06)] z-40">
-      <div className="px-6 mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-              {config.icon}
-            </span>
+    <aside className="flex flex-col w-20 h-screen bg-gray-900 border-r border-gray-800 shrink-0">
+      {/* Logo Section (Dynamic Branding) */}
+      <div className="flex items-center justify-center h-16 border-b border-gray-800">
+        {loading ? (
+          <div className="h-8 w-8 rounded-lg bg-gray-800 animate-pulse" />
+        ) : logoUrl ? (
+          <img src={logoUrl} alt={tenant?.name} className="h-8 w-8 object-contain" />
+        ) : (
+          <div 
+            className="flex items-center justify-center h-10 w-10 rounded-xl text-white font-black text-xl shadow-lg"
+            style={{ backgroundColor: brandColor }}
+          >
+            {tenant?.name?.[0]?.toUpperCase() ?? 'Z'}
           </div>
-          <div>
-            <p className="font-prompt uppercase tracking-widest text-[10px] text-secondary">
-              {config.title}
-            </p>
-            <h2 className="text-[10px] font-black text-secondary uppercase tracking-wider font-prompt">
-              {config.subtitle}
-            </h2>
-          </div>
-        </div>
+        )}
       </div>
 
-      <nav className="flex-1 space-y-1">
-        {config.items.map(({ label, href, icon }) => {
-          const isActive = pathname === href;
+      {/* Nav items */}
+      <nav className="flex-1 flex flex-col items-center gap-1 py-4">
+        {navItems.map(({ label, href, icon: Icon }) => {
+          const isActive = pathname?.startsWith(href);
           return (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-4 py-3 transition-all duration-200 group ${
-                isActive
-                  ? 'text-primary bg-surface-container-low border-r-4 border-primary font-bold'
-                  : 'text-secondary hover:bg-surface-container-low hover:text-primary'
-              }`}
+              title={label}
+              style={isActive ? { backgroundColor: brandColor } : {}}
+              className={`
+                flex flex-col items-center justify-center w-14 h-14 rounded-xl gap-1
+                transition-all text-xs font-medium duration-200
+                ${isActive
+                  ? 'text-white shadow-md scale-105'
+                  : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
+                }
+              `}
             >
-              <span className={`material-symbols-outlined transition-colors ${isActive ? 'text-primary' : 'group-hover:text-primary'}`}>
-                {icon}
-              </span>
-              <span className="font-prompt uppercase tracking-widest text-[10px]">
-                {label}
-              </span>
+              <Icon className="h-5 w-5" />
+              <span className="hidden">{label}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="px-4 mt-auto pt-6 border-t border-outline-variant/15">
+      {/* Settings at bottom */}
+      <div className="flex items-center justify-center h-16 border-t border-gray-800">
         <Link
-          href="/help"
-          className="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-all group"
+          href="/settings"
+          title="Settings"
+          className="flex items-center justify-center w-10 h-10 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
         >
-          <span className="material-symbols-outlined group-hover:text-primary">help</span>
-          <span className="font-prompt uppercase tracking-widest text-[10px]">Help Center</span>
+          <Settings className="h-5 w-5" />
         </Link>
-        <button
-          className="w-full flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-all group"
-        >
-          <span className="material-symbols-outlined group-hover:text-primary">logout</span>
-          <span className="font-prompt uppercase tracking-widest text-[10px]">Logout</span>
-        </button>
       </div>
     </aside>
   );

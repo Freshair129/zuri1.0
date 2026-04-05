@@ -167,15 +167,15 @@ LINE Mini App รองรับ **2 กลุ่มผู้ใช้** ใน 
 
 | Feature | Role | Priority |
 |---|---|---|
-| Daily Sales Brief (อ่านสรุปยอด) | OWNER, MANAGER | P0 |
-| Inbox — ดูและตอบแชท | SALES, MANAGER, OWNER | P0 |
-| Hot Lead alerts + customer profile quick view | SALES, MANAGER, OWNER | P0 |
+| Daily Sales Brief (อ่านสรุปยอด) | OWNER, MGR | P0 |
+| Inbox — ดูและตอบแชท | AGT, SLS, MGR, OWNER | P0 |
+| Hot Lead alerts + customer profile quick view | SLS, MGR, OWNER | P0 |
 | Task — ดู + mark complete | ทุก role | P0 |
-| POS — สร้าง order + รับสลิปผ่านกล้อง | SALES, STAFF | P1 |
-| Approve PO (กดอนุมัติ/ปฏิเสธ) | MANAGER, OWNER, KITCHEN | P1 |
-| CRM — ค้นหาลูกค้า + เปลี่ยน stage | SALES, MANAGER | P1 |
-| Stock quick check | STAFF, MANAGER | P2 |
-| Campaign quick stats | SALES, MANAGER, OWNER | P2 |
+| POS — สร้าง order + รับสลิปผ่านกล้อง | SLS, AGT, STF | P1 |
+| Approve PO (กดอนุมัติ/ปฏิเสธ) | MGR, OWNER, PUR | P1 |
+| CRM — ค้นหาลูกค้า + เปลี่ยน stage | SLS, MGR | P1 |
+| Stock quick check | STF, MGR | P2 |
+| Campaign quick stats | MKT, MGR, OWNER | P2 |
 
 ### 5.3 Architecture
 

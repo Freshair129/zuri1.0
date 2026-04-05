@@ -17,23 +17,31 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
 
   async function handleSubmit(e) {
-    e.preventDefault()
+    if (e) e.preventDefault()
     setError('')
     setLoading(true)
 
-    const result = await signIn('credentials', {
-      email: identity,
-      password,
-      redirect: false,
-    })
+    console.log('[LoginPage] Attempting login for:', identity)
 
-    setLoading(false)
+    try {
+      const result = await signIn('credentials', {
+        email: identity,
+        password,
+        redirect: false,
+      })
 
-    if (result?.error) {
-      setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง / Invalid email or password')
-    } else {
-      router.push(callbackUrl)
-      router.refresh()
+      setLoading(false)
+
+      if (result?.error) {
+        setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง / Invalid email or password')
+      } else {
+        router.push(callbackUrl)
+        router.refresh()
+      }
+    } catch (err) {
+      setLoading(false)
+      setError('เกิดข้อผิดพลาดในการเชื่อมต่อ / Connection error')
+      console.error('[LoginPage]', err)
     }
   }
 
@@ -92,6 +100,7 @@ export default function LoginPage() {
                   required
                   autoComplete="email"
                   disabled={loading}
+                  name="email"
                 />
                 <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#d4a017] transition-colors">person</span>
               </div>
@@ -118,6 +127,7 @@ export default function LoginPage() {
                   required
                   autoComplete="current-password"
                   disabled={loading}
+                  name="password"
                 />
                 <button
                   type="button"

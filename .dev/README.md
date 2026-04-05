@@ -7,44 +7,31 @@
 
 ```
 .dev/
-├── co-dev/              # Multi-agent co-dev system (Antigravity + Gemini CLI)
-│   ├── README.md        # คำสั่งใช้งาน + origin story
-│   ├── cli.py           # Python orchestrator entry point
-│   ├── core/            # Engine: llm.py, gates.py, pipeline.py, state.py
-│   ├── config/
-│   │   ├── agents.yaml  # 9 agents + context_files + model routing
-│   │   ├── router.yaml  # cost modes (quality/balanced/speed/free)
-│   │   ├── gates.yaml   # 15 gate rules
-│   │   ├── settings.yaml
-│   │   └── prompts/     # system prompt per agent (×9)
-│   ├── outputs/         # agent output files (gitignored)
-│   ├── agent-knowledge-graph.html
-│   └── index.html
+├── orchestrator/        # CLI สำหรับ enforce DOC TO CODE workflow
+│   ├── cli.js           # Entry: npx zuri <command>
+│   ├── commands/        # แต่ละ command แยกไฟล์
+│   └── templates/       # Feature spec, ADR, changelog templates
 │
-├── agents/              # Claude Code custom agent skills
-│   └── agent-skills/    # code-reviewer, doc-writer, migration-planner, test-writer
+├── agents/              # Multi-agent config (ไม่ใช่ production code)
+│   ├── claude-skills/   # Claude Code custom skills
+│   ├── agent-skills/    # Other agent skills (Gemini, etc.)
+│   └── AGENT_PROTOCOL.md
 │
-└── templates/           # Document templates (ใช้โดย scripts/)
-    ├── adr.md
-    ├── feature-spec.md
-    └── changelog-entry.md
+├── scripts/             # One-off maintenance scripts
+│   ├── backfill/        # Data backfill scripts
+│   ├── migration/       # DB migration helpers
+│   └── smoke-test.mjs   # Health check
+│
+└── shared-context/      # Agent handover (push to GitHub)
+    ├── GOAL.md           # Current objectives
+    ├── MEMORY.md         # Agent progress log
+    └── CONTEXT_INDEX.yaml
 ```
-
-## Python Scripts (run from project root)
-
-| Script | คำสั่ง | หน้าที่ |
-|--------|--------|---------|
-| `changelog.py` | `python scripts/changelog.py --version vX.Y.Z --severity PATCH --summary "..." --changes "..." --files "..." --tags "..."` | สร้าง changelog entry |
-| `new-adr.py` | `python scripts/new-adr.py "ADR Title"` | สร้าง ADR ใหม่ใน docs/decisions/adrs/ |
-| `new-feature.py` | `python scripts/new-feature.py "Feature Name"` | สร้าง feature spec + flow skeleton |
-| `pre-commit.py` | `python scripts/pre-commit.py` | ตรวจ staged files ก่อน commit (8 rules) |
-| `sync-check.py` | `python scripts/sync-check.py` | ตรวจ docs integrity (ADR frontmatter, spec status, changelog LATEST) |
-| `verify-flow.py` | `python scripts/verify-flow.py docs/product/specs/FEAT-*.md` | ตรวจ spec ครบก่อน implement |
 
 ## External CLI Tools
 
 | Tool | Command | Purpose |
-|------|---------|---------|
+|---|---|---|
 | **NotebookLM CLI** | `nlm` | Research, audio overview, quiz, mind map, slides |
 
 ```bash
@@ -67,6 +54,6 @@ nlm mindmap create <id> --confirm
 ## กฎ
 
 1. **ห้าม import** ไฟล์ใน .dev/ จาก src/ → build จะพัง
-2. **ห้ามเก็บ secrets** → ใช้ .env.local หรือ .dev/co-dev/.env เท่านั้น
-3. **scripts/** อยู่ที่ project root — ไม่ใช่ใน .dev/
-4. **co-dev/outputs/** gitignored — ไม่ push ขึ้น GitHub
+2. **ห้ามเก็บ secrets** → ใช้ .env.local เท่านั้น
+3. **Orchestrator** เป็น standalone Node.js CLI → มี package.json แยก
+4. **shared-context/** push ขึ้น GitHub ได้ → ใช้ย้ายเครื่อง

@@ -137,7 +137,7 @@ sequenceDiagram
 
     alt status == DONE
         Worker->>Worker: formatLINEMessage(dailyBrief)\n  using template from FEAT-DSB §5.1
-        Worker->>DB: getManagerLineIds(tenantId)\n  roles: MANAGER, SALES
+        Worker->>DB: getManagerLineIds(tenantId)\n  roles: MGR, MKT
         DB-->>Worker: lineUserId[]
         loop for each manager
             Worker->>LINE: POST /v2/bot/message/push\n  { to: lineUserId, messages: [formattedBrief] }
@@ -173,7 +173,7 @@ sequenceDiagram
 ### 3.2 LINE Messaging API
 
 - Used exclusively by the notify worker (`/api/workers/daily-brief/notify`)
-- Sends push messages to individual LINE user IDs (MANAGER, SALES role holders with linked LINE accounts)
+- Sends push messages to individual LINE user IDs (MGR, MKT role holders with linked LINE accounts)
 - Message template defined in `FEAT-DSB.md §5.1`
 - LINE channel access token stored per-tenant in credentials store
 
@@ -210,8 +210,8 @@ All reads go directly to PostgreSQL via `dailyBriefRepo` and `customerProfileRep
 | **Inbox (Unified Inbox)** | DSB reads from Inbox | `Conversation` records + `Message` threads for the analysis window (yesterday) |
 | **CRM** | DSB reads from + writes to CRM | Reads `Customer.lifecycleStage` for context; writes inferred `CustomerProfile` demographics back |
 | **AI (Gemini)** | DSB calls Gemini | Conversation analysis, customer profile inference, promo advisor recommendations |
-| **LINE Messaging API** | DSB pushes to LINE | Notify worker sends formatted brief to MANAGER/SALES line accounts |
-| **Auth / RBAC** | DSB respects RBAC | Read access: MANAGER, SALES, DEV. Profile reads: SALES, MANAGER |
+| **LINE Messaging API** | DSB pushes to LINE | Notify worker sends formatted brief to MGR/MKT line accounts |
+| **Auth / RBAC** | DSB respects RBAC | Read access: MGR, MKT, DEV. Profile reads: AGT, SLS, MGR |
 | **Marketing** | No direct dependency | Ad attribution in brief uses `Conversation.firstTouchAdId` — same field as Marketing module |
 
 ### Data lineage
@@ -224,5 +224,5 @@ Inbox (Conversation + Messages)
         │           └── CustomerProfile (merge — never downgrade)
         └── DailyBrief (aggregate, status=DONE)
               └── Notify Worker (08:00 ICT)
-                    └── LINE Messaging API → MANAGER / SALES
+                    └── LINE Messaging API → MGR / MKT
 ```

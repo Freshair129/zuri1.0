@@ -1,115 +1,10 @@
 # Zuri Platform — Technical Specification
 
-> Version: 1.1.0
-> Date: 2026-04-04
+> Version: 1.0.0
+> Date: 2026-03-27
+> Origin: ZURI-v1 (ACTIVE)
 > Owner: Claude (Lead Architect)
 > Companion: docs/product/PRD.md (product requirements)
-
----
-
-## 0. System Diagram
-
-```mermaid
-flowchart TB
-    subgraph Client["Client (Browser)"]
-        Next[Next.js 14 App Router]
-        TW[Tailwind CSS]
-        FM[Framer Motion]
-        LU[Lucide Icons]
-        RC[Recharts]
-        PJS[pusher-js]
-    end
-
-    subgraph Vercel["Vercel (Serverless)"]
-        API[API Routes]
-        MW[Middleware<br>tenant + auth]
-        REPO[Repositories]
-        WH[Webhooks<br>FB + LINE]
-        WK[Workers<br>QStash cron]
-    end
-
-    subgraph External["External Services"]
-        SB[(Supabase<br>PostgreSQL)]
-        RD[(Upstash Redis<br>Cache)]
-        QS[QStash<br>Queue]
-        PS[Pusher<br>Realtime]
-        GM[Gemini 2.0 Flash<br>AI]
-        META[Meta Graph API]
-        LINE[LINE Messaging API]
-    end
-
-    Next --> MW --> API --> REPO --> SB
-    API --> RD
-    API --> GM
-    WH --> REPO
-    QS --> WK --> REPO
-    QS --> META
-    QS --> LINE
-    PS --> PJS
-    API --> PS
-```
-
-## 0.1 Critical Data Flow
-
-```mermaid
-flowchart LR
-    UI[UI/Pages] -->|reads| API[API Routes]
-    API -->|calls| REPO[Repositories]
-    REPO -->|queries| DB[(Database)]
-
-    WH[Webhooks] -->|writes| DB
-    WK[QStash Workers] -->|syncs| DB
-    META[Meta API] -.->|NEVER from UI| UI
-
-    style META fill:#f99,stroke:#333
-```
-
-**กฎ:** UI reads from DB only — ห้าม call Meta/LINE API จาก UI หรือ API routes โดยตรง
-
-## 0.2 Multi-Tenant Flow
-
-```mermaid
-flowchart TD
-    REQ[Request] --> MW[Middleware]
-    MW --> |resolve tenant| TID[x-tenant-id header]
-    TID --> API[API Route]
-    API --> REPO[Repository]
-    REPO --> |WHERE tenant_id = ?| DB[(Database)]
-
-    subgraph Tenants
-        T1[V School<br>10000000-...-0001]
-        T2[School B<br>20000000-...-0002]
-        T3[School C<br>30000000-...-0003]
-    end
-```
-
-## 0.3 Auth Flow
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant NA as NextAuth
-    participant DB as Database
-    participant API as API Route
-
-    U->>NA: Login (email + password)
-    NA->>DB: Verify credentials (bcrypt)
-    DB-->>NA: User + roles
-    NA-->>U: JWT token (session)
-    U->>API: Request + JWT
-    API->>API: getServerSession()
-    API->>API: can(roles, domain, action)
-    API-->>U: Response
-```
-
-## 0.4 NFR Summary
-
-| NFR | Target | How |
-|---|---|---|
-| NFR1 | Webhook < 200ms | Respond 200 first, process async via QStash |
-| NFR2 | Dashboard < 500ms | Upstash Redis cache (TTL 300s) |
-| NFR3 | Worker retry >= 5x | throw error, let QStash retry |
-| NFR5 | No P2002 race | prisma.$transaction for identity upsert |
 
 ---
 
@@ -140,7 +35,7 @@ zuri/
 │   │   │   ├── auth/           # NextAuth handlers
 │   │   │   ├── conversations/  # Inbox + reply
 │   │   │   ├── customers/      # CRM
-│   │   │   ├── employees/      # MANAGER
+│   │   │   ├── employees/      # HR
 │   │   │   ├── marketing/      # Ads sync + dashboard
 │   │   │   ├── orders/         # POS + billing
 │   │   │   ├── tasks/          # Task management
@@ -244,10 +139,11 @@ Login → NextAuth (credentials provider)
      → session ใน cookie (httpOnly, secure)
 ```
 
-### 5.2 Roles (6 + 1)
+### 5.2 Roles (12 + OWNER)
 
 ```
-DEV · OWNER · MANAGER · SALES · KITCHEN · FINANCE · STAFF
+DEV · TEC · MGR · MKT · HR · PUR · PD · ADM · ACC · SLS · AGT · STF
++ OWNER (read-only, multi-tenant admin)
 ```
 
 ### 5.3 Permission Check
@@ -313,8 +209,7 @@ Node:       18.x (LTS)
 |---|---|
 | Product Requirements | `docs/product/PRD.md` |
 | Feature Specs | `docs/product/specs/FEAT-*.md` |
+| Architecture Overview | `docs/architecture/system-overview.md` |
 | DB Schema | `prisma/schema.prisma` |
 | Config SSOT | `system_config.yaml` |
 | ID Standards | `id_standards.yaml` |
-| Project Map | `docs/PROJECT_MAP.md` |
-                                                       

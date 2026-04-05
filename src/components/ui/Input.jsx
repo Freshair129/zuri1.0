@@ -10,37 +10,35 @@ export default function Input({
   ...props
 }) {
   return (
-    <div className="w-full relative group">
+    <div className="w-full">
       {label && (
-        <label htmlFor={id} className="block font-label text-[0.65rem] uppercase tracking-widest text-secondary mb-1 ml-1 group-focus-within:text-primary transition-colors">
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
           {label}
-          {required && <span className="text-error ml-1">*</span>}
+          {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       <div className="relative">
         {Icon && (
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Icon className="h-5 w-5 text-outline group-focus-within:text-primary transition-colors" />
+            <Icon className="h-4 w-4 text-gray-400" />
           </div>
         )}
         <input
           id={id}
           className={`
-            block w-full bg-surface-container-low text-on-surface font-body
-            placeholder:text-outline-variant transition-all duration-300
-            border-0 border-b-2 
-            focus:ring-0 focus:outline-none focus:bg-surface-container
-            disabled:bg-surface disabled:text-outline disabled:cursor-not-allowed disabled:border-b-outline-variant/30
-            ${error ? 'border-b-error' : 'border-b-outline-variant focus:border-b-primary'}
-            ${Icon ? 'pl-11 pr-3 py-3' : 'px-3 py-3'}
-            rounded-t-md rounded-b-none
+            block w-full rounded-lg border bg-white text-sm text-gray-900
+            placeholder:text-gray-400 transition-colors
+            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+            disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed
+            ${error ? 'border-red-400 focus:ring-red-500' : 'border-gray-300'}
+            ${Icon ? 'pl-10 pr-3 py-2' : 'px-3 py-2'}
             ${className}
           `}
           {...props}
         />
       </div>
       {error && (
-        <p className="mt-1 text-xs text-error font-prompt font-light ml-1">{error}</p>
+        <p className="mt-1 text-xs text-red-600">{error}</p>
       )}
     </div>
   );

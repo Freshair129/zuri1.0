@@ -13,7 +13,6 @@ out/
 
 # Vercel
 .vercel
-docs/devtools/
 
 # Build
 *.tsbuildinfo

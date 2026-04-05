@@ -31,7 +31,7 @@ owns:
   hooks: []
 
 depends_on:
-  - auth: session + role guard (MANAGER, DEV, KITCHEN)
+  - auth: session + role guard (MGR, DEV, TEC)
   - crm: Customer model, lifecycleStage for segmentation context
   - inbox: Conversation + messages as input for Gemini analysis
   - ai: Gemini 2.0 Flash for NL analysis, summarization, and profiling

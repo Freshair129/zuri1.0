@@ -16,7 +16,6 @@
 | DB schema | `prisma/schema.prisma` |
 | Incident / gotcha rules | [[gotchas/*]] |
 | Milestone / roadmap | [[product/ROADMAP]] |
-| วิธีทำงานข้ามแพลตฟอร์ม | [[guide/co-dev-workflow]] |
 
 ---
 
@@ -57,9 +56,9 @@
 ## Architecture
 
 ### Overview
-- [[architecture/tech-spec|Tech Spec]] — Stack diagram, API design, RBAC, data flows, integrations
+- [[architecture/system-overview|System Overview]] — Tech stack diagram
+- [[architecture/tech-spec|Tech Spec]] — Stack, API design, RBAC, integrations
 - [[architecture/database-erd/full-schema|Database ERD]] — Full schema + ERD
-- [[architecture/WEBHOOK_EVENT_CATALOG|Webhook & Event Catalog]] — Inbound webhooks, Pusher events, QStash jobs
 
 ### Data Flows (11 modules)
 [[architecture/data-flows/crm|CRM]] · [[architecture/data-flows/inbox|Inbox]] · [[architecture/data-flows/pos|POS]] · [[architecture/data-flows/marketing|Marketing]] · [[architecture/data-flows/dsb|DSB]] · [[architecture/data-flows/enrollment|Enrollment]] · [[architecture/data-flows/kitchen|Kitchen]] · [[architecture/data-flows/tasks|Tasks]] · [[architecture/data-flows/auth|Auth]] · [[architecture/data-flows/ai|AI]] · [[architecture/data-flows/multi-tenant|Multi-Tenant]]
@@ -85,7 +84,7 @@
 | [[decisions/adrs/ADR-066-component-size-limit\|ADR-066]] | Component Size Limit | ✅ Done |
 | [[decisions/adrs/ADR-067-changelog-system-v2\|ADR-067]] | Changelog System v2 | ✅ Done |
 | [[decisions/adrs/ADR-068-persona-based-rbac\|ADR-068]] | Persona-Based RBAC (6 roles) | ✅ Done |
-| [[decisions/adrs/ADR-069-ai-context-layer-notebooklm\|ADR-069]] | AI Context Layer (NotebookLM) | ✅ Done |
+| ADR-069 | NLM Notebook Architecture | 🔲 Pending |
 
 ---
 
@@ -111,4 +110,7 @@
 
 - [[guide/DEV_SETUP|Dev Setup]] — Local dev environment
 - [[CHANGELOG_SYSTEM|Changelog System]] — How to write changelogs
-- [
+
+---
+
+#zuri #home

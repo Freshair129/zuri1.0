@@ -11,14 +11,12 @@ agents:
     role: "CTO / Lead Architect"
     goal: "ตัดสินใจ architecture, เขียน ADR, review สุดท้าย, guard gotchas"
     llm_task: architecture
-    model_override: gemini-pro     # ฟรีผ่าน GOOGLE_AI_API_KEY (AI Studio) — ไม่เสียเงินเพิ่ม
+    model_override: claude-opus    # บังคับ Opus เสมอ ไม่ว่า cost_mode
     allow_delegation: true
     human_gate: true
-    tool_use: true                 # Phase C: Enable dynamic discovery (ต้องการ GOOGLE_AI_API_KEY)
 
     # ── Domain Ownership ──
-    domain: ALL                   # cross-cutting — ดูแลทุก domain
-    domains: ALL                   
+    domains: ALL                   # cross-cutting — ดูแลทุก domain
     modules:
       - core/*                     # ทุก core module
       - shared/*                   # ทุก shared module
@@ -38,7 +36,12 @@ agents:
 
     context_files:
       - CLAUDE.md
+      - docs/gotchas/README.md
+      - docs/gotchas/multi-tenant.md
+      - docs/gotchas/dev-process.md
+      - prisma/schema.prisma
       - system_config.yaml
+      - docs/zuri/RESTRUCTURE_PLAN.md
     skills:
       - verify-adr
       - domain-infra
@@ -49,10 +52,8 @@ agents:
     llm_task: review
     allow_delegation: false
     human_gate: false
-    tool_use: true                 # Phase C: Enable dynamic discovery
 
     # ── Domain Ownership ──
-    domain: ALL
     domains: ALL                   # review ทุก domain
     modules:
       - core/*
@@ -74,7 +75,8 @@ agents:
 
     context_files:
       - CLAUDE.md
-      - system_config.yaml
+      - docs/gotchas/
+      - .dev/agents/AGENT_PROTOCOL.md
     skills:
       - verify-adr
       - code-reviewer
@@ -91,7 +93,6 @@ agents:
     human_gate: false
 
     # ── Domain Ownership ──
-    domain: ALL                    # Backend needs broad visibility or runtime resolution
     domains:
       - api-routes
       - repositories
@@ -130,7 +131,7 @@ agents:
 
     context_files:
       - CLAUDE.md
-      - docs/schema-slices/{domain}
+      - prisma/schema.prisma
       - system_config.yaml
       - id_standards.yaml
       - docs/gotchas/webhook-serverless.md
@@ -156,7 +157,6 @@ agents:
     human_gate: false
 
     # ── Domain Ownership ──
-    domain: [inbox, crm, pos, marketing, enrollment]
     domains:
       - pages
       - components
@@ -196,7 +196,6 @@ agents:
     context_files:
       - CLAUDE.md
       - system_config.yaml
-      - docs/schema-slices/{domain}
       - src/lib/permissionMatrix.js
       - docs/gotchas/database-identity.md  # dbId vs id
     skills:
@@ -219,12 +218,10 @@ agents:
     role: "Product Manager"
     goal: "แปลง feature request → user stories, acceptance criteria, data flow"
     llm_task: spec_writing
-    model_override: gemini-flash    # ฟรี ผ่าน GOOGLE_API_KEY — Boss review ตามอยู่แล้ว
     allow_delegation: false
     human_gate: false
 
     # ── Domain Ownership ──
-    domain: [inbox, crm, pos, marketing]
     domains:
       - feature-specs
       - user-stories
@@ -247,15 +244,13 @@ agents:
     parallel_with: null
 
     context_files:
-      - CLAUDE.md
-      - docs/product/PRD.md
+      - docs/zuri/RESTRUCTURE_PLAN.md
       - system_requirements.yaml
       - system_config.yaml
-      - docs/schema-slices/{domain}
       - .dev/orchestrator/templates/feature-spec.md
     skills:
       - doc-writer
-    output_to: "docs/product/specs/"
+    output_to: "docs/product/features/"
 
   qa:
     role: "QA Engineer"
@@ -265,7 +260,6 @@ agents:
     human_gate: false
 
     # ── Domain Ownership ──
-    domain: ALL
     domains:
       - unit-tests
       - integration-tests
@@ -295,7 +289,7 @@ agents:
 
     context_files:
       - CLAUDE.md
-      - docs/schema-slices/{domain}
+      - prisma/schema.prisma
       - docs/gotchas/database-identity.md
       - docs/gotchas/webhook-serverless.md
     skills:
@@ -310,29 +304,26 @@ agents:
     role: "Documentation Writer"
     goal: "เขียน feature specs, ADRs, changelogs, gotchas ตาม templates"
     llm_task: documentation
-    model_override: gemini-flash    # ฟรี ผ่าน GOOGLE_API_KEY — Boss review ตามอยู่แล้ว
     allow_delegation: false
     human_gate: false
 
     # ── Domain Ownership ──
-    domain: ALL
     domains:
       - documentation
       - changelogs
       - gotchas
     modules:
-      - docs/product/specs/        # feature specs
-      - docs/product/flows/        # flow diagrams
-      - docs/decisions/adrs/       # architecture decision records
+      - docs/product/              # feature specs, flows
+      - docs/adr/                  # architecture decision records
       - docs/gotchas/              # known issues
-      - docs/guide/                # how-to guides
+      - docs/guides/               # how-to guides
       - changelog/                 # CL-*.md entries
     responsibility:
       - "เขียน/อัปเดต feature specs"
       - "เขียน ADR drafts (CTO approve)"
       - "เขียน changelog entries (sliding window)"
       - "เขียน gotchas เมื่อเจอ issue ใหม่"
-      - "อัปเดต docs/HOME.md"
+      - "อัปเดต CONTEXT_INDEX.yaml"
       - "Sync docs หลัง implement"
 
     # ── Dependencies ──
@@ -344,8 +335,7 @@ agents:
     context_files:
       - .dev/orchestrator/templates/
       - docs/gotchas/README.md
-      - docs/HOME.md
-      - docs/schema-slices/{domain}
+      - .dev/shared-context/CONTEXT_INDEX.yaml
     skills:
       - doc-writer
       - sync-docs
@@ -402,7 +392,6 @@ agents:
     human_gate: false
 
     # ── Domain Ownership ──
-    domain: ALL
     domains:
       - migration
       - refactoring
@@ -429,9 +418,9 @@ agents:
     parallel_with: null
 
     context_files:
+      - docs/zuri/RESTRUCTURE_PLAN.md
       - CLAUDE.md
-      - docs/PROJECT_MAP.md
-      - docs/schema-slices/{domain}
+      - prisma/schema.prisma
       - id_standards.yaml
     skills:
       - migration-planner
@@ -485,7 +474,7 @@ agents:
 #   shared/audit              │ ●       │         │ ●   │
 #   industry/culinary/courses │ ○       │ ●       │ ●   │ ●
 #   industry/culinary/recipes │ ○       │ ●       │ ●   │ ●
-#   industry/culinary/kitchen │ ○       │ ●       │ ●      │ ●
+#   industry/culinary/kitchen │ ○       │ ●       │ ●   │ ●
 #   industry/culinary/certs   │ ○       │ ●       │ ●   │ ●
 #   industry/culinary/pkgs    │ ○       │ ●       │ ●   │ ●
 #   components/ui             │         │ ●       │     │

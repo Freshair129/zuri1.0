@@ -249,10 +249,13 @@ ROAS calculation:
 
 | Role | Dashboard | Campaign Table | Demographics | Attribution | Sync Manual | Export |
 |---|---|---|---|---|---|---|
-| **OWNER, MANAGER** | อ่าน | อ่าน | อ่าน | อ่าน | กด sync | Phase 2 |
-| **SALES** | อ่าน | อ่าน | อ่าน | อ่าน | กด sync | Phase 2 |
-| **FINANCE** | อ่าน (spend/revenue) | อ่าน spend เท่านั้น | ไม่เห็น | อ่าน | ไม่ได้ | Phase 2 |
-| **STAFF, KITCHEN** | ไม่เห็น | ไม่เห็น | ไม่เห็น | ไม่เห็น | ไม่ได้ | — |
+| **OWNER** | อ่าน | อ่าน | อ่าน | อ่าน | กด sync | Phase 2 |
+| **MGR** | อ่าน | อ่าน | อ่าน | อ่าน | กด sync | Phase 2 |
+| **MKT** | อ่าน | อ่าน | อ่าน | อ่าน | กด sync | Phase 2 |
+| **SLS** | อ่าน (summary only) | ไม่เห็น spend | ไม่เห็น | อ่าน (attributed orders ของตัวเอง) | ไม่ได้ | — |
+| **ADM** | อ่าน | อ่าน | อ่าน | อ่าน | ไม่ได้ | — |
+| **ACC** | อ่าน (spend/revenue) | อ่าน spend เท่านั้น | ไม่เห็น | อ่าน | ไม่ได้ | Phase 2 |
+| **AGT, STF, HR, PUR, PD, TEC** | ไม่เห็น | ไม่เห็น | ไม่เห็น | ไม่เห็น | ไม่ได้ | — |
 
 > ใช้ `can(roles, 'marketing', 'read')` จาก `src/lib/permissionMatrix.js` ก่อน render ทุก component
 
@@ -341,7 +344,7 @@ ROAS calculation:
 - **ADR-050:** MCP Server for Meta Ads AI Tools
 - **FEAT04-INBOX.md** — `firstTouchAdId` ตั้งค่าใน webhook handler ของ Inbox
 - **FEAT06-POS.md** — orders ที่ใช้ใน ROAS calculation
-- **FEAT11-AI-ASSISTANT.md** — AI สามารถ query marketing data ผ่าน NL2SQL (role: SALES or MANAGER)
+- **FEAT11-AI-ASSISTANT.md** — AI สามารถ query marketing data ผ่าน NL2SQL (role: MKT)
 - `src/lib/repositories/marketingRepo.js` — repository หลักของ module นี้
 - `src/app/api/workers/sync-hourly/route.js` — QStash worker สำหรับ sync Meta Ads data
 - `prisma/schema.prisma` — models: Campaign, AdSet, Ad, AdDailyMetric, AdHourlyMetric, AdDailyDemographic, AdDailyPlacement, AdCreative, AdActivity, AdLiveStatus, AdsOptimizeRequest

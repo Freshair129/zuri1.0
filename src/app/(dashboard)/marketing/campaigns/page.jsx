@@ -1,145 +1,344 @@
-'use client';
+'use client'
 
-// Marketing — Campaign list page
-// Full table of all campaigns across channels with filtering, sorting, and status management.
+/**
+ * Marketing — Campaigns page (core/marketing FEAT09)
+ * Sortable campaign table with 3-level drill-down: Campaign → AdSet → Ad
+ * All data from /api/marketing/campaigns — never direct Meta API.
+ */
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react'
+import { ChevronDown, ChevronRight, ArrowUpDown, ArrowLeft, Search } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
-const CHANNEL_FILTERS = ['All Channels', 'Meta', 'Google', 'LINE OA', 'TikTok', 'Email', 'SMS'];
-const STATUS_FILTERS = ['All', 'Active', 'Paused', 'Completed', 'Draft'];
+const RANGES = ['7d', '30d', '90d']
+const STATUSES = ['', 'ACTIVE', 'PAUSED', 'ARCHIVED']
+
+function fmt(n, { type = 'number', decimals = 0 } = {}) {
+  if (n == null) return '—'
+  if (type === 'currency') return `฿${Number(n).toLocaleString('th-TH', { minimumFractionDigits: decimals })}`
+  if (type === 'pct')      return `${Number(n).toFixed(decimals)}%`
+  if (type === 'x')        return `${Number(n).toFixed(decimals)}x`
+  return Number(n).toLocaleString('th-TH', { minimumFractionDigits: decimals })
+}
+
+function StatusBadge({ status }) {
+  const map = {
+    ACTIVE:   'bg-green-100 text-green-700',
+    PAUSED:   'bg-yellow-100 text-yellow-700',
+    ARCHIVED: 'bg-gray-100 text-gray-500',
+    ENABLED:  'bg-green-100 text-green-700',
+  }
+  return (
+    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${map[status] ?? 'bg-gray-100 text-gray-500'}`}>
+      {status || '—'}
+    </span>
+  )
+}
+
+function SortHeader({ label, field, sortBy, sortDir, onSort }) {
+  const active = sortBy === field
+  return (
+    <th
+      className="px-4 py-2.5 text-right cursor-pointer hover:bg-gray-100 select-none"
+      onClick={() => onSort(field)}
+    >
+      <span className="inline-flex items-center gap-1 justify-end text-xs font-medium text-gray-500 uppercase tracking-wide">
+        {label}
+        <ArrowUpDown className={`h-3 w-3 ${active ? 'text-orange-500' : 'text-gray-300'}`} />
+      </span>
+    </th>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AdSet sub-row
+function AdSetRow({ tenantId, adSetId, range, depth = 1 }) {
+  const [expanded, setExpanded] = useState(false)
+  const [ads, setAds]           = useState([])
+  const [loading, setLoading]   = useState(false)
+  const [row, setRow]           = useState(null)
+
+  // Fetch ad-level rows on expand
+  const loadAds = useCallback(async () => {
+    if (ads.length > 0) return
+    setLoading(true)
+    try {
+      const data = await fetch(`/api/marketing/campaigns?drill=ads&adset_id=${adSetId}&range=${range}`).then(r => r.json())
+      setAds(Array.isArray(data) ? data : [])
+    } finally {
+      setLoading(false)
+    }
+  }, [adSetId, range, ads.length])
+
+  const toggle = () => {
+    setExpanded(e => !e)
+    if (!expanded) loadAds()
+  }
+
+  if (!row) return null  // rendered via parent map
+
+  return null  // placeholder — AdSet rows rendered inside CampaignRow
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function CampaignsPage() {
-  const [channel, setChannel] = useState('All Channels');
-  const [status, setStatus] = useState('All');
+  const router = useRouter()
+  const [range, setRange]         = useState('30d')
+  const [status, setStatus]       = useState('')
+  const [search, setSearch]       = useState('')
+  const [campaigns, setCampaigns] = useState([])
+  const [loading, setLoading]     = useState(true)
+  const [sortBy, setSortBy]       = useState('spend')
+  const [sortDir, setSortDir]     = useState('desc')
+
+  // Drill-down state: { [campaignId]: adsets[] | null }
+  const [adSets, setAdSets]   = useState({})
+  const [adRows, setAdRows]   = useState({})         // { [adSetId]: ads[] }
+  const [expanded, setExpanded] = useState({})       // { [id]: boolean }
+  const [drillLoading, setDrillLoading] = useState({})
+
+  const fetchCampaigns = useCallback(async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({ range })
+      if (status) params.set('status', status)
+      const data = await fetch(`/api/marketing/campaigns?${params}`).then(r => r.json())
+      setCampaigns(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('[campaigns/page]', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [range, status])
+
+  useEffect(() => { fetchCampaigns() }, [fetchCampaigns])
+
+  // Sort campaigns
+  const sorted = [...campaigns]
+    .filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => {
+      const v = sortDir === 'asc' ? 1 : -1
+      return (a[sortBy] > b[sortBy] ? 1 : -1) * v
+    })
+
+  const handleSort = (field) => {
+    if (sortBy === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortBy(field); setSortDir('desc') }
+  }
+
+  const toggleCampaign = async (campId) => {
+    const next = !expanded[campId]
+    setExpanded(e => ({ ...e, [campId]: next }))
+    if (next && !adSets[campId]) {
+      setDrillLoading(l => ({ ...l, [campId]: true }))
+      try {
+        const data = await fetch(`/api/marketing/campaigns?drill=adsets&campaign_id=${campId}&range=${range}`).then(r => r.json())
+        setAdSets(a => ({ ...a, [campId]: Array.isArray(data) ? data : [] }))
+      } finally {
+        setDrillLoading(l => ({ ...l, [campId]: false }))
+      }
+    }
+  }
+
+  const toggleAdSet = async (adSetId) => {
+    const key = `as-${adSetId}`
+    const next = !expanded[key]
+    setExpanded(e => ({ ...e, [key]: next }))
+    if (next && !adRows[adSetId]) {
+      setDrillLoading(l => ({ ...l, [key]: true }))
+      try {
+        const data = await fetch(`/api/marketing/campaigns?drill=ads&adset_id=${adSetId}&range=${range}`).then(r => r.json())
+        setAdRows(a => ({ ...a, [adSetId]: Array.isArray(data) ? data : [] }))
+      } finally {
+        setDrillLoading(l => ({ ...l, [key]: false }))
+      }
+    }
+  }
+
+  const colHeaders = [
+    { label: 'Spend',    field: 'spend'   },
+    { label: 'Revenue',  field: 'revenue' },
+    { label: 'ROAS',     field: 'roas'    },
+    { label: 'CTR',      field: 'ctr'     },
+    { label: 'Clicks',   field: 'clicks'  },
+    { label: 'Leads',    field: 'leads'   },
+    { label: 'CPL',      field: 'cpl'     },
+  ]
+
+  const renderMetricCells = (row) => (
+    <>
+      <td className="px-4 py-2.5 text-right text-sm font-medium text-gray-800">{fmt(row.spend, { type: 'currency' })}</td>
+      <td className="px-4 py-2.5 text-right text-sm text-green-700">{fmt(row.revenue, { type: 'currency' })}</td>
+      <td className="px-4 py-2.5 text-right text-sm">
+        <span className={`font-semibold ${row.roas >= 3 ? 'text-green-600' : row.roas >= 1 ? 'text-yellow-600' : 'text-red-500'}`}>
+          {fmt(row.roas, { type: 'x', decimals: 2 })}
+        </span>
+      </td>
+      <td className="px-4 py-2.5 text-right text-sm text-gray-600">{fmt(row.ctr, { type: 'pct', decimals: 2 })}</td>
+      <td className="px-4 py-2.5 text-right text-sm text-gray-600">{fmt(row.clicks)}</td>
+      <td className="px-4 py-2.5 text-right text-sm text-gray-600">{fmt(row.leads)}</td>
+      <td className="px-4 py-2.5 text-right text-sm text-gray-600">{fmt(row.cpl, { type: 'currency' })}</td>
+    </>
+  )
 
   return (
-    <div className="p-8 space-y-8 bg-surface min-h-[calc(100vh-64px)]">
+    <div className="p-6 space-y-5">
 
-      {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div className="ornate-lead">
-          <span className="font-label uppercase tracking-[0.2em] text-xs text-primary font-bold">Growth Intelligence</span>
-          <h1 className="text-3xl font-extrabold text-on-surface font-headline mt-1">Campaigns</h1>
-          <p className="text-sm text-secondary font-body mt-0.5">All marketing campaigns across channels</p>
-        </div>
-        <div className="flex gap-3">
-          {/* New campaign wizard button */}
-          <button className="h-10 px-6 gold-gradient rounded-xl font-label text-xs uppercase font-bold tracking-widest text-[#0B2D5E] shadow-sm hover:shadow-floating transition-all">
-            New Campaign
-          </button>
-        </div>
-      </div>
-
-      {/* Filters toolbar */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* search by campaign name */}
-        <div className="flex-1 h-12 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center px-4 gap-3 focus-within:border-primary transition-colors hover:shadow-floating">
-          <span className="material-symbols-outlined text-outline">search</span>
-          <div className="h-4 w-40 bg-outline-variant/20 rounded" />
-        </div>
-
-        {/* Channel filter */}
-        <select
-          value={channel}
-          onChange={(e) => setChannel(e.target.value)}
-          className="h-12 px-4 bg-surface-container-lowest border border-outline-variant/30 rounded-xl text-[10px] font-label font-bold uppercase tracking-widest text-secondary focus:outline-none focus:border-primary cursor-pointer hover:bg-surface-container-low transition-colors"
-        >
-          {CHANNEL_FILTERS.map((c) => <option key={c}>{c}</option>)}
-        </select>
-
-        {/* Date range picker placeholder */}
-        <div className="h-12 w-48 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center px-4" />
-
-        {/* Export CSV button */}
-        <button className="h-12 px-6 bg-surface-container-lowest border border-outline-variant/30 rounded-xl text-[10px] font-label font-bold uppercase tracking-widest text-secondary hover:bg-surface-container-low hover:text-primary transition-colors hover:shadow-sm">
-          Export CSV
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <button onClick={() => router.push('/marketing')} className="p-1.5 text-gray-400 hover:text-gray-600">
+          <ArrowLeft className="h-5 w-5" />
         </button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Campaigns</h1>
+          <p className="text-sm text-gray-500">Meta Ads — drill-down Campaign → AdSet → Ad</p>
+        </div>
       </div>
 
-      {/* Status pills */}
-      <div className="flex gap-2 flex-wrap">
-        {STATUS_FILTERS.map((s) => (
-          <button
-            key={s}
-            onClick={() => setStatus(s)}
-            className={`px-4 py-2 rounded-full text-[10px] font-label font-bold uppercase tracking-widest border transition-colors ${
-              status === s ? 'gold-gradient text-[#0B2D5E] border-primary shadow-sm' : 'bg-surface-container-lowest text-secondary border-outline-variant/30 hover:bg-surface-container-low'
-            }`}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
-
-      {/* Campaigns table */}
-      <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-sm overflow-hidden">
-        {/* Table header */}
-        <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-outline-variant/15 bg-surface-container-low/50 text-[10px] font-label uppercase font-bold text-secondary tracking-widest">
-          <div className="col-span-3">Campaign Name</div>
-          <div className="col-span-1">Channel</div>
-          <div className="col-span-2">Dates</div>
-          <div className="col-span-1">Budget</div>
-          <div className="col-span-1">Spend</div>
-          <div className="col-span-1">ROAS</div>
-          <div className="col-span-1">Conversions</div>
-          <div className="col-span-1">Status</div>
-          <div className="col-span-1" />
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Search */}
+        <div className="relative flex-1 min-w-48 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="ค้นหา campaign..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
+          />
         </div>
 
-        {/* map over fetched campaigns, render CampaignTableRow */}
-        <div className="space-y-0">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div
-              key={i}
-              className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-surface hover:bg-surface-container-low transition-colors items-center group cursor-pointer"
-            >
-              <div className="col-span-3 space-y-1.5 flex items-center gap-3">
-                 <div className="h-10 w-10 flex-shrink-0 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-1">
-                   <span className="material-symbols-outlined text-[1.2rem]">campaign</span>
-                 </div>
-                 <div>
-                  <div className="h-4 w-40 bg-on-surface/10 rounded mb-1.5" />
-                  <div className="h-3 w-28 bg-secondary/20 rounded" />
-                 </div>
-              </div>
-              <div className="col-span-1">
-                <div className="h-6 w-16 bg-[#0B2D5E]/5 rounded-full flex items-center justify-center text-[9px] font-label font-bold uppercase tracking-widest text-[#0B2D5E]">Meta</div>
-              </div>
-              <div className="col-span-2 space-y-1">
-                <div className="h-4 w-20 bg-on-surface/5 rounded" />
-                <div className="h-3.5 w-20 bg-secondary/10 rounded" />
-              </div>
-              <div className="col-span-1"><div className="h-4 w-16 bg-on-surface/5 rounded" /></div>
-              <div className="col-span-1"><div className="h-4 w-14 bg-on-surface/5 rounded" /></div>
-              <div className="col-span-1">
-                {/* color-code ROAS — green if >2, red if <1 */}
-                <div className={`h-5 w-12 flex items-center justify-center text-[10px] font-label font-bold rounded ${i % 3 === 0 ? 'bg-green-500/10 text-green-700' : 'bg-surface-container-high text-secondary'}`}>2.4</div>
-              </div>
-              <div className="col-span-1"><div className="h-4 w-12 bg-on-surface/5 rounded" /></div>
-              <div className="col-span-1">
-                <div className={`h-6 w-20 rounded-full flex items-center justify-center text-[9px] font-label uppercase tracking-widest font-bold ${
-                  i % 4 === 0 ? 'bg-[#0B2D5E]/10 text-[#0B2D5E]' : i % 4 === 1 ? 'bg-green-500/10 text-green-700' : i % 4 === 2 ? 'bg-surface-container-highest text-secondary' : 'bg-error/10 text-error'
-                }`}>Active</div>
-              </div>
-              <div className="col-span-1 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                {/* 3-dot menu — edit, pause/resume, duplicate, delete */}
-                <div className="h-8 w-8 bg-surface-container-highest rounded-lg flex items-center justify-center text-secondary hover:bg-primary/20 hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined text-[1.2rem]">more_vert</span>
-                </div>
-              </div>
-            </div>
+        {/* Range */}
+        <div className="flex border border-gray-200 rounded-lg overflow-hidden bg-white">
+          {RANGES.map(r => (
+            <button key={r} onClick={() => setRange(r)}
+              className={`px-3 py-1.5 text-sm font-medium transition-colors ${range === r ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>
+              {r}
+            </button>
           ))}
         </div>
+
+        {/* Status filter */}
+        <select
+          value={status}
+          onChange={e => setStatus(e.target.value)}
+          className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+        >
+          <option value="">All Status</option>
+          {STATUSES.filter(Boolean).map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+
+        <span className="ml-auto text-sm text-gray-400">
+          {sorted.length} campaigns
+        </span>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between pt-4">
-        <div className="h-4 w-40 bg-secondary/20 rounded" />
-        <div className="flex gap-2">
-          <div className="h-10 w-24 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-center text-[10px] font-label font-bold uppercase tracking-widest text-secondary hover:bg-surface-container-low transition-colors cursor-pointer shadow-sm">Prev</div>
-          <div className="h-10 w-24 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-center text-[10px] font-label font-bold uppercase tracking-widest text-secondary hover:bg-surface-container-low transition-colors cursor-pointer shadow-sm">Next</div>
+      {/* Table */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="px-5 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ minWidth: 280 }}>
+                  Campaign / AdSet / Ad
+                </th>
+                <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
+                {colHeaders.map(h => (
+                  <SortHeader key={h.field} label={h.label} field={h.field} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {loading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td className="px-5 py-3"><div className="h-4 bg-gray-100 rounded w-56" /></td>
+                    <td className="px-4 py-3"><div className="h-4 bg-gray-100 rounded w-16" /></td>
+                    {Array.from({ length: 7 }).map((__, j) => (
+                      <td key={j} className="px-4 py-3 text-right"><div className="h-4 bg-gray-100 rounded w-16 ml-auto" /></td>
+                    ))}
+                  </tr>
+                ))
+              ) : sorted.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="px-5 py-12 text-center text-sm text-gray-400">ไม่มี campaign ในช่วงนี้</td>
+                </tr>
+              ) : sorted.map(camp => (
+                <>
+                  {/* Campaign row */}
+                  <tr key={camp.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-5 py-3">
+                      <button
+                        onClick={() => toggleCampaign(camp.campaignId)}
+                        className="flex items-center gap-2 text-left w-full group"
+                      >
+                        {drillLoading[camp.campaignId]
+                          ? <div className="h-4 w-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                          : expanded[camp.campaignId]
+                            ? <ChevronDown className="h-4 w-4 text-orange-500 flex-shrink-0" />
+                            : <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-gray-500 flex-shrink-0" />
+                        }
+                        <span>
+                          <p className="font-semibold text-gray-900 truncate max-w-xs">{camp.name}</p>
+                          <p className="text-xs text-gray-400">{camp.objective ?? '—'} · {camp.adSetCount ?? 0} adsets · {camp.adCount ?? 0} ads</p>
+                        </span>
+                      </button>
+                    </td>
+                    <td className="px-4 py-3"><StatusBadge status={camp.status} /></td>
+                    {renderMetricCells(camp)}
+                  </tr>
+
+                  {/* AdSet sub-rows */}
+                  {expanded[camp.campaignId] && (adSets[camp.campaignId] ?? []).map(aset => (
+                    <>
+                      <tr key={aset.adSetId} className="bg-orange-50/40 hover:bg-orange-50/70 transition-colors">
+                        <td className="pl-12 pr-5 py-2.5">
+                          <button
+                            onClick={() => toggleAdSet(aset.adSetId)}
+                            className="flex items-center gap-2 text-left w-full group"
+                          >
+                            {drillLoading[`as-${aset.adSetId}`]
+                              ? <div className="h-3.5 w-3.5 border-2 border-orange-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                              : expanded[`as-${aset.adSetId}`]
+                                ? <ChevronDown className="h-3.5 w-3.5 text-orange-400 flex-shrink-0" />
+                                : <ChevronRight className="h-3.5 w-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0" />
+                            }
+                            <span>
+                              <p className="font-medium text-gray-700 text-xs">{aset.name}</p>
+                              <p className="text-xs text-gray-400">{aset.adCount ?? 0} ads</p>
+                            </span>
+                          </button>
+                        </td>
+                        <td className="px-4 py-2.5"><StatusBadge status={aset.status} /></td>
+                        {renderMetricCells(aset)}
+                      </tr>
+
+                      {/* Ad sub-rows */}
+                      {expanded[`as-${aset.adSetId}`] && (adRows[aset.adSetId] ?? []).map(ad => (
+                        <tr key={ad.adId} className="bg-blue-50/30 hover:bg-blue-50/60 transition-colors">
+                          <td className="pl-20 pr-5 py-2">
+                            <div className="flex items-center gap-2">
+                              <div className="h-1.5 w-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                              <span>
+                                <p className="text-xs text-gray-600 truncate max-w-xs">{ad.name}</p>
+                                <p className="text-xs text-gray-400">{ad.deliveryStatus ?? ad.status}</p>
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-2"><StatusBadge status={ad.status} /></td>
+                          {renderMetricCells(ad)}
+                        </tr>
+                      ))}
+                    </>
+                  ))}
+                </>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
-  );
+  )
 }

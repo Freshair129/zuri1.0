@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
+import { withAuth } from '@/lib/auth'
+import { getTaskById, updateTask, deleteTask } from '@/lib/repositories/taskRepo'
 
 // GET /api/tasks/[id] - Get single task detail
-export async function GET(request, { params }) {
+export const GET = withAuth(async (request, { params }) => {
   try {
     const tenantId = await getTenantId(request)
     if (!tenantId) {
@@ -11,21 +13,20 @@ export async function GET(request, { params }) {
 
     const { id } = await params
 
-    // TODO: Import taskRepo and call getTaskById({ tenantId, id })
-    const task = null // TODO: replace with real data
+    const task = await getTaskById(tenantId, id)
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
 
     return NextResponse.json({ data: task })
   } catch (error) {
-    console.error('[Tasks/Detail]', error)
+    console.error('[Task_GET]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}, { domain: 'tasks', action: 'R' })
 
 // PATCH /api/tasks/[id] - Update task fields
-export async function PATCH(request, { params }) {
+export const PATCH = withAuth(async (request, { params }) => {
   try {
     const tenantId = await getTenantId(request)
     if (!tenantId) {
@@ -34,24 +35,22 @@ export async function PATCH(request, { params }) {
 
     const { id } = await params
     const body = await request.json()
-    // TODO: Whitelist updatable fields
-    const { title, description, assigneeId, dueDate, priority, status } = body
+    
+    // Parse dates if present
+    if (body.dueDate) body.dueDate = new Date(body.dueDate)
+    if (body.startDate) body.startDate = new Date(body.startDate)
 
-    // TODO: Import taskRepo and call updateTask({ tenantId, id, ...fields })
-    const task = null // TODO: replace with real data
-    if (!task) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 })
-    }
+    const task = await updateTask(tenantId, id, body)
 
     return NextResponse.json({ data: task })
   } catch (error) {
-    console.error('[Tasks/Detail]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('[Task_PATCH]', error)
+    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: error.message.includes('not found') ? 404 : 500 })
   }
-}
+}, { domain: 'tasks', action: 'W' })
 
-// DELETE /api/tasks/[id] - Delete (or archive) a task
-export async function DELETE(request, { params }) {
+// DELETE /api/tasks/[id] - Delete a task
+export const DELETE = withAuth(async (request, { params }) => {
   try {
     const tenantId = await getTenantId(request)
     if (!tenantId) {
@@ -60,12 +59,11 @@ export async function DELETE(request, { params }) {
 
     const { id } = await params
 
-    // TODO: Import taskRepo and call deleteTask({ tenantId, id })
-    // TODO: Consider soft-delete (set isArchived = true) instead of hard delete
+    await deleteTask(tenantId, id)
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('[Tasks/Detail]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('[Task_DELETE]', error)
+    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: error.message.includes('not found') ? 404 : 500 })
   }
-}
+}, { domain: 'tasks', action: 'W' })

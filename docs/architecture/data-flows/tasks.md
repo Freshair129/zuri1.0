@@ -129,7 +129,7 @@ sequenceDiagram
     participant DB as PostgreSQL
 
     Browser->>Route: DELETE /api/tasks/:id
-    Route->>Auth: verify MANAGER role
+    Route->>Auth: verify MGR or ADM role
     Route->>Repo: delete(tenantId, id)
     Repo->>DB: DELETE FROM Task WHERE id = :id AND tenant_id = :tenantId
     DB-->>Repo: deleted

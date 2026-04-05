@@ -35,16 +35,16 @@ export async function getEmployees({ tenantId, page = 1, limit = 20 } = {}) {
 /**
  * Create a new employee — used by /api/employees POST
  */
-export async function createEmployee({ tenantId, name, email, role, phone }) {
+export async function createEmployee({ tenantId, name, email, role, phone, lineId }) {
   const bcrypt = await import('bcryptjs')
   const { generateEmployeeId } = await import('@/lib/idGenerator')
 
   const [firstName, ...rest] = (name ?? '').trim().split(' ')
   const lastName = rest.join(' ') || '-'
+  const department = 'GEN'
   const employmentType = 'EMP'
-  const finalRole = role ?? 'STAFF'
 
-  const employeeId = await generateEmployeeId(finalRole, employmentType)
+  const employeeId = await generateEmployeeId(department, employmentType)
   const passwordHash = await bcrypt.hash(`${email}_changeme`, 10)
 
   return prisma.employee.create({
@@ -55,10 +55,37 @@ export async function createEmployee({ tenantId, name, email, role, phone }) {
       lastName,
       email,
       phone: phone ?? null,
-      role: finalRole,
-      roles: [finalRole],
+      role: role ?? 'STF',
+      roles: [role ?? 'STF'],
       passwordHash,
       status: 'ACTIVE',
     },
   })
 }
+
+export async function updateEmployee(tenantId, id, data) {
+  const employee = await findById(tenantId, id)
+  if (!employee) throw new Error('Employee not found or access denied')
+
+  // Handle roles specifically if role is updated, also update the Array
+  const updateData = { ...data }
+  if (updateData.role && !updateData.roles) {
+    updateData.roles = [updateData.role]
+  }
+
+  return prisma.employee.update({
+    where: { id },
+    data: updateData,
+  })
+}
+
+export async function deleteEmployee(tenantId, id) {
+  const employee = await findById(tenantId, id)
+  if (!employee) throw new Error('Employee not found or access denied')
+
+  return prisma.employee.update({
+    where: { id },
+    data: { status: 'INACTIVE' },
+  })
+}
+

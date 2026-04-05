@@ -45,7 +45,7 @@ owns:
   hooks: []
 
 depends_on:
-  - auth: KITCHEN / MANAGER role enforcement on PO approval flows
+  - auth: PUR / MGR role enforcement on PO approval flows
   - kitchen: auto-generates PurchaseRequest when ingredient stock falls below threshold
 
 public_api:

@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server'
+import { getTenantId } from '@/lib/tenant'
+import { withAuth } from '@/lib/auth'
+import { getConversationById, getMessages } from '@/lib/repositories/conversationRepo'
+import { generateFollowUpDraft } from '@/lib/ai/gemini'
 
 export const dynamic = 'force-dynamic'
-import { getTenantId } from '@/lib/tenant'
-import { getConversationById } from '@/lib/repositories/conversationRepo'
 
 // POST /api/ai/compose-reply - Use Gemini to draft a reply for a conversation
-export async function POST(request) {
+export const POST = withAuth(async (request) => {
   try {
     const tenantId = await getTenantId(request)
     if (!tenantId) {
@@ -13,30 +15,39 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    const { conversationId, tone, context } = body
+    const { conversationId, tone, contextExtra } = body
     // tone: 'professional' | 'friendly' | 'empathetic' | default
 
     if (!conversationId) {
       return NextResponse.json({ error: 'conversationId is required' }, { status: 400 })
     }
 
-    // TODO: Fetch last N messages from conversation for context
+    // 1. Fetch conversation and customer info
     const conversation = await getConversationById({ tenantId, id: conversationId })
     if (!conversation) {
       return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
     }
 
-    // TODO: Build Gemini prompt with conversation history, customer info, and tone instruction
-    // TODO: const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-    // TODO: const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
-    // TODO: const result = await model.generateContent(prompt)
-    // TODO: const draft = result.response.text()
+    // 2. Fetch last 10 messages for context
+    const messages = await getMessages(conversationId, 10)
+    const lastMessage = messages.length > 0 ? messages[messages.length - 1].content : ''
 
-    const draft = '' // TODO: replace with Gemini-generated draft
+    // 3. Use Gemini to generate draft
+    const customerName = conversation.customer?.facebookName || conversation.customer?.name || 'Customer'
+    const insights = conversation.customer?.insight || {}
 
-    return NextResponse.json({ data: { draft } })
+    // Add extra context if provided (e.g. "ask about the course price")
+    const enhancedInsights = {
+      ...insights,
+      tone: tone || 'friendly',
+      additionalContext: contextExtra || ''
+    }
+
+    const draft = await generateFollowUpDraft(customerName, lastMessage, enhancedInsights)
+
+    return NextResponse.json({ data: { draft, conversationId } })
   } catch (error) {
     console.error('[AI/ComposeReply]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}, { domain: 'inbox', action: 'R' }) // Requires read access to inbox to draft replies

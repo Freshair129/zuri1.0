@@ -52,12 +52,12 @@ export default {
   },
 
   // Navigation items injected into the core sidebar
-    navigation: [
-      { label: 'Kitchen',    icon: 'ChefHat',   path: '/kitchen',    roles: ['MANAGER', 'KITCHEN', 'STAFF'] },
-      { label: 'Schedule',   icon: 'Calendar',  path: '/schedule',   roles: ['MANAGER', 'KITCHEN'] },
-      { label: 'Recipes',    icon: 'BookOpen',  path: '/recipes',    roles: ['MANAGER', 'KITCHEN']  },
-      { label: 'Enrollment', icon: 'GraduationCap', path: '/enrollment', roles: ['MANAGER', 'SALES'] },
-    ],
+  navigation: [
+    { label: 'Kitchen',    icon: 'ChefHat',   path: '/kitchen',    roles: ['MGR', 'STF'] },
+    { label: 'Schedule',   icon: 'Calendar',  path: '/schedule',   roles: ['MGR', 'TEC'] },
+    { label: 'Recipes',    icon: 'BookOpen',  path: '/recipes',    roles: ['MGR', 'PD']  },
+    { label: 'Enrollment', icon: 'GraduationCap', path: '/enrollment', roles: ['MGR', 'SLS'] },
+  ],
 }
 ```
 

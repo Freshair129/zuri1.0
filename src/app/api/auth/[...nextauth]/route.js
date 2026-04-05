@@ -2,7 +2,6 @@ import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import * as employeeRepo from '@/lib/repositories/employeeRepo'
-import { normalizeRole } from '@/lib/auth'
 
 export const authOptions = {
   providers: [
@@ -13,30 +12,19 @@ export const authOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        try {
-          const employee = await employeeRepo.findByEmail(credentials.email)
-          if (!employee) return null
+        const employee = await employeeRepo.findByEmail(credentials.email)
+        if (!employee) return null
 
-          const valid = await bcrypt.compare(credentials.password, employee.passwordHash)
-          if (!valid) return null
+        const valid = await bcrypt.compare(credentials.password, employee.passwordHash)
+        if (!valid) return null
 
-          // Normalize legacy roles → 6 persona roles (ADR-068)
-          // employee.roles is string[] — normalize each entry
-          const roles = Array.isArray(employee.roles)
-            ? employee.roles.map(normalizeRole)
-            : [normalizeRole(employee.role)]
-
-          return {
-            id: employee.id,
-            employeeId: employee.employeeId,
-            name: `${employee.firstName} ${employee.lastName}`,
-            email: employee.email,
-            roles,
-            tenantId: employee.tenantId,
-          }
-        } catch (err) {
-          console.error('[NextAuth.authorize]', err)
-          return null
+        return {
+          id: employee.id,
+          employeeId: employee.employeeId,
+          name: `${employee.firstName} ${employee.lastName}`,
+          email: employee.email,
+          roles: employee.roles,
+          tenantId: employee.tenantId,
         }
       },
     }),
@@ -45,15 +33,15 @@ export const authOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.employeeId = user.employeeId
-        token.roles     = user.roles
-        token.tenantId  = user.tenantId
+        token.roles = user.roles
+        token.tenantId = user.tenantId
       }
       return token
     },
     async session({ session, token }) {
       session.user.employeeId = token.employeeId
-      session.user.roles      = token.roles
-      session.user.tenantId   = token.tenantId
+      session.user.roles = token.roles
+      session.user.tenantId = token.tenantId
       return session
     },
   },

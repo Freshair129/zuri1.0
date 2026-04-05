@@ -91,7 +91,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant Route as PATCH /api/tenants/[id]/config
-    participant Auth as getSession() + can(MANAGER, tenant, update)
+    participant Auth as getSession() + can(MGR, tenant, update)
     participant Repo as tenantRepo.updateConfig(tenantId, config)
     participant DB as PostgreSQL
 

@@ -4,31 +4,60 @@
 // Browse and manage the school's recipe library.
 // Recipes are linked to courses; each recipe has ingredients, steps, and cost breakdown.
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Plus, Search, Filter, LayoutGrid, List as ListIcon, ChefHat, Clock, Utensils, MoreVertical } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CATEGORY_FILTERS = ['All', 'Appetizers', 'Mains', 'Desserts', 'Pastry', 'Sauces', 'Beverages'];
 
 export default function RecipesPage() {
   const [category, setCategory] = useState('All');
-  const [view, setView] = useState('Grid');
+  const [view, setView] = useState('Grid'); // Grid | List
+  const [search, setSearch] = useState('');
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRecipes();
+  }, [category, search]);
+
+  async function fetchRecipes() {
+    setLoading(true);
+    try {
+      const url = new URL('/api/culinary/recipes', window.location.origin);
+      if (category !== 'All') url.searchParams.set('category', category);
+      if (search) url.searchParams.set('search', search);
+
+      const res = await fetch(url);
+      if (res.ok) {
+        const json = await res.json();
+        setRecipes(json.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch recipes', error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className="p-8 space-y-8 bg-surface min-h-[calc(100vh-64px)]">
-
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div className="ornate-lead">
-          <span className="font-label uppercase tracking-[0.2em] text-xs text-primary font-bold">Kitchen Intelligence</span>
-          <h1 className="text-3xl font-extrabold text-on-surface font-headline mt-1">Recipe Library</h1>
-          <p className="text-sm text-secondary font-body mt-0.5">Manage the culinary school recipe library</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Recipes</h1>
+          <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+            <ChefHat className="h-4 w-4 text-orange-500" />
+            Manage the culinary school recipe library and ingredients
+          </p>
         </div>
-        <div className="flex gap-3">
-          {/* Import recipe button */}
-          <button className="h-10 px-4 bg-surface-container-lowest text-secondary rounded-lg font-label text-xs uppercase font-bold tracking-widest border border-outline-variant/30 hover:bg-surface-container-low transition-all">
-            Import Recipes
+        <div className="flex gap-2">
+          <button className="h-10 px-4 flex items-center gap-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+            <Filter className="h-4 w-4" />
+            Import
           </button>
-          {/* New recipe button */}
-          <button className="h-10 px-6 gold-gradient rounded-lg font-label text-xs uppercase font-bold tracking-widest text-[#0B2D5E] shadow-sm hover:shadow-primary/30 transition-all">
+          <button className="h-10 px-5 flex items-center gap-2 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600 transition-all shadow-md shadow-orange-100">
+            <Plus className="h-5 w-5" />
             New Recipe
           </button>
         </div>
@@ -36,42 +65,45 @@ export default function RecipesPage() {
 
       {/* Search + filter toolbar */}
       <div className="flex flex-col sm:flex-row gap-4 items-center">
-        <div className="flex-1 w-full h-12 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center px-4 gap-3 focus-within:border-primary transition-colors">
-          <span className="material-symbols-outlined text-outline">search</span>
-          <div className="h-4 w-40 bg-outline-variant/20 rounded" />
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by recipe name or ingredient..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full h-11 pl-10 pr-4 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all shadow-sm"
+          />
         </div>
-        {/* difficulty filter */}
-        <div className="h-12 w-32 px-4 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-center text-secondary font-label text-xs uppercase tracking-widest font-bold cursor-pointer hover:bg-surface-container-low transition-colors">
-          Difficulty
-        </div>
-        {/* sort by */}
-        <div className="h-12 w-36 px-4 bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex items-center justify-center text-secondary font-label text-xs uppercase tracking-widest font-bold cursor-pointer hover:bg-surface-container-low transition-colors">
-          Sort by
-        </div>
-        {/* Grid / List toggle */}
-        <div className="flex border border-outline-variant/30 rounded-xl overflow-hidden bg-surface-container-lowest shadow-sm h-12">
-          {['Grid', 'List'].map((m) => (
-            <button
-              key={m}
-              onClick={() => setView(m)}
-              className={`px-4 py-2 font-label text-[10px] uppercase font-bold tracking-widest transition-colors ${
-                view === m ? 'bg-primary/10 text-primary' : 'text-secondary hover:bg-surface-container-low'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[1.2rem]">{m === 'Grid' ? 'grid_view' : 'list'}</span>
-            </button>
-          ))}
+        
+        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl p-1 shadow-sm">
+          <button
+            onClick={() => setView('Grid')}
+            className={`p-2 rounded-lg transition-all ${view === 'Grid' ? 'bg-orange-100 text-orange-600' : 'text-gray-400 hover:bg-gray-50'}`}
+            title="Grid View"
+          >
+            <LayoutGrid className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => setView('List')}
+            className={`p-2 rounded-lg transition-all ${view === 'List' ? 'bg-orange-100 text-orange-600' : 'text-gray-400 hover:bg-gray-50'}`}
+            title="List View"
+          >
+            <ListIcon className="h-5 w-5" />
+          </button>
         </div>
       </div>
 
       {/* Category pills */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap pb-2 border-b border-gray-100">
         {CATEGORY_FILTERS.map((c) => (
           <button
             key={c}
             onClick={() => setCategory(c)}
-            className={`px-4 py-2 rounded-full text-[10px] uppercase tracking-widest font-label font-bold transition-all border ${
-              category === c ? 'gold-gradient text-[#0B2D5E] border-primary shadow-sm' : 'bg-surface-container-lowest text-secondary hover:bg-surface-container-low border-outline-variant/30'
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${
+              category === c 
+                ? 'bg-gray-900 text-white scale-105' 
+                : 'bg-white text-gray-500 border border-gray-100 hover:bg-gray-50'
             }`}
           >
             {c}
@@ -79,53 +111,88 @@ export default function RecipesPage() {
         ))}
       </div>
 
-      {/* Recipe cards */}
-      <div className={view === 'Grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'space-y-4'}>
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className={`bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-sm overflow-hidden hover:shadow-floating hover:border-primary/50 transition-all cursor-pointer group ${view === 'List' ? 'flex flex-row items-center p-4' : ''}`}
-          >
-            {view === 'Grid' ? (
-              <div className="h-40 bg-surface-container-low relative overflow-hidden flex items-center justify-center text-outline-variant/30 group-hover:bg-primary/5 transition-colors">
-                <span className="material-symbols-outlined text-5xl">menu_book</span>
-                <div className="absolute top-3 right-3 h-8 w-8 bg-surface/80 rounded-full flex items-center justify-center text-secondary hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined text-[1rem]">more_horiz</span>
+      {/* Recipe list/grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl h-64 animate-pulse border border-gray-100 shadow-sm" />
+          ))}
+        </div>
+      ) : recipes.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
+          <Utensils className="h-12 w-12 text-gray-200 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900">No recipes found</h3>
+          <p className="text-gray-500 text-sm mt-1">Try adjusting your filters or search term</p>
+        </div>
+      ) : (
+        <motion.div 
+          layout
+          className={view === 'Grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'space-y-4'}
+        >
+          <AnimatePresence mode="popLayout">
+            {recipes.map((recipe) => (
+              <motion.div
+                layout
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                key={recipe.id}
+                className={`group bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl hover:border-orange-200 transition-all cursor-pointer ${
+                  view === 'List' ? 'flex items-center gap-4 p-3' : ''
+                }`}
+              >
+                <div className={`${view === 'Grid' ? 'h-40 bg-gradient-to-br from-amber-50 to-orange-100 relative' : 'h-16 w-16 rounded-xl bg-orange-50 flex-shrink-0 flex items-center justify-center'}`}>
+                  {recipe.imageUrl ? (
+                    <img src={recipe.imageUrl} alt={recipe.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <Utensils className={`text-orange-300 ${view === 'Grid' ? 'h-12 w-12 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2' : 'h-6 w-6'}`} />
+                  )}
+                  {view === 'Grid' && (
+                    <div className="absolute top-3 left-3 px-2 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-bold text-gray-700 shadow-sm">
+                      {recipe.category || 'Standard'}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ) : (
-              <div className="h-16 w-16 bg-surface-container-low rounded-xl flex items-center justify-center text-outline-variant/30 mr-4 group-hover:bg-primary/5 transition-colors">
-                <span className="material-symbols-outlined text-2xl">menu_book</span>
-              </div>
-            )}
-            <div className={`p-5 space-y-3 ${view === 'List' ? 'flex-1 p-0 space-y-0 flex items-center justify-between' : ''}`}>
-              <div className={`${view === 'List' ? 'flex items-center gap-4' : 'flex flex-col gap-2'}`}>
-                {/* Recipe name */}
-                <div className="h-5 w-40 bg-on-surface/10 rounded" />
-                {/* Difficulty badge */}
-                <div className="h-5 w-16 bg-primary/20 rounded-full flex-shrink-0" />
-              </div>
-              
-              <div className={`${view === 'List' ? 'flex gap-8' : 'space-y-3'}`}>
-                {/* Category + prep time */}
-                <div className="flex gap-2">
-                  <div className="h-3.5 w-16 bg-secondary/20 rounded" />
-                  <div className="h-3.5 w-14 bg-secondary/10 rounded" />
-                </div>
-                {/* cost per portion */}
-                <div className={`flex items-center justify-between ${view === 'List' ? 'gap-6' : 'pt-3 border-t border-outline-variant/15'}`}>
-                  <div className="space-y-1">
-                    <div className="h-3 w-20 bg-secondary/10 rounded" />
-                    <div className="h-4 w-16 bg-primary/20 rounded" />
+
+                <div className={`${view === 'Grid' ? 'p-4 space-y-3' : 'flex-1'}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-bold text-gray-900 line-clamp-1 group-hover:text-orange-600 transition-colors">
+                      {recipe.name}
+                    </h3>
+                    <button className="text-gray-300 hover:text-gray-600">
+                      <MoreVertical className="h-4 w-4" />
+                    </button>
                   </div>
-                  {/* Linked courses pill */}
-                  <div className="h-6 w-24 bg-surface-container-low border border-outline-variant/30 rounded-full" />
+
+                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <Utensils className="h-3 w-3" />
+                      <span>{recipe._count?.ingredients || 0} items</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      <span>{recipe.yieldAmount || '--'} {recipe.yieldUnit || 'portions'}</span>
+                    </div>
+                  </div>
+
+                  {view === 'Grid' && (
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-50 mt-1">
+                      <div className="flex -space-x-2">
+                        {/* Placeholder for linked courses */}
+                        <div className="h-6 w-6 rounded-full border-2 border-white bg-blue-100" />
+                        <div className="h-6 w-6 rounded-full border-2 border-white bg-orange-100 text-[10px] flex items-center justify-center font-bold text-orange-600">+2</div>
+                      </div>
+                      <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">
+                        {recipe.recipeId}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
+      )}
     </div>
   );
 }

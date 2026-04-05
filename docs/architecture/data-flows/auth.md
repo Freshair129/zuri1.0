@@ -92,7 +92,7 @@ sequenceDiagram
     participant Repo as employeeRepo
     participant DB as PostgreSQL (prisma.$transaction)
 
-    Route->>Auth: verify MANAGER role
+    Route->>Auth: verify MGR or ADM role
     Route->>Repo: create(tenantId, {name, email, passwordHash, roles[], departmentId})
     Note over Repo: roles stored UPPERCASE in DB
     Repo->>DB: prisma.$transaction([Employee.create, ...])

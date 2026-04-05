@@ -1,4 +1,7 @@
 import { getTenantId } from '@/lib/tenant'
+import { GoogleGenerativeAI } from '@google/generative-ai'
+
+export const dynamic = 'force-dynamic'
 
 // POST /api/ai/ask - Ask Gemini a question with streaming SSE response
 export async function POST(request) {
@@ -21,9 +24,15 @@ export async function POST(request) {
       })
     }
 
-    // TODO: Build Gemini prompt (inject systemContext, tenant business profile, etc.)
-    // TODO: const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-    // TODO: const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    // Build Gemini prompt
+    let prompt = question
+    if (systemContext) {
+      prompt = `${systemContext}\n\nQuestion: ${question}`
+    }
+
+    // Initialize Gemini API
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
     // Stream response as Server-Sent Events (SSE)
     const stream = new ReadableStream({
@@ -31,14 +40,16 @@ export async function POST(request) {
         const encoder = new TextEncoder()
 
         try {
-          // TODO: const result = await model.generateContentStream(prompt)
-          // TODO: for await (const chunk of result.stream) {
-          //   const text = chunk.text()
-          //   controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`))
-          // }
+          const result = await model.generateContentStream(prompt)
 
-          // Placeholder until Gemini integration is wired up
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: '[AI response TODO]' })}\n\n`))
+          for await (const chunk of result.stream) {
+            const text = chunk.text()
+            if (text) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`))
+            }
+          }
+
+          // Signal completion
           controller.enqueue(encoder.encode('data: [DONE]\n\n'))
         } catch (streamError) {
           console.error('[AI/Ask] stream error', streamError)

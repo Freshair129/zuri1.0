@@ -46,7 +46,7 @@ owns:
     - useMarketingDashboard.js
 
 depends_on:
-  - auth: session + role guard (SALES, MANAGER, DEV)
+  - auth: session + role guard (MKT, MGR, DEV)
   - crm: customer.originId used for ad attribution linkback
   - inbox: conversation.firstTouchAdId links conversations to campaigns
 

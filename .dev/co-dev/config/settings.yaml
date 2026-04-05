@@ -6,7 +6,9 @@ project:
   project_path: "auto"  # resolved from .dev/co-dev/../../ at runtime
 
 context:
-  max_context_lines: 200     # max lines sent to agent per call (token limit)
+  core_path: "context/core"
+  runtime_path: "context/runtime"
+  max_context_lines: 200     # max lines sent to agent per call
   jsonl_tail_lines: 30       # read last N lines from JSONL
 
 gates:

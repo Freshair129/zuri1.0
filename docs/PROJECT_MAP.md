@@ -1,6 +1,6 @@
 # Zuri Platform — Project Map
 
-> **Version:** 1.0.0 · **Date:** 2026-04-04
+> **Version:** 1.1.0 · **Date:** 2026-04-05
 > Single source of truth สำหรับ navigate codebase ทั้งหมด
 
 ---
@@ -43,7 +43,7 @@ zuri/
 | **POS** | `/pos` | `/api/orders` `/api/invoices` `/api/payments/verify-slip` | `orderRepo` `transactionRepo` | Order, OrderItem, Transaction, Invoice |
 | **Courses** | `/courses` `/courses/:id` | `/api/catalog` `/api/schedules` | `enrollmentRepo` `scheduleRepo` | Course, Package, Enrollment, EnrollmentItem |
 | **Schedule** | `/schedule` | `/api/schedules/:id` | `scheduleRepo` | ClassSession, Attendance |
-| **Kitchen** | `/kitchen/*` | `/api/inventory/*` `/api/recipes` `/api/procurement/*` | `inventoryRepo` `ingredientRepo` `poRepo` `supplierRepo` | Ingredient, IngredientLot, Recipe, PurchaseOrder |
+| **Kitchen** | `/kitchen/*` | `/api/inventory/*` `/api/culinary/recipes` `/api/culinary/schedules` | `inventoryRepo` `recipeRepo` `ingredientRepo` `scheduleRepo` `poRepo` `supplierRepo` | Ingredient, IngredientLot, Recipe, RecipeIngredient, CourseSchedule, PurchaseOrder |
 | **Marketing** | `/marketing/*` | `/api/marketing/dashboard` `/api/marketing/chat` `/api/ads/*` | `campaignRepo` `dailyBriefRepo` | Campaign, AdSet, Ad, AdDailyMetric, DailyBrief |
 | **Tasks** | `/tasks` | `/api/tasks` | `taskRepo` | Task |
 | **Employees** | `/employees` | `/api/employees` | `employeeRepo` | Employee, User |
@@ -89,8 +89,9 @@ api/
 ├── invoices/           CRUD
 ├── payments/           verify-slip
 ├── inventory/          stock · movements
-├── recipes/            CRUD
-├── schedules/          list · [id]
+├── recipes/            (DEPRECATED → use culinary/recipes)
+├── culinary/           recipes · recipes/[id] · schedules
+├── schedules/          (LEGACY)
 ├── procurement/        po · po/[id]/approve|grn · suppliers
 ├── marketing/          dashboard · chat/conversations
 ├── ads/                optimize
@@ -169,8 +170,11 @@ lib/
     ├── poRepo.js
     ├── supplierRepo.js
     ├── productRepo.js
+    ├── recipeRepo.js
+    ├── courseRepo.js
     ├── auditRepo.js
-    └── tenantRepo.js (implied)
+    ├── pushRepo.js
+    └── tenantRepo.js
 ```
 
 ### 3.6 hooks/ — Custom Hooks

@@ -1,57 +1,46 @@
 import { NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
-// V School default tenant (ADR-056)
-const DEFAULT_TENANT_ID = '10000000-0000-0000-0000-000000000001'
-
-// Routes that don't require auth
-const PUBLIC_PATHS = new Set(['/login', '/register', '/forgot-password'])
-
-// Static + API auth routes — skip middleware entirely
-const SKIP_PREFIXES = ['/_next', '/api/auth', '/favicon.ico', '/icons', '/manifest.json']
-
 export async function middleware(req) {
   const { pathname } = req.nextUrl
 
-  // 1. Skip static + NextAuth routes
-  if (SKIP_PREFIXES.some((p) => pathname.startsWith(p))) {
+  // Skip static files and auth routes
+  if (pathname.startsWith('/_next') || pathname.startsWith('/api/auth') || pathname === '/login') {
     return NextResponse.next()
   }
 
-  // 2. Tenant resolution — extract from subdomain
+  // Tenant resolution:
+  // 1. Extract from subdomain (e.g. vschool.zuri.app -> vschool)
   const host = req.headers.get('host') || ''
   let slug = host.split('.')[0]
 
-  // Local dev: localhost or main domain → fallback to 'vschool'
-  if (!slug || slug === 'www' || slug === 'zuri' || host.startsWith('localhost')) {
-    slug = req.nextUrl.searchParams.get('tenant') || 'vschool'
+  // Handle local dev (localhost:3000) or main domains
+  if (slug === 'www' || slug === 'zuri' || slug === 'localhost:3000') {
+    // If local dev, we could query params or fallback to vschool
+    const searchParams = req.nextUrl.searchParams
+    slug = searchParams.get('tenant') || 'vschool'
   }
 
-  // 3. Auth check
+  // 2. Check JWT session
   const token = await getToken({ req })
 
-  // Allow public pages without auth
-  if (PUBLIC_PATHS.has(pathname)) {
-    // Redirect already-authenticated users away from auth pages
-    if (token) {
-      return NextResponse.redirect(new URL('/', req.url))
+  let tenantId = null
+  if (token?.tenantId) {
+    tenantId = token.tenantId
+  }
+
+  // Protect dashboard routes
+  if (pathname.startsWith('/') && !pathname.startsWith('/api') && pathname !== '/') {
+    if (!token) {
+      return NextResponse.redirect(new URL('/login', req.url))
     }
-    return NextResponse.next()
   }
 
-  // Protect all other routes
-  if (!token) {
-    const loginUrl = new URL('/login', req.url)
-    loginUrl.searchParams.set('callbackUrl', pathname)
-    return NextResponse.redirect(loginUrl)
-  }
-
-  // 4. Resolve tenantId — prefer JWT tenantId (most authoritative)
-  const tenantId = token.tenantId ?? DEFAULT_TENANT_ID
-
-  // 5. Inject tenant context headers for API routes + Server Components
+  // Inject tenant context for downstream API routes
   const headers = new Headers(req.headers)
-  headers.set('x-tenant-id', tenantId)
+  if (tenantId) {
+    headers.set('x-tenant-id', tenantId)
+  }
   headers.set('x-tenant-slug', slug)
 
   return NextResponse.next({ request: { headers } })

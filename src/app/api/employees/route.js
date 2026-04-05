@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
 import { getTenantId } from '@/lib/tenant'
+import { withAuth } from '@/lib/auth'
 import { getEmployees, createEmployee } from '@/lib/repositories/employeeRepo'
 
 export const dynamic = 'force-dynamic'
 
 // GET /api/employees - List employees for the tenant
-export async function GET(request) {
+export const GET = withAuth(async (request) => {
   try {
     const tenantId = await getTenantId(request)
     if (!tenantId) {
@@ -13,22 +14,23 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url)
-    // TODO: Extract filters (role, isActive, search, page, limit)
     const page = parseInt(searchParams.get('page') ?? '1')
-    const limit = parseInt(searchParams.get('limit') ?? '20')
+    const limit = parseInt(searchParams.get('limit') ?? '50')
 
-    // TODO: Call employeeRepo.getEmployees({ tenantId, page, limit })
     const employees = await getEmployees({ tenantId, page, limit })
 
-    return NextResponse.json({ data: employees, page, limit })
+    // Optional: map to safe employee representation (omit passwordHash)
+    const safeEmployees = employees.map(({ passwordHash, ...rest }) => rest)
+
+    return NextResponse.json({ data: safeEmployees, page, limit })
   } catch (error) {
-    console.error('[Employees]', error)
+    console.error('[Employees_GET]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}, { domain: 'employees', action: 'R' })
 
 // POST /api/employees - Create a new employee
-export async function POST(request) {
+export const POST = withAuth(async (request) => {
   try {
     const tenantId = await getTenantId(request)
     if (!tenantId) {
@@ -36,19 +38,19 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    // TODO: Validate required fields (name, email, role)
     const { name, email, role, phone, lineId } = body
 
     if (!name || !email || !role) {
       return NextResponse.json({ error: 'name, email, and role are required' }, { status: 400 })
     }
 
-    // TODO: Call employeeRepo.createEmployee({ tenantId, name, email, role, ... })
     const employee = await createEmployee({ tenantId, name, email, role, phone, lineId })
 
-    return NextResponse.json({ data: employee }, { status: 201 })
+    const { passwordHash, ...safeEmployee } = employee;
+
+    return NextResponse.json({ data: safeEmployee }, { status: 201 })
   } catch (error) {
-    console.error('[Employees]', error)
+    console.error('[Employees_POST]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}, { domain: 'employees', action: 'W' })

@@ -21,14 +21,14 @@ owns:
     - GET /api/tokens/status — token status per tenant
   workers: []
   pages:
-    - /settings/tenant — tenant config (OWNER/MANAGER only)
+    - /settings/tenant — tenant config (OWNER/ADM only)
   components:
     - TenantSettings.js — tenant name, logo, config editor
     - TenantOnboarding.js — new tenant setup wizard
   hooks: []
 
 depends_on:
-  - auth: OWNER/MANAGER role enforcement on tenant admin routes
+  - auth: OWNER/ADM role enforcement on tenant admin routes
 
 public_api:
   repos:
