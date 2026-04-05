@@ -1,287 +1,150 @@
-'use client'
+'use client';
 
-/**
- * Marketing Dashboard — core/marketing (FEAT09)
- * Executive overview: KPI cards, spend vs revenue chart, hourly heatmap,
- * top campaigns table. All data from /api/marketing/* — never direct Meta API.
- */
+// Marketing — Overview dashboard
+// Top-level marketing dashboard: spend summary, ROAS, channel breakdown,
+// active campaigns overview. Uses Recharts for charts.
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import {
-  Bar, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, ComposedChart, LineChart,
-} from 'recharts'
-import {
-  TrendingUp, TrendingDown, Minus, RefreshCw, ExternalLink,
-  DollarSign, MousePointerClick, Eye, Users, Zap, Target,
-} from 'lucide-react'
+import { useState } from 'react';
+// TODO: import { BarChart, Bar, LineChart, Line, PieChart, Pie, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-const RANGES = ['7d', '30d', '90d']
-const RANGE_LABELS = { '7d': '7 วัน', '30d': '30 วัน', '90d': '90 วัน' }
-const DOW_LABELS = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']
-
-function fmt(n, { type = 'number', decimals = 0 } = {}) {
-  if (n == null) return '—'
-  if (type === 'currency') return `฿${Number(n).toLocaleString('th-TH', { minimumFractionDigits: decimals })}`
-  if (type === 'pct')      return `${Number(n).toFixed(decimals)}%`
-  if (type === 'x')        return `${Number(n).toFixed(decimals)}x`
-  return Number(n).toLocaleString('th-TH', { minimumFractionDigits: decimals })
-}
-
-function ChangeChip({ value }) {
-  if (value == null) return <span className="text-gray-400 text-xs">—</span>
-  const up = value > 0
-  const Icon = up ? TrendingUp : value < 0 ? TrendingDown : Minus
-  const color = up ? 'text-green-600 bg-green-50' : value < 0 ? 'text-red-600 bg-red-50' : 'text-gray-500 bg-gray-100'
-  return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full ${color}`}>
-      <Icon className="h-3 w-3" />
-      {Math.abs(value).toFixed(1)}%
-    </span>
-  )
-}
-
-function KpiCard({ label, value, change, icon: Icon, color = 'orange' }) {
-  const colors = {
-    orange: 'bg-orange-50 text-orange-600',
-    green:  'bg-green-50 text-green-600',
-    blue:   'bg-blue-50 text-blue-600',
-    purple: 'bg-purple-50 text-purple-600',
-    pink:   'bg-pink-50 text-pink-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
-  }
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</span>
-        <span className={`p-1.5 rounded-lg ${colors[color]}`}><Icon className="h-4 w-4" /></span>
-      </div>
-      <p className="text-2xl font-bold text-gray-900 leading-tight">{value}</p>
-      <ChangeChip value={change} />
-    </div>
-  )
-}
-
-function StatusBadge({ status }) {
-  const map = { ACTIVE:'bg-green-100 text-green-700', PAUSED:'bg-yellow-100 text-yellow-700', ARCHIVED:'bg-gray-100 text-gray-500' }
-  return <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${map[status] ?? 'bg-gray-100 text-gray-500'}`}>{status}</span>
-}
-
-function heatColor(value, max) {
-  if (!max || !value) return '#f3f4f6'
-  const p = value / max
-  if (p < 0.15) return '#fef3c7'
-  if (p < 0.35) return '#fde68a'
-  if (p < 0.55) return '#fbbf24'
-  if (p < 0.75) return '#f97316'
-  return '#ea580c'
-}
+const DATE_RANGES = ['7d', '30d', '90d', 'Custom'];
 
 export default function MarketingPage() {
-  const router = useRouter()
-  const [range, setRange]           = useState('30d')
-  const [dashboard, setDashboard]   = useState(null)
-  const [timeSeries, setTimeSeries] = useState([])
-  const [heatmap, setHeatmap]       = useState([])
-  const [campaigns, setCampaigns]   = useState([])
-  const [loading, setLoading]       = useState(true)
-  const [error, setError]           = useState(null)
-
-  const fetchAll = useCallback(async (r) => {
-    setLoading(true); setError(null)
-    try {
-      const [dash, ts, heat, camps] = await Promise.all([
-        fetch(`/api/marketing/dashboard?range=${r}`).then(x => x.json()),
-        fetch(`/api/marketing/campaigns?type=timeseries&range=${r}`).then(x => x.json()),
-        fetch(`/api/marketing/campaigns?type=heatmap&range=${r}`).then(x => x.json()),
-        fetch(`/api/marketing/campaigns?range=${r}`).then(x => x.json()),
-      ])
-      setDashboard(Array.isArray(dash) ? null : dash)
-      setTimeSeries(Array.isArray(ts) ? ts : [])
-      setHeatmap(Array.isArray(heat) ? heat : [])
-      setCampaigns((Array.isArray(camps) ? camps : []).slice(0, 10))
-    } catch (err) {
-      console.error('[marketing/page]', err)
-      setError('ดึงข้อมูลไม่สำเร็จ')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => { fetchAll(range) }, [range, fetchAll])
-
-  const { mat: heatMat, maxVal: heatMax } = (() => {
-    const mat = {}; let maxVal = 0
-    heatmap.forEach(({ dow, hour, spend }) => { mat[`${dow}-${hour}`] = spend; if (spend > maxVal) maxVal = spend })
-    return { mat, maxVal }
-  })()
-
-  const c = dashboard?.current ?? {}
-  const ch = dashboard?.changes ?? {}
+  const [dateRange, setDateRange] = useState('30d');
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-8 bg-surface min-h-[calc(100vh-64px)]">
 
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Marketing</h1>
-          <p className="text-sm text-gray-500 mt-0.5">วิเคราะห์ประสิทธิภาพโฆษณา Meta Ads · ซิงค์ทุก 1 ชั่วโมง</p>
+      {/* Page header */}
+      <div className="flex items-center justify-between">
+        <div className="ornate-lead">
+          <span className="font-label uppercase tracking-[0.2em] text-xs text-primary font-bold">Growth Intelligence</span>
+          <h1 className="text-3xl font-extrabold text-on-surface font-headline mt-1">Marketing Hub</h1>
+          <p className="text-sm text-secondary font-body mt-0.5">Track spend, ROAS, and campaign performance</p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex border border-gray-200 rounded-lg overflow-hidden bg-white">
-            {RANGES.map(r => (
-              <button key={r} onClick={() => setRange(r)}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors ${range === r ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>
-                {RANGE_LABELS[r]}
+        <div className="flex gap-3">
+          {/* Date range selector */}
+          <div className="flex border border-outline-variant/30 rounded-xl overflow-hidden bg-surface-container-lowest shadow-sm h-10">
+            {DATE_RANGES.map((r) => (
+              <button
+                key={r}
+                onClick={() => setDateRange(r)}
+                className={`px-4 py-2 font-label text-[10px] uppercase font-bold tracking-widest transition-colors ${
+                  dateRange === r ? 'bg-primary/10 text-primary' : 'text-secondary hover:bg-surface-container-low'
+                }`}
+              >
+                {r}
               </button>
             ))}
           </div>
-          <button onClick={() => router.push('/marketing/campaigns')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
-            <ExternalLink className="h-4 w-4" />ดูทุก Campaign
-          </button>
-          <button onClick={() => fetchAll(range)} disabled={loading} className="p-1.5 text-gray-500 hover:text-gray-700 disabled:opacity-50" title="Refresh">
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          {/* Export report button */}
+          <button className="h-10 px-6 bg-surface-container-lowest text-secondary rounded-xl font-label text-xs uppercase font-bold tracking-widest border border-outline-variant/30 hover:bg-surface-container-low transition-all shadow-sm">
+            Export Report
           </button>
         </div>
       </div>
 
-      {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">{error}</div>}
-
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-        <div className="col-span-2"><KpiCard label="ยอดใช้โฆษณา"       value={fmt(c.spend,{type:'currency'})}           change={ch.spend}       icon={DollarSign}        color="orange" /></div>
-        <div className="col-span-2"><KpiCard label="รายได้ (attributed)" value={fmt(c.revenue,{type:'currency'})}         change={ch.revenue}     icon={TrendingUp}        color="green"  /></div>
-        <KpiCard label="ROAS"        value={fmt(c.roas,{type:'x',decimals:2})}  change={ch.roas}        icon={Target}            color="blue"   />
-        <KpiCard label="CPL"         value={fmt(c.cpl,{type:'currency'})}       change={ch.cpl}         icon={Users}             color="purple" />
-        <KpiCard label="CTR"         value={fmt(c.ctr,{type:'pct',decimals:2})} change={ch.ctr}         icon={MousePointerClick} color="pink"   />
-        <KpiCard label="Impressions" value={fmt(c.impressions)}                 change={ch.impressions} icon={Eye}               color="indigo" />
-        <KpiCard label="Clicks"      value={fmt(c.clicks)}                      change={ch.clicks}      icon={Zap}               color="orange" />
-        <KpiCard label="Leads"       value={fmt(c.leads)}                       change={ch.leads}       icon={Users}             color="green"  />
+      {/* KPI cards — Total Spend, Total Revenue, ROAS, CPA, CTR, Impressions */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        {[
+          { label: 'Total Spend', color: 'bg-error/5 border-error/20 text-error' },
+          { label: 'Revenue', color: 'bg-green-500/5 border-green-500/20 text-green-700' },
+          { label: 'ROAS', color: 'bg-[#0B2D5E]/5 border-[#0B2D5E]/10 text-[#0B2D5E]' },
+          { label: 'CPA', color: 'bg-surface-container-lowest border-outline-variant/15 text-primary' },
+          { label: 'CTR', color: 'bg-primary/5 border-primary/20 text-primary' },
+          { label: 'Impressions', color: 'bg-surface-container-lowest border-outline-variant/15 text-on-surface' },
+        ].map(({ label, color }) => (
+          <div key={label} className={`${color} rounded-2xl border p-6 shadow-sm hover:shadow-floating transition-shadow`}>
+            <p className="text-[10px] uppercase font-label font-bold tracking-widest opacity-70 mb-3">{label}</p>
+            <div className="h-8 w-20 bg-surface/50 rounded animate-pulse" />
+            {/* delta vs previous period */}
+            <div className="h-3 w-14 bg-surface/30 rounded mt-2" />
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">ยอดใช้โฆษณา vs รายได้</h2>
-          {timeSeries.length === 0 && !loading
-            ? <div className="h-52 flex items-center justify-center text-sm text-gray-400">ไม่มีข้อมูล</div>
-            : <ResponsiveContainer width="100%" height={220}>
-                <ComposedChart data={timeSeries} margin={{top:4,right:16,left:0,bottom:0}}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="date" tick={{fontSize:10}} tickFormatter={d=>d?.slice(5)} interval="preserveStartEnd" />
-                  <YAxis yAxisId="left"  tick={{fontSize:10}} tickFormatter={v=>`฿${(v/1000).toFixed(0)}k`} />
-                  <YAxis yAxisId="right" orientation="right" tick={{fontSize:10}} tickFormatter={v=>`฿${(v/1000).toFixed(0)}k`} />
-                  <Tooltip formatter={(v,n)=>[`฿${Number(v).toLocaleString()}`,n==='spend'?'Spend':'Revenue']} labelFormatter={l=>`วันที่ ${l}`} />
-                  <Legend wrapperStyle={{fontSize:12}} />
-                  <Bar  yAxisId="left"  dataKey="spend"   name="Spend"   fill="#fb923c" radius={[3,3,0,0]} />
-                  <Line yAxisId="right" dataKey="revenue" name="Revenue" stroke="#22c55e" strokeWidth={2} dot={false} />
-                </ComposedChart>
-              </ResponsiveContainer>
-          }
-        </div>
+      {/* Charts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">CTR Trend (%)</h2>
-          {timeSeries.length === 0 && !loading
-            ? <div className="h-52 flex items-center justify-center text-sm text-gray-400">ไม่มีข้อมูล</div>
-            : <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={timeSeries} margin={{top:4,right:16,left:0,bottom:0}}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="date" tick={{fontSize:10}} tickFormatter={d=>d?.slice(5)} interval="preserveStartEnd" />
-                  <YAxis tick={{fontSize:10}} tickFormatter={v=>`${v.toFixed(1)}%`} />
-                  <Tooltip formatter={v=>[`${Number(v).toFixed(2)}%`,'CTR']} labelFormatter={l=>`วันที่ ${l}`} />
-                  <Line dataKey="ctr" name="CTR" stroke="#8b5cf6" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-          }
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-gray-700">Hourly Spend Heatmap</h2>
-          <span className="text-xs text-gray-400">สีเข้ม = Spend สูง</span>
-        </div>
-        {heatmap.length === 0 && !loading
-          ? <div className="h-16 flex items-center justify-center text-sm text-gray-400">ไม่มีข้อมูล</div>
-          : <div className="overflow-x-auto">
-              <div className="inline-flex gap-0.5">
-                <div className="flex flex-col gap-0.5 mr-1">
-                  <div className="h-5 w-7" />
-                  {Array.from({length:24},(_,h)=>(
-                    <div key={h} className="h-5 w-7 flex items-center justify-end pr-1 text-xs text-gray-400">{h%6===0?h:''}</div>
-                  ))}
-                </div>
-                {DOW_LABELS.map((dow,d)=>(
-                  <div key={d} className="flex flex-col gap-0.5">
-                    <div className="h-5 w-10 text-center text-xs font-medium text-gray-500">{dow}</div>
-                    {Array.from({length:24},(_,h)=>{
-                      const val = heatMat[`${d}-${h}`] ?? 0
-                      return <div key={h} className="h-5 w-10 rounded-sm" style={{backgroundColor:heatColor(val,heatMax)}} title={`${DOW_LABELS[d]} ${h}:00 — ฿${val.toFixed(0)}`} />
-                    })}
-                  </div>
-                ))}
-              </div>
-            </div>
-        }
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-700">Top Campaigns (by spend)</h2>
-          <button onClick={()=>router.push('/marketing/campaigns')} className="text-xs font-medium text-orange-600 hover:text-orange-700">ดูทั้งหมด →</button>
-        </div>
-
-        {loading ? (
-          <div className="divide-y divide-gray-50">
-            {Array.from({length:4}).map((_,i)=>(
-              <div key={i} className="px-5 py-3 flex gap-4 animate-pulse">
-                <div className="h-4 bg-gray-100 rounded flex-1" /><div className="h-4 bg-gray-100 rounded w-20" /><div className="h-4 bg-gray-100 rounded w-16" />
+        {/* Spend vs Revenue line chart (Recharts) */}
+        <div className="lg:col-span-2 bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-sm font-label uppercase font-bold tracking-widest text-secondary">Spend vs Revenue</h3>
+            {/* channel filter */}
+            <div className="h-8 w-24 bg-surface-container-low rounded-lg" />
+          </div>
+          {/* TODO: Recharts placeholder */}
+          <div className="h-64 bg-surface-container-low/30 rounded-xl flex items-end gap-2 px-4 pb-4">
+            {Array.from({ length: 30 }).map((_, i) => (
+              <div key={i} className="flex-1 flex flex-col gap-1 items-center">
+                <div className="w-full bg-green-500/40 rounded-t" style={{ height: `${20 + Math.sin(i) * 15}%` }} />
+                <div className="w-full bg-error/40 rounded-t" style={{ height: `${10 + Math.cos(i) * 10}%` }} />
               </div>
             ))}
           </div>
-        ) : campaigns.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-gray-400">ไม่มี campaign ในช่วงนี้</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  <th className="px-5 py-2.5 text-left">Campaign</th>
-                  <th className="px-4 py-2.5 text-left">Status</th>
-                  <th className="px-4 py-2.5 text-right">Spend</th>
-                  <th className="px-4 py-2.5 text-right">Revenue</th>
-                  <th className="px-4 py-2.5 text-right">ROAS</th>
-                  <th className="px-4 py-2.5 text-right">CTR</th>
-                  <th className="px-4 py-2.5 text-right">Leads</th>
-                  <th className="px-4 py-2.5 text-right">CPL</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {campaigns.map(camp=>(
-                  <tr key={camp.id} className="hover:bg-gray-50 cursor-pointer" onClick={()=>router.push('/marketing/campaigns')}>
-                    <td className="px-5 py-3">
-                      <p className="font-medium text-gray-900 truncate max-w-xs">{camp.name}</p>
-                      <p className="text-xs text-gray-400">{camp.objective??'—'}</p>
-                    </td>
-                    <td className="px-4 py-3"><StatusBadge status={camp.status} /></td>
-                    <td className="px-4 py-3 text-right font-medium">{fmt(camp.spend,{type:'currency'})}</td>
-                    <td className="px-4 py-3 text-right text-green-700">{fmt(camp.revenue,{type:'currency'})}</td>
-                    <td className="px-4 py-3 text-right">
-                      <span className={`font-semibold ${camp.roas>=3?'text-green-600':camp.roas>=1?'text-yellow-600':'text-red-500'}`}>
-                        {fmt(camp.roas,{type:'x',decimals:2})}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right text-gray-600">{fmt(camp.ctr,{type:'pct',decimals:2})}</td>
-                    <td className="px-4 py-3 text-right text-gray-600">{fmt(camp.leads)}</td>
-                    <td className="px-4 py-3 text-right text-gray-600">{fmt(camp.cpl,{type:'currency'})}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        </div>
+
+        {/* Channel breakdown pie / donut (Recharts) */}
+        <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-sm p-6">
+          <h3 className="text-sm font-label uppercase font-bold tracking-widest text-secondary mb-6">Spend by Channel</h3>
+          <div className="h-40 w-40 bg-surface-container-low rounded-full mx-auto border-[12px] border-surface shadow-inner" />
+          {/* Legend */}
+          <div className="mt-6 space-y-3">
+            {[
+              { label: 'Meta Ads', color: 'bg-[#1877F2]' },
+              { label: 'Google Ads', color: 'bg-primary' },
+              { label: 'LINE OA', color: 'bg-[#00B900]' },
+              { label: 'TikTok', color: 'bg-[#000000] dark:bg-white' },
+            ].map(({ label, color }) => (
+              <div key={label} className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-3">
+                  <div className={`h-2.5 w-2.5 rounded-full ${color}`} />
+                  <span className="text-secondary font-body text-xs">{label}</span>
+                </div>
+                <div className="h-4 w-12 bg-surface-container-low rounded" />
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+      </div>
+
+      {/* Active campaigns summary table */}
+      <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-sm p-6 overflow-hidden">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-sm font-label uppercase font-bold tracking-widest text-secondary">Active Campaigns</h3>
+          <a href="/marketing/campaigns" className="text-[10px] font-label uppercase font-bold tracking-widest text-primary hover:underline">View all</a>
+        </div>
+        <div className="space-y-0">
+          {/* Header */}
+          <div className="grid grid-cols-12 gap-4 px-4 py-3 text-[10px] font-label font-bold text-secondary uppercase tracking-widest border-b border-outline-variant/15 bg-surface-container-low/50">
+            <div className="col-span-4">Campaign</div>
+            <div className="col-span-2">Channel</div>
+            <div className="col-span-2">Spend</div>
+            <div className="col-span-2">ROAS</div>
+            <div className="col-span-2">Status</div>
+          </div>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="grid grid-cols-12 gap-4 px-4 py-4 border-b border-surface hover:bg-surface-container-low transition-colors items-center group cursor-pointer">
+              <div className="col-span-4 flex items-center gap-3">
+                <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-1"><span className="material-symbols-outlined text-[1rem]">campaign</span></div>
+                <div>
+                  <div className="h-4 w-36 bg-on-surface/10 rounded" />
+                  <div className="h-3 w-24 bg-secondary/20 rounded mt-1.5" />
+                </div>
+              </div>
+              <div className="col-span-2"><div className="h-5 w-16 bg-[#0B2D5E]/10 rounded-full" /></div>
+              <div className="col-span-2"><div className="h-4 w-16 bg-on-surface/5 rounded" /></div>
+              <div className="col-span-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-10 bg-on-surface/5 rounded" />
+                  <div className={`h-3 w-3 rounded-sm ${i % 2 === 0 ? 'bg-green-500/20 text-green-700' : 'bg-error/20 text-error'} flex items-center justify-center`}><span className="material-symbols-outlined text-[10px]">{i % 2 === 0 ? 'arrow_upward' : 'arrow_downward'}</span></div>
+                </div>
+              </div>
+              <div className="col-span-2"><div className="h-5 w-16 bg-green-500/10 text-green-700 rounded-full flex items-center justify-center text-[9px] font-label uppercase font-bold tracking-widest">Active</div></div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
-  )
+  );
 }
