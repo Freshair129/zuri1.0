@@ -1,98 +1,57 @@
-/**
- * GET  /api/orders — list orders (with filters)
- * POST /api/orders — create new order (POS quick sale)
- */
 import { NextResponse } from 'next/server'
-import { withAuth } from '@/lib/auth'
-import { listOrders, createOrder, getDailySummary } from '@/lib/repositories/orderRepo'
-import * as auditRepo from '@/lib/repositories/auditRepo'
-import triggerPusher from '@/lib/pusher'
+import { getTenantId } from '@/lib/tenant'
+import { getOrders, createOrder } from '@/lib/repositories/orderRepo'
 
-export const dynamic = 'force-dynamic'
-
-// GET /api/orders?status=&orderType=&customerId=&from=&to=&page=&limit=&summary=1
-export const GET = withAuth(
-  async (request, { session }) => {
-    try {
-      const tenantId = session.user.tenantId
-      const { searchParams } = new URL(request.url)
-
-      // Daily summary shortcut
-      if (searchParams.get('summary') === '1') {
-        const dateParam = searchParams.get('date')
-        const summary = await getDailySummary(tenantId, dateParam ? new Date(dateParam) : new Date())
-        return NextResponse.json({ data: summary })
-      }
-
-      const page      = parseInt(searchParams.get('page')  ?? '1')
-      const limit     = parseInt(searchParams.get('limit') ?? '20')
-      const status    = searchParams.get('status')    || undefined
-      const orderType = searchParams.get('orderType') || undefined
-      const customerId = searchParams.get('customerId') || undefined
-      const from      = searchParams.get('from')      || undefined
-      const to        = searchParams.get('to')        || undefined
-
-      const result = await listOrders(tenantId, { status, orderType, customerId, from, to, page, limit })
-      return NextResponse.json({ data: result })
-    } catch (error) {
-      console.error('[Orders.GET]', error)
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+// GET /api/orders - List orders
+export async function GET(request) {
+  try {
+    const tenantId = await getTenantId(request)
+    if (!tenantId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-  },
-  { domain: 'orders', action: 'R' }
-)
 
-// POST /api/orders — create order (POS checkout)
-export const POST = withAuth(
-  async (request, { session }) => {
-    try {
-      const tenantId = session.user.tenantId
-      const body = await request.json()
+    const { searchParams } = new URL(request.url)
+    // TODO: Extract filters (status, customerId, dateFrom, dateTo, page, limit)
+    const page = parseInt(searchParams.get('page') ?? '1')
+    const limit = parseInt(searchParams.get('limit') ?? '20')
+    const status = searchParams.get('status')
+    const customerId = searchParams.get('customerId')
 
-      const {
-        customerId, tableId, orderType, items,
-        discountAmount, notes,
-        vatRate, vatIncluded, serviceChargeRate,
-      } = body
+    // TODO: Call orderRepo.getOrders({ tenantId, page, limit, status, customerId })
+    const orders = await getOrders({ tenantId, page, limit, status, customerId })
 
-      if (!items || items.length === 0) {
-        return NextResponse.json({ error: 'items cannot be empty' }, { status: 400 })
-      }
-      for (const item of items) {
-        if (!item.name || !item.unitPrice || !item.qty) {
-          return NextResponse.json({ error: 'Each item requires name, unitPrice, qty' }, { status: 400 })
-        }
-      }
+    return NextResponse.json({ data: orders, page, limit })
+  } catch (error) {
+    console.error('[Orders]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
 
-      const order = await createOrder(tenantId, {
-        customerId, tableId, orderType, items,
-        discountAmount: discountAmount ?? 0,
-        notes,
-        closedById: session.user.employeeId ?? null,
-        vatRate, vatIncluded, serviceChargeRate,
-      })
-
-      await auditRepo.create(
-        tenantId,
-        session.user.employeeId ?? session.user.email,
-        'ORDER_CREATE',
-        order.id,
-        { orderId: order.orderId, total: order.totalAmount }
-      )
-
-      // Notify POS clients of new order
-      await triggerPusher(`tenant-${tenantId}`, 'new-order', {
-        orderId: order.orderId,
-        tableId,
-        orderType: order.orderType,
-        total: order.totalAmount,
-      })
-
-      return NextResponse.json({ data: order }, { status: 201 })
-    } catch (error) {
-      console.error('[Orders.POST]', error)
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+// POST /api/orders - Create a new order
+export async function POST(request) {
+  try {
+    const tenantId = await getTenantId(request)
+    if (!tenantId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-  },
-  { domain: 'orders', action: 'W' }
-)
+
+    const body = await request.json()
+    // TODO: Validate required fields (customerId, items[])
+    const { customerId, items, note, discountCode, shippingAddress } = body
+
+    if (!customerId || !items?.length) {
+      return NextResponse.json({ error: 'customerId and items are required' }, { status: 400 })
+    }
+
+    // TODO: Calculate totals, apply discounts, check stock
+    // TODO: Call orderRepo.createOrder({ tenantId, customerId, items, ... })
+    const order = await createOrder({ tenantId, customerId, items, note, discountCode, shippingAddress })
+
+    // TODO: Optionally enqueue invoice generation via QStash
+
+    return NextResponse.json({ data: order }, { status: 201 })
+  } catch (error) {
+    console.error('[Orders]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

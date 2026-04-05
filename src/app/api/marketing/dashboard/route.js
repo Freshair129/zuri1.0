@@ -1,42 +1,30 @@
 import { NextResponse } from 'next/server'
-import { getTenantId } from '@/lib/tenant'
-import { getCampaignMetrics } from '@/lib/repositories/campaignRepo'
+import { withAuth } from '@/lib/auth'
+import * as marketingRepo from '@/lib/repositories/marketingRepo'
 
-export const dynamic = 'force-dynamic'
+/**
+ * GET /api/marketing/dashboard?range=30d
+ * Returns KPI summary + period-over-period comparison for Marketing overview.
+ * Scoped by tenantId from session. Redis cached 5 min.
+ *
+ * Query params:
+ *   range  — '7d' | '30d' | '90d'  (default: '30d')
+ *
+ * Response: { range, current: KPI, previous: KPI, changes: { spend%, ... } }
+ */
+export const GET = withAuth(
+  async (req, { session }) => {
+    try {
+      const { searchParams } = new URL(req.url)
+      const range = searchParams.get('range') || '30d'
 
-// GET /api/marketing/dashboard - Return ads metrics from DB (NOT live Graph API)
-export async function GET(request) {
-  try {
-    const tenantId = await getTenantId(request)
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      const tenantId = session.user.tenantId
+      const data = await marketingRepo.getDashboardSummary(tenantId, range)
+      return NextResponse.json(data)
+    } catch (error) {
+      console.error('[marketing/dashboard]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
-
-    const { searchParams } = new URL(request.url)
-    // TODO: Extract date range filters
-    const dateFrom = searchParams.get('dateFrom')
-    const dateTo = searchParams.get('dateTo')
-    const campaignId = searchParams.get('campaignId')
-
-    // Read from DB — never call Meta Graph API directly here
-    // TODO: Call campaignRepo.getCampaignMetrics({ tenantId, dateFrom, dateTo, campaignId })
-    const metrics = await getCampaignMetrics({ tenantId, dateFrom, dateTo, campaignId })
-
-    // TODO: Aggregate spend, impressions, clicks, leads, CPL, ROAS
-    const dashboard = {
-      totalSpend: 0,
-      totalImpressions: 0,
-      totalClicks: 0,
-      totalLeads: 0,
-      cpl: 0,
-      roas: 0,
-      campaigns: metrics,
-      // TODO: populate from real aggregated data
-    }
-
-    return NextResponse.json({ data: dashboard })
-  } catch (error) {
-    console.error('[Marketing/Dashboard]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
+  },
+  { domain: 'marketing', action: 'R' }
+)
