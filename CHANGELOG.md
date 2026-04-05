@@ -1,7 +1,31 @@
 # Changelog — Zuri Platform v2
 
 > Format: [version] date — summary
-> LATEST → v2.2.8
+> LATEST → v2.2.9
+
+---
+
+## [2.2.9] 2026-04-06
+
+### Fixed — dev/test: Vitest Linux compatibility + expand test coverage
+
+**Root Causes Fixed:**
+- `@rolldown/binding-linux-x64-gnu` missing — `npm install` on Windows only fetches Windows binary; Vitest 4.x (Rolldown-based) requires platform binary to run on Linux sandbox
+- `PrismaClientInitializationError` unhandled rejection — `new PrismaClient()` tried to load Windows `.query-engine` binary on Linux even though all tests mock the DB
+
+**Changes:**
+- Install `@rolldown/binding-linux-x64-gnu@1.0.0-rc.12` (coexists with Windows binary — no production impact)
+- `src/tests/setup.js` — เพิ่ม `process.env.MOCK_MODE = 'true'` → force `isMockMode=true` → `db.ts` ใช้ Proxy แทน `new PrismaClient()` ใน test environment
+- `prisma/schema.prisma` — เพิ่ม `binaryTargets = ["native", "windows", "debian-openssl-3.0.x"]` เพื่อรองรับ `prisma generate` ใน Linux/CI ในอนาคต
+- `src/tests/mocks/prismaMock.js` — เพิ่ม `$transaction` + `$queryRawUnsafe` helpers
+- `src/tests/mocks/redisMock.js` (NEW) — global Redis mock pattern สำหรับ repos ที่ import `@/lib/redis`
+- `src/lib/redis.js` — export `redis` singleton ป้องกัน undefined import ใน tests
+- `src/lib/repositories/customerRepo.test.js` — อัปเดต expectations ตาม multi-tenant + soft-delete impl
+- `src/lib/repositories/orderRepo.test.js` (NEW) — unit tests สำหรับ payment + inventory sync
+- `src/lib/repositories/ingredientRepo.test.js` (NEW) — unit tests สำหรับ FEFO inventory logic
+- `src/tests/integration/multi-tenant.test.js` — ขยาย test cases ครอบคลุม tenant isolation
+
+**Result:** `npm test` → **Test Files: 16 passed · Tests: 55 passed** (Linux sandbox + Windows)
 
 ---
 
