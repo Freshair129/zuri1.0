@@ -67,13 +67,14 @@ export async function generateCustomerId(channel) {
   return `${prefix}-${String(serial).padStart(4, '0')}`
 }
 
-export async function generateEmployeeId(role, employmentType) {
-  const { getEmploymentTypes } = await import('@/lib/systemConfig')
+export async function generateEmployeeId(department, employmentType) {
+  const { getEmploymentTypes, getDepartmentCodes } = await import('@/lib/systemConfig')
   const types = getEmploymentTypes()
+  const depts = getDepartmentCodes()
 
   const typeCode = types[employmentType] || 'EMP'
-  const roleCode = role || 'STAFF'
-  const prefix = `ZRI-${typeCode}-${roleCode}`
+  const deptCode = depts[department] || 'GEN'
+  const prefix = `TVS-${typeCode}-${deptCode}`
 
   const last = await prisma.employee.findFirst({
     where: { employeeId: { startsWith: prefix } },
@@ -92,6 +93,10 @@ export async function generateEmployeeId(role, employmentType) {
 
 export async function generateOrderId() {
   return generateDailyId('order', 'orderId', 'ORD')
+}
+
+export async function generateProductId() {
+  return generateGlobalId('product', 'productId', 'PRD', 4)
 }
 
 export async function generateTransactionId() {
@@ -118,10 +123,4 @@ export async function generatePurchaseOrderId() {
   return generateDailyId('purchaseOrder', 'poId', 'PO')
 }
 
-export async function generateSupplierId() {
-  return generateGlobalId('supplier', 'supplierId', 'SUP')
-}
-
-export async function generateMovementId() {
-  return generateDailyId('stockMovement', 'movementId', 'MOV')
-}
+export async function 

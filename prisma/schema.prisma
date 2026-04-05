@@ -28,6 +28,7 @@ model Tenant {
   employees     Employee[]
   customers     Customer[]
   conversations Conversation[]
+  orders        Order[]
 
   @@map("tenants")
 }
@@ -247,36 +248,68 @@ model Message {
 // ============================================
 
 model Order {
-  id             String   @id @default(uuid())
-  orderId        String   @unique @map("order_id")
-  customerId     String   @map("customer_id")
-  closedById     String?  @map("closed_by_id")
-  conversationId String?  @map("conversation_id")
-  status         String   @default("PENDING")
-  orderType      String   @default("ONLINE") @map("order_type")
-  totalAmount    Float    @default(0) @map("total_amount")
-  paidAmount     Float    @default(0) @map("paid_amount")
-  discountAmount Float    @default(0) @map("discount_amount")
-  paymentMethod  String?  @map("payment_method")
-  items          Json     @default("[]")
-  notes          String?  @db.Text
-  date           DateTime @default(now())
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(uuid())
+  orderId         String   @unique @map("order_id")
+  tenantId        String   @map("tenant_id")           // CRITICAL: multi-tenant isolation
+  customerId      String?  @map("customer_id")         // nullable — walk-in customers
+  tableId         String?  @map("table_id")            // PosTable.id (onsite orders)
+  closedById      String?  @map("closed_by_id")        // Employee.id
+  conversationId  String?  @map("conversation_id")
+  status          String   @default("PENDING")         // PENDING | PAID | VOID | REFUNDED
+  orderType       String   @default("TAKEAWAY") @map("order_type") // ONSITE | TAKEAWAY | ONLINE
+  subtotalAmount  Float    @default(0) @map("subtotal_amount")
+  discountAmount  Float    @default(0) @map("discount_amount")
+  vatAmount       Float    @default(0) @map("vat_amount")
+  serviceCharge   Float    @default(0) @map("service_charge")
+  totalAmount     Float    @default(0) @map("total_amount")
+  paidAmount      Float    @default(0) @map("paid_amount")
+  paymentMethod   String?  @map("payment_method")      // CASH | QR | CARD | CREDIT
+  cashReceived    Float?   @map("cash_received")       // for change calculation
+  notes           String?  @db.Text
+  date            DateTime @default(now())
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
-  customer     Customer      @relation(fields: [customerId], references: [id])
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  customer     Customer?     @relation(fields: [customerId], references: [id])
+  table        PosTable?     @relation(fields: [tableId], references: [id])
+  items        OrderItem[]
   transactions Transaction[]
 
+  @@index([tenantId])
+  @@index([status])
+  @@index([date])
   @@map("orders")
+}
+
+// Order line items (replaces JSON items field — normalized for reporting)
+model OrderItem {
+  id          String  @id @default(uuid())
+  orderId     String  @map("order_id")
+  tenantId    String  @map("tenant_id")
+  productId   String? @map("product_id")       // Product.id — null for custom items
+  name        String                            // snapshot of product name at time of sale
+  qty         Int     @default(1)
+  unitPrice   Float   @map("unit_price")
+  discount    Float   @default(0)
+  totalPrice  Float   @map("total_price")
+  note        String?
+  kitchenStatus String @default("PENDING") @map("kitchen_status") // PENDING | SENT | DONE
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_items")
 }
 
 model Transaction {
   id            String   @id @default(uuid())
   transactionId String   @unique @map("transaction_id")
+  tenantId      String   @map("tenant_id")
   orderId       String   @map("order_id")
   amount        Float
-  type          String   @default("PAYMENT")
-  method        String   @default("Transfer")
+  type          String   @default("PAYMENT")   // PAYMENT | REFUND | VOID
+  method        String   @default("CASH")
   slipStatus    String   @default("PENDING") @map("slip_status")
   slipData      Json?    @map("slip_data")
   slipUrl       String?  @map("slip_url")
@@ -286,7 +319,59 @@ model Transaction {
 
   order Order @relation(fields: [orderId], references: [id])
 
+  @@index([tenantId])
   @@map("transactions")
+}
+
+// POS floor plan
+model PosZone {
+  id       String @id @default(uuid())
+  tenantId String @map("tenant_id")
+  name     String
+  floor    Int    @default(1)
+  color    String @default("#f97316")
+
+  tables PosTable[]
+
+  @@index([tenantId])
+  @@map("pos_zones")
+}
+
+model PosTable {
+  id         String  @id @default(uuid())
+  tenantId   String  @map("tenant_id")
+  zoneId     String? @map("zone_id")
+  name       String
+  capacity   Int     @default(4)
+  shape      String  @default("rect")  // rect | circle
+  positionX  Float   @default(0) @map("position_x")
+  positionY  Float   @default(0) @map("position_y")
+  floor      Int     @default(1)
+  status     String  @default("AVAILABLE") // AVAILABLE | OCCUPIED | RESERVED | BILL_REQUESTED | CLEANING
+
+  zone   PosZone? @relation(fields: [zoneId], references: [id])
+  orders Order[]
+
+  @@index([tenantId])
+  @@map("pos_tables")
+}
+
+// Per-tenant receipt/document configuration
+model PosReceiptConfig {
+  id                String  @id @default(uuid())
+  tenantId          String  @unique @map("tenant_id")
+  businessName      String? @map("business_name")
+  address           String? @db.Text
+  taxId             String? @map("tax_id")   // 13-digit Thai TIN
+  phone             String?
+  website           String?
+  logoUrl           String? @map("logo_url")
+  vatIncluded       Boolean @default(true) @map("vat_included")
+  vatRate           Float   @default(7) @map("vat_rate")
+  serviceChargeRate Float   @default(0) @map("service_charge_rate")
+  footerText        String? @map("footer_text")
+
+  @@map("pos_receipt_configs")
 }
 
 // ============================================
@@ -294,21 +379,29 @@ model Transaction {
 // ============================================
 
 model Product {
-  id                  String  @id @default(uuid())
-  productId           String  @unique @map("product_id")
+  id                  String   @id @default(uuid())
+  productId           String   @unique @map("product_id")
+  tenantId            String   @map("tenant_id")           // CRITICAL: multi-tenant
   name                String
+  description         String?  @db.Text
   category            String
-  fallbackSubCategory String? @map("fallback_sub_category")
-  basePrice           Float   @default(0) @map("base_price")
+  fallbackSubCategory String?  @map("fallback_sub_category")
+  imageUrl            String?  @map("image_url")
+  sku                 String?                              // barcode / SKU for scan
+  basePrice           Float    @default(0) @map("base_price")
+  posPrice            Float?   @map("pos_price")          // override base_price for POS
   hours               Float?
-  sessionType         String? @map("session_type")
-  isActive            Boolean @default(true) @map("is_active")
+  sessionType         String?  @map("session_type")
+  isActive            Boolean  @default(true) @map("is_active")
+  isPosVisible        Boolean  @default(true) @map("is_pos_visible")
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
 
   enrollments Enrollment[]
   schedules   CourseSchedule[]
 
+  @@index([tenantId])
+  @@index([category])
   @@map("products")
 }
 
