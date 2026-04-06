@@ -5,7 +5,7 @@ export async function middleware(req) {
   const { pathname } = req.nextUrl
 
   // Skip static files and auth routes
-  if (pathname.startsWith('/_next') || pathname.startsWith('/api/auth') || pathname === '/login') {
+  if (pathname.startsWith('/_next') || pathname.startsWith('/api/auth') || pathname === '/login' || pathname === '/register') {
     return NextResponse.next()
   }
 

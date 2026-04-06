@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Utensils, ChefHat, Inventory, Speed, OpenInNew, Add, Warning, CheckCircle, TrendingUp } from 'lucide-react'
+import { Utensils, ChefHat, Plus, CheckCircle, TrendingUp } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function KitchenPage() {
@@ -253,7 +253,7 @@ export default function KitchenPage() {
 
       {/* FAB - Global Quick Action */}
       <button className="fixed bottom-10 right-10 w-14 h-14 bg-orange-500 text-white rounded-2xl shadow-2xl shadow-orange-200 flex items-center justify-center hover:bg-orange-600 hover:scale-110 active:scale-95 transition-all z-50">
-        <Add className="h-6 w-6" />
+        <Plus className="h-6 w-6" />
       </button>
     </div>
   )

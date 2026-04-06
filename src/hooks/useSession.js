@@ -5,7 +5,11 @@ import { useSession as useNextAuthSession } from 'next-auth/react'
  * Returns { user, roles, tenantId, isLoading }
  */
 export function useSession() {
-  const { data: session, status } = useNextAuthSession()
+  const result = useNextAuthSession()
+
+  // During SSR prerendering, useSession may return undefined (no SessionProvider)
+  const session = result?.data ?? null
+  const status = result?.status ?? 'loading'
 
   const isLoading = status === 'loading'
   const user = session?.user ?? null
