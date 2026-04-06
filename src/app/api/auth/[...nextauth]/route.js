@@ -33,6 +33,12 @@ export const authOptions = {
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // After login, always go to /dashboard unless a valid callback is set
+      if (url.startsWith(baseUrl)) return url
+      if (url.startsWith('/')) return baseUrl + url
+      return baseUrl + '/dashboard'
+    },
     async jwt({ token, user }) {
       if (user) {
         token.employeeId = user.employeeId

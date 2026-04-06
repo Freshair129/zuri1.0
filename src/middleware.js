@@ -29,6 +29,11 @@ export async function middleware(req) {
     tenantId = token.tenantId
   }
 
+  // Redirect authenticated users from landing page to dashboard
+  if (pathname === '/' && token) {
+    return NextResponse.redirect(new URL('/dashboard', req.url))
+  }
+
   // Protect dashboard routes
   if (pathname.startsWith('/') && !pathname.startsWith('/api') && pathname !== '/') {
     if (!token) {
